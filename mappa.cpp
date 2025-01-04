@@ -44,21 +44,27 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
             }
         }
         delete m_matrice;
+        m_matrice = nullptr; // Evita dangling pointers
     }
 
-    // Carica la matrice direttamente dal database
-    QVector<QVector<Coordinate*>>* nuovaMatrice = db->caricaMatriceDaDb(locatore_da, locatore_a);
+    auto future = QtConcurrent::run([this, locatore_da, locatore_a]() {
+        // Carica la matrice direttamente dal database
+        QMutexLocker locker(&mutex);
+        QVector<QVector<Coordinate*>>* nuovaMatrice = db->caricaMatriceDaDb(locatore_da, locatore_a);
 
-    // Assegna la nuova matrice
-    m_matrice = nuovaMatrice;
+        // Trasferisci la matrice al thread principale
+        QMetaObject::invokeMethod(this, [this, nuovaMatrice]() {
+            // Assegna la nuova matrice
+            m_matrice = nuovaMatrice;
 
-    // Aggiorna il widget
-    update();
+            // Aggiorna il widget
+            update();
 
-    // Emetti il segnale che la matrice è stata caricata
-    emit matriceCaricata();
+            // Emetti il segnale che la matrice è stata caricata
+            emit matriceCaricata();
+        }, Qt::QueuedConnection);
+    });
 }
-
 
 void Mappa::addLinea(const Linee l, bool refresh) {
     if (!linee->contains(l)) {
@@ -146,6 +152,80 @@ void Mappa::mousePressEvent(QMouseEvent *event) {
     }
 }
 
+void Mappa::mouseDoubleClickEvent(QMouseEvent *event) {
+    if (!m_matrice || m_matrice->isEmpty())
+        return;
+
+    int rows = m_matrice->size();
+    int cols = m_matrice->at(0).size();
+
+    if (rows == 0 || cols == 0)
+        return;
+
+    QPointF pos = event->position();
+    float mouseX = (2.0f * pos.x() / this->width()) - 1.0f;
+    float mouseY = 1.0f - (2.0f * pos.y() / this->height());
+
+
+    float cellWidth = 2.0f / cols;
+    float cellHeight = 2.0f / rows;
+
+    int col = static_cast<int>((mouseX + 1.0f) / cellWidth);
+    int row = static_cast<int>((1.0f - mouseY) / cellHeight);
+
+    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+        const Coordinate *coord = m_matrice->at(row).at(col);
+
+        if (coord != nullptr) {
+            emit mouseLocatoreDPPCLK(coord->getLocatore());
+        }
+    }
+}
+
+QColor Mappa::generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity) {
+    // Converti il colore in HSL per manipolazione
+    float h, s, l, a;
+    nationalColor.getHslF(&h, &s, &l, &a);
+
+    // Parametri base per le variazioni
+    float baseRegionHueShift = 0.1f;
+    float baseProvinceHueShift = 0.02f;
+    float baseMunicipalityLightShift = 0.05f;
+
+    float baseRegionSaturationShift = 0.2f;
+    float baseProvinceSaturationShift = 0.1f;
+    float baseMunicipalitySaturationShift = 0.05f;
+
+    // Scala le variazioni in base all'intensità
+    float regionHueShift = baseRegionHueShift * intensity;
+    float provinceHueShift = baseProvinceHueShift * intensity;
+    float municipalityLightShift = baseMunicipalityLightShift * intensity;
+
+    float regionSaturationShift = baseRegionSaturationShift * intensity;
+    float provinceSaturationShift = baseProvinceSaturationShift * intensity;
+    float municipalitySaturationShift = baseMunicipalitySaturationShift * intensity;
+
+    // Calcola il nuovo colore
+    h += (regionCode % 10) * regionHueShift / 10.0f;  // Cambia tonalità per regione
+    h += (provinceCode % 10) * provinceHueShift / 10.0f; // Cambia tonalità per provincia
+    l += (municipalityCode % 10) * municipalityLightShift / 10.0f; // Cambia luminosità per comune
+
+    s += (regionCode % 10) * regionSaturationShift / 10.0f; // Cambia saturazione per regione
+    s -= (provinceCode % 10) * provinceSaturationShift / 10.0f; // Riduce saturazione per provincia
+    s -= (municipalityCode % 10) * municipalitySaturationShift / 10.0f; // Riduce saturazione per comune
+
+    // Normalizza i valori di HSL
+    h = std::fmod(h + 1.0f, 1.0f); // Assicura che h sia tra 0 e 1
+    s = std::clamp(s, 0.0f, 1.0f);
+    l = std::clamp(l, 0.0f, 1.0f);
+
+    // Genera il nuovo colore
+    QColor modifiedColor;
+    modifiedColor.setHslF(h, s, l, a);
+
+    return modifiedColor;
+}
+
 void Mappa::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -173,12 +253,12 @@ void Mappa::paintGL() {
             float y = 1.0f - row * cellHeight - cellHeight;
 
             QColor colore;
-            switch (coord->getColore()) {
+            switch (coord->getColoreStato()) {
             case 1:
                 colore = QColor(170, 120, 210); // Viola pastello scuro
                 break;
             case 2:
-                colore = QColor(90, 200, 90); // Verde pastello scuro
+                colore = QColor(90, 150, 220); // Blu pastello scuro
                 break;
             case 3:
                 colore = QColor(70, 120, 70); // Verde oliva scuro
@@ -196,6 +276,7 @@ void Mappa::paintGL() {
                 colore = QColor(170, 170, 170); // Grigio pastello scuro
             }
 
+            colore = generateHierarchicalColor(colore, coord->getColoreRegione(), coord->getColoreProvincia(), coord->getColoreComune(), 1.5);
 
             drawSquare(x, y, cellWidth, cellHeight, colore, cols <= 110);
         }

@@ -35,6 +35,7 @@ public slots:
 private slots:
     void compilaNominativo(const QString &txt);
     void locatoreDaMappa(QString loc);
+    void locatoreDaMappaDPPCLK(QString loc);
     void locatoreDaMappaOceano();
 
     void catturaTab();

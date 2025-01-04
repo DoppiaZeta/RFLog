@@ -50,12 +50,21 @@ public:
     QString getLocatore() const;
     void setLocatore(const QString &loc);
 
-    unsigned char getColore() const;
-    void setColore(unsigned char c);
+    unsigned char getColoreStato() const;
+    void setColoreStato(unsigned char c);
+    unsigned char getColoreRegione() const;
+    void setColoreRegione(unsigned char c);
+    unsigned char getColoreProvincia() const;
+    void setColoreProvincia(unsigned char c);
+    unsigned char getColoreComune() const;
+    void setColoreComune(unsigned char c);
 
 private:
     char locatore[6];
-    unsigned char colore;
+    unsigned char colore_stato;
+    unsigned char colore_regione;
+    unsigned char colore_provincia;
+    unsigned char colore_comune;
 };
 
 class DatabaseManager : public QObject
@@ -81,6 +90,8 @@ signals:
 private:
     QSqlDatabase m_database;
     QString m_databasePath;
+
+    QMutex mutex;
 };
 
 #endif // DATABASEMANAGER_H

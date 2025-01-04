@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Griglia->setRowStretch(2, 1);
 
     connect(mappa, &Mappa::mouseLocatore, this, &MainWindow::locatoreDaMappa);
+    connect(mappa, &Mappa::mouseLocatoreDPPCLK, this, &MainWindow::locatoreDaMappaDPPCLK);
     connect(mappa, &Mappa::mouseOceano, this, &MainWindow::locatoreDaMappaOceano);
 
     connect(Nominativo, &QLineEdit::textChanged, this, &MainWindow::compilaNominativo);
@@ -102,6 +103,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->locatorePresetNordAmerica, &QPushButton::clicked, this, &MainWindow::centraPredefinitoNordAmerica);
     connect(mappaConfig->locatorePresetSudAmerica, &QPushButton::clicked, this, &MainWindow::centraPredefinitoSudAmerica);
     connect(mappaConfig->locatorePresetOceania, &QPushButton::clicked, this, &MainWindow::centraPredefinitoOceania);
+
+    mappaConfig->locatoreOffsetValue->setText(QString::number(mappaConfig->locatoreOffset->value()));
+    connect(mappaConfig->locatoreOffset, &QSlider::valueChanged, [this](int value) {
+        mappaConfig->locatoreOffsetValue->setText(QString::number(value));
+    });
 
 
     QTimer *t = new QTimer(this);
@@ -256,6 +262,11 @@ void MainWindow::locatoreDaMappa(QString loc) {
     delete res;
 }
 
+void MainWindow::locatoreDaMappaDPPCLK(QString loc) {
+    locatoreDaMappa(loc);
+    centraDaLocatore();
+}
+
 void MainWindow::locatoreDaMappaOceano() {
     QString vuoto;
     mappaConfig->Locatore->setText(vuoto);
@@ -275,7 +286,7 @@ void MainWindow::locatoreDaMappaOceano() {
 void MainWindow::centraDaLocatore() {
     if(Coordinate::validaLocatore(mappaConfig->locatoreCentra->text().trimmed())) {
         QString lato1, lato2;
-        int offset = mappaConfig->locatoreOffset->text().trimmed().toInt() / 2;
+        int offset = mappaConfig->locatoreOffset->value() / 2;
         lato1 = Coordinate::calcolaCoordinate(mappaConfig->locatoreCentra->text().trimmed(), -offset, -offset);
         lato2 = Coordinate::calcolaCoordinate(mappaConfig->locatoreCentra->text().trimmed(), offset, offset);
         mappa->setMatrice(lato1, lato2);
@@ -283,7 +294,7 @@ void MainWindow::centraDaLocatore() {
 }
 
 void MainWindow::centraPredefinitoITA() {
-    mappa->setMatrice("JM24XG", "JN98MP");
+    mappa->setMatrice("JM26XJ", "JN97NG");
 }
 void MainWindow::centraPredefinitoMondo() {
     mappa->setMatrice("AC00AA", "RR89PX");

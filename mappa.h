@@ -30,6 +30,7 @@ public:
 
 signals:
     void mouseLocatore(QString locatore); // Segnale per il quadrato sotto il mouse
+    void mouseLocatoreDPPCLK(QString locatore); // Segnale per il quadrato sotto il mouse
     void mouseOceano();
     void matriceCaricata();
 
@@ -39,16 +40,19 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
     QVector<QVector<Coordinate*>> *m_matrice;
 
     void drawSquare(float x, float y, float width, float height, const QColor &color, bool border = false);
+    QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
     QList<Linee> *linee;
     QString primoLocatore;
     QString ultimoLocatore;
 
     DatabaseManager *db;
+    QMutex mutex;
 
 private slots:
     void setPrimoLoatore(QString primo, QString secondo);

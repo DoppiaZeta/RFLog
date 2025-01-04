@@ -7,7 +7,10 @@ DBResult::DBResult() {
 
 Coordinate::Coordinate() {
     std::memset(locatore, 0, sizeof(locatore));
-    colore = 1;
+    colore_stato = 1;
+    colore_regione = 0;
+    colore_provincia = 0;
+    colore_comune = 0;
 }
 
 bool Coordinate::operator==(const Coordinate &other) const {
@@ -31,12 +34,36 @@ void Coordinate::setLocatore(const QString &loc) {
         std::memcpy(locatore, loc.toUtf8().constData(), sizeof(locatore));
 }
 
-unsigned char Coordinate::getColore() const {
-    return colore;
+unsigned char Coordinate::getColoreStato() const {
+    return colore_stato;
 }
 
-void Coordinate::setColore(unsigned char c) {
-    colore = c;
+void Coordinate::setColoreStato(unsigned char c) {
+    colore_stato = c;
+}
+
+unsigned char Coordinate::getColoreRegione() const {
+    return colore_regione;
+}
+
+void Coordinate::setColoreRegione(unsigned char c) {
+    colore_regione = c;
+}
+
+unsigned char Coordinate::getColoreProvincia() const {
+    return colore_provincia;
+}
+
+void Coordinate::setColoreProvincia(unsigned char c) {
+    colore_provincia = c;
+}
+
+unsigned char Coordinate::getColoreComune() const {
+    return colore_comune;
+}
+
+void Coordinate::setColoreComune(unsigned char c) {
+    colore_comune = c;
 }
 
 DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
@@ -71,6 +98,7 @@ QString DatabaseManager::escape(const QString &txt) {
 }
 
 DBResult* DatabaseManager::executeQuery(const QString &queryStr) {
+    QMutexLocker locker(&mutex);
     DBResult *ret = new DBResult;
 
     if (!m_database.isOpen()) {
@@ -225,10 +253,10 @@ QVector<QVector<Coordinate*>>* DatabaseManager::caricaMatriceDaDb(QString locato
 
     // Calcola il passo di riduzione progressivo
     auto calculateStep = [](int total) -> int {
-        if (total <= 700) return 1;   // Precisione massima
-        if (total <= 1400) return 2;   // Salta 1 ogni 2
-        if (total <= 2100) return 4;   // Salta 3 ogni 4
-        if (total <= 2800) return 7;   // Salta 7 ogni 8
+        if (total <= 1000) return 1;   // Precisione massima
+        if (total <= 1500) return 2;   // Salta 1 ogni 2
+        if (total <= 2000) return 4;   // Salta 3 ogni 4
+        if (total <= 2500) return 7;   // Salta 7 ogni 8
         return 12;
     };
 
@@ -260,7 +288,7 @@ QVector<QVector<Coordinate*>>* DatabaseManager::caricaMatriceDaDb(QString locato
             QString createTempTableQuery = "CREATE TEMP TABLE temp_locatori (locatore TEXT);";
             QString insertTempTableQuery = QString("INSERT INTO temp_locatori (locatore) VALUES %1;").arg(values);
             QString queryString = R"(
-              SELECT l.locatore, l.colore
+              SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune
               FROM locatori l
               JOIN temp_locatori t
                 ON l.locatore = t.locatore
@@ -282,7 +310,10 @@ QVector<QVector<Coordinate*>>* DatabaseManager::caricaMatriceDaDb(QString locato
                     QString locatoreStr = coord->getLocatore();
                     if (queryMap.contains(locatoreStr)) {
                         const QVector<QString>& data = queryMap[locatoreStr];
-                        coord->setColore(data[1].toInt());
+                        coord->setColoreStato(data[1].toInt());
+                        coord->setColoreRegione(data[2].toInt());
+                        coord->setColoreProvincia(data[3].toInt());
+                        coord->setColoreComune(data[4].toInt());
                     } else {
                         delete coord;
                         coord = nullptr;
