@@ -27,12 +27,13 @@ public:
     void addLinea(const Linee l, bool refresh = true);
     void delLinea(const Linee l);
     void delAllLinee();
+    void reload();
 
 signals:
     void mouseLocatore(QString locatore); // Segnale per il quadrato sotto il mouse
     void mouseLocatoreDPPCLK(QString locatore); // Segnale per il quadrato sotto il mouse
-    void mouseOceano();
     void matriceCaricata();
+    void matriceDaA(QString da, QString a);
 
 
 protected:
@@ -47,6 +48,9 @@ private:
 
     void drawSquare(float x, float y, float width, float height, const QColor &color, bool border = false);
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
+
+    QString calcolaLocatoreMouse(QMouseEvent *event);
+
     QList<Linee> *linee;
     QString primoLocatore;
     QString ultimoLocatore;

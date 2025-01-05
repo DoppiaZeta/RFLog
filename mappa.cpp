@@ -53,7 +53,7 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
         QVector<QVector<Coordinate*>>* nuovaMatrice = db->caricaMatriceDaDb(locatore_da, locatore_a);
 
         // Trasferisci la matrice al thread principale
-        QMetaObject::invokeMethod(this, [this, nuovaMatrice]() {
+        QMetaObject::invokeMethod(this, [this, nuovaMatrice, locatore_a, locatore_da]() {
             // Assegna la nuova matrice
             m_matrice = nuovaMatrice;
 
@@ -62,6 +62,7 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
 
             // Emetti il segnale che la matrice è stata caricata
             emit matriceCaricata();
+            emit matriceDaA(locatore_da, locatore_a);
         }, Qt::QueuedConnection);
     });
 }
@@ -120,66 +121,44 @@ void Mappa::drawSquare(float x, float y, float width, float height, const QColor
     }
 }
 
-void Mappa::mousePressEvent(QMouseEvent *event) {
-    if (!m_matrice || m_matrice->isEmpty())
-        return;
-
-    int rows = m_matrice->size();
-    int cols = m_matrice->at(0).size();
-
-    if (rows == 0 || cols == 0)
-        return;
-
+QString Mappa::calcolaLocatoreMouse(QMouseEvent *event) {
     QPointF pos = event->position();
     float mouseX = (2.0f * pos.x() / this->width()) - 1.0f;
     float mouseY = 1.0f - (2.0f * pos.y() / this->height());
 
+    int xprimo, yprimo, xultimo, yultimo, xdiviso, ydiviso;
+    Coordinate::toRowCol(primoLocatore, xprimo, yprimo);
+    Coordinate::toRowCol(ultimoLocatore, xultimo, yultimo);
 
-    float cellWidth = 2.0f / cols;
-    float cellHeight = 2.0f / rows;
+    xdiviso = xultimo - xprimo + 1;
+    ydiviso = yprimo - yultimo + 1;
 
-    int col = static_cast<int>((mouseX + 1.0f) / cellWidth);
-    int row = static_cast<int>((1.0f - mouseY) / cellHeight);
+    if(xdiviso == 0)
+        xdiviso = 1;
 
-    if (col >= 0 && col < cols && row >= 0 && row < rows) {
-        const Coordinate *coord = m_matrice->at(row).at(col);
+    if(ydiviso == 0)
+        ydiviso = 1;
 
-        if (coord != nullptr) {
-            emit mouseLocatore(coord->getLocatore());
-        } else {
-            emit mouseOceano();
-        }
-    }
+    float col = (mouseX + 1.0f) / 2 * xdiviso;
+    float row = (mouseY + 1.0f) / 2 * ydiviso;
+
+    //qDebug() << xprimo << yprimo << xultimo << yultimo << col << row << cellWidth << cellHeight << primoLocatore << ultimoLocatore << mouseX << mouseY << Coordinate::fromRowCol(xprimo + col, yultimo + row);
+
+    return Coordinate::fromRowCol(xprimo + col, yultimo + row);
+}
+
+void Mappa::mousePressEvent(QMouseEvent *event) {
+    QString loc = calcolaLocatoreMouse(event);
+
+    if(Coordinate::validaLocatore(loc))
+        emit mouseLocatore(loc);
 }
 
 void Mappa::mouseDoubleClickEvent(QMouseEvent *event) {
-    if (!m_matrice || m_matrice->isEmpty())
-        return;
+    QString loc = calcolaLocatoreMouse(event);
 
-    int rows = m_matrice->size();
-    int cols = m_matrice->at(0).size();
-
-    if (rows == 0 || cols == 0)
-        return;
-
-    QPointF pos = event->position();
-    float mouseX = (2.0f * pos.x() / this->width()) - 1.0f;
-    float mouseY = 1.0f - (2.0f * pos.y() / this->height());
-
-
-    float cellWidth = 2.0f / cols;
-    float cellHeight = 2.0f / rows;
-
-    int col = static_cast<int>((mouseX + 1.0f) / cellWidth);
-    int row = static_cast<int>((1.0f - mouseY) / cellHeight);
-
-    if (col >= 0 && col < cols && row >= 0 && row < rows) {
-        const Coordinate *coord = m_matrice->at(row).at(col);
-
-        if (coord != nullptr) {
-            emit mouseLocatoreDPPCLK(coord->getLocatore());
-        }
-    }
+    if(Coordinate::validaLocatore(loc))
+        emit mouseLocatoreDPPCLK(loc);
 }
 
 QColor Mappa::generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity) {
@@ -282,24 +261,6 @@ void Mappa::paintGL() {
         }
     }
 
-/*
-    // Linea diagonale principale (da angolo in alto a sinistra a angolo in basso a destra)
-    glBegin(GL_LINES);
-    glColor4f(0.0f, 1.0f, 0.0f, 0.1f); // Verde trasparente
-    glVertex2f(-1.0f, 1.0f); // Angolo in alto a sinistra
-    glColor4f(0.0f, 1.0f, 0.0f, 1.0f); // Verde pieno
-    glVertex2f(1.0f, -1.0f); // Angolo in basso a destra
-    glEnd();
-
-    // Linea diagonale opposta (da angolo in alto a destra a angolo in basso a sinistra)
-    glBegin(GL_LINES);
-    glColor4f(0.0f, 1.0f, 0.0f, 0.1f); // Verde trasparente
-    glVertex2f(1.0f, 1.0f); // Angolo in alto a destra
-    glColor4f(0.0f, 1.0f, 0.0f, 1.0f); // Verde pieno
-    glVertex2f(-1.0f, -1.0f); // Angolo in basso a sinistra
-    glEnd();
-*/
-
     if(!primoLocatore.isEmpty()) {
         int primox, primoy,ultimox, ultimoy, collen, rowlen;
         Coordinate::toRowCol(primoLocatore, primox, primoy);
@@ -326,13 +287,6 @@ void Mappa::paintGL() {
 
             x2f = x2f * 2 - 1;
             y2f = y2f * 2 - 1;
-/*
-            qDebug() << "Primo" << primoLocatore << primox << primoy;
-            qDebug() << "Ultimo" << ultimoLocatore << ultimox << ultimoy;
-            qDebug() << "Collen" << collen << "Rowlen" << rowlen;
-            qDebug() << "Loc da" << linea.locatore_da << x1 << y1 << x1f << y1f;
-            qDebug() << "Loc a" << linea.locatore_a << x2 << y2 << x2f << y2f;
-*/
 
             // Imposta il colore rosso
             glColor4f(0.9f, 0.1f, 0.1f, 1.0f); // Rosso più tenue
@@ -368,9 +322,10 @@ void Mappa::paintGL() {
             // Ripristina il colore pieno per eventuali disegni successivi
             glColor4f(0.9f, 0.1f, 0.1f, 1.0f);
 
-
-
         }
     }
 }
 
+void Mappa::reload() {
+    setMatrice(primoLocatore, ultimoLocatore);
+}

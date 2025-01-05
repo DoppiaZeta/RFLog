@@ -36,7 +36,6 @@ private slots:
     void compilaNominativo(const QString &txt);
     void locatoreDaMappa(QString loc);
     void locatoreDaMappaDPPCLK(QString loc);
-    void locatoreDaMappaOceano();
 
     void catturaTab();
     void centraDaLocatore();
@@ -55,11 +54,35 @@ private slots:
     void cercaProvincia(const QString & txt);
     void cercaComune(const QString & txt);
     void cercaLocatore(const QString & txt);
+
+    void caricaColoreStato(const QString & txt);
+    void caricaColoreRegione(const QString & txt);
+    void caricaColoreProvincia(const QString & txt);
+    void caricaColoreComune(const QString & txt);
+
+    void salvaColoreStato();
+    void salvaColoreRegione();
+    void salvaColoreProvincia();
+    void salvaColoreComune();
+
     void pulisciCerca();
     void confermaCerca();
+    void caricaDaA(QString da, QString a);
+    void centraDAA();
 
 
 private:
+    DBResult * caricaStatiDB();
+    DBResult * caricaRegioniDB(const QString & stato);
+    DBResult * caricaProvinceDB(const QString & stato, const QString & regione);
+    DBResult * caricaComuniDB(const QString & stato, const QString & regione, const QString & provincia);
+    DBResult * caricaLocatoriDB(const QString & stato, const QString & regione, const QString & provincia, const QString & comune);
+
+    DBResult * caricaColoreStatoDB(const QString & stato);
+    DBResult * caricaColoreRegioneDB(const QString & stato, const QString & regione);
+    DBResult * caricaColoreProvinciaDB(const QString & stato, const QString & regione, const QString & provincia);
+    DBResult * caricaColoreComuneDB(const QString & stato, const QString & regione, const QString & provincia, const QString & comune);
+
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
     SuggestiveLineEdit *Nominativo;

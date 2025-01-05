@@ -28,6 +28,8 @@
 class DBResult {
 public:
     DBResult();
+    bool isEmpty() const;
+    bool hasRows() const;
 
     QVector<QString> colonne;
     QVector<QVector<QString>> tabella;
@@ -80,6 +82,7 @@ public:
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
 
     DBResult* executeQuery(const QString &queryStr);
+    void executeQueryNoRes(const QString &queryStr);
     QString lastError() const;
 
     static QString escape(const QString &txt);

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>in</string>
+   <string>RFLog</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -65,7 +65,7 @@
      <x>0</x>
      <y>0</y>
      <width>971</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

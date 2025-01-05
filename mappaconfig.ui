@@ -31,10 +31,68 @@
      <property name="spacing">
       <number>0</number>
      </property>
+     <item row="0" column="1">
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="5" column="0">
+        <widget class="QLabel" name="Regione">
+         <property name="styleSheet">
+          <string notr="true">font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLineEdit" name="Locatore">
+         <property name="styleSheet">
+          <string notr="true">color: blue;
+font-weight: bold;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="Comune">
+         <property name="styleSheet">
+          <string notr="true">font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="Stato">
+         <property name="styleSheet">
+          <string notr="true">font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="Provincia">
+         <property name="styleSheet">
+          <string notr="true">font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="1" column="1">
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="CENTRALOC">
         <attribute name="title">
@@ -292,13 +350,57 @@ mappa</string>
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="CENTRADAA">
+        <attribute name="title">
+         <string>Centra da a</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_13">
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <layout class="QGridLayout" name="gridLayout_12">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>A:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLineEdit" name="locatoreDA"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>DA:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLineEdit" name="locatoreA"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="locatoreCentraDAA">
+             <property name="text">
+              <string>Centra
+nella
+mappa</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
          <string>Coordinate</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_11">
          <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox">
+          <widget class="QGroupBox" name="COORDINATE">
            <property name="title">
             <string>Coordinate:</string>
            </property>
@@ -380,70 +482,257 @@ mappa</string>
          </item>
         </layout>
        </widget>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <layout class="QGridLayout" name="gridLayout">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="3" column="0">
-        <widget class="QLabel" name="Regione">
-         <property name="styleSheet">
-          <string notr="true">font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLineEdit" name="Locatore">
-         <property name="styleSheet">
-          <string notr="true">color: blue;
+       <widget class="QWidget" name="MODIFICAMAPPA">
+        <attribute name="title">
+         <string>Modifica mappa</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_17">
+         <item row="0" column="1">
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <layout class="QGridLayout" name="gridLayout_18">
+             <item row="2" column="0">
+              <layout class="QGridLayout" name="gridLayout_16">
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_20">
+                 <property name="text">
+                  <string>Regione:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QComboBox" name="modificaRegione">
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QLabel" name="label_21">
+                 <property name="text">
+                  <string>Provincia:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QComboBox" name="modificaStato">
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_19">
+                 <property name="text">
+                  <string>Stato:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="3">
+                <widget class="QComboBox" name="modificaProvincia">
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="4">
+                <widget class="QComboBox" name="modificaComune">
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QLabel" name="label_22">
+                 <property name="text">
+                  <string>Regione:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <item>
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Locatore:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="modificaLocatore">
+                 <property name="styleSheet">
+                  <string notr="true">color: darkblue;
 font-weight: bold;</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="Stato">
-         <property name="styleSheet">
-          <string notr="true">font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="Provincia">
-         <property name="styleSheet">
-          <string notr="true">font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="Comune">
-         <property name="styleSheet">
-          <string notr="true">font-weight: bold;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="modificaOK">
+             <property name="text">
+              <string>Salva
+modifiche</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="CAMBIACOLORI">
+        <attribute name="title">
+         <string>Modifica Colori</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_15">
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout_14">
+           <item row="8" column="1">
+            <widget class="QComboBox" name="coloriComuneTXT">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QComboBox" name="coloriRegioneTXT">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
+            <widget class="QPushButton" name="coloreRegioneOK">
+             <property name="text">
+              <string>Salva colore regione</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QComboBox" name="coloreStato"/>
+           </item>
+           <item row="4" column="2">
+            <widget class="QComboBox" name="coloreRegione"/>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="coloriStatoTXT">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="2">
+            <widget class="QComboBox" name="coloreComune"/>
+           </item>
+           <item row="6" column="1">
+            <widget class="QComboBox" name="coloriProvinciaTXT">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="3">
+            <widget class="QPushButton" name="coloreProvinciaOK">
+             <property name="text">
+              <string>Salva colore provincia</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QPushButton" name="coloreStatoOK">
+             <property name="text">
+              <string>Salva colore stato</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QComboBox" name="coloreProvincia"/>
+           </item>
+           <item row="8" column="3">
+            <widget class="QPushButton" name="coloreComuneOK">
+             <property name="text">
+              <string>Salva colore comune</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Stato:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Regone:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>Provincia:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>Comune:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>Locatore</tabstop>
+  <tabstop>locatoreCentra</tabstop>
+  <tabstop>locatoreOffset</tabstop>
+  <tabstop>locatoreCentraOK</tabstop>
+  <tabstop>locatorePresetITA</tabstop>
+  <tabstop>locatorePresetMondo</tabstop>
+  <tabstop>locatorePresetEU</tabstop>
+  <tabstop>locatorePresetAfrica</tabstop>
+  <tabstop>locatorePresetAsia</tabstop>
+  <tabstop>locatorePresetOceania</tabstop>
+  <tabstop>locatorePresetNordAmerica</tabstop>
+  <tabstop>locatorePresetSudAmerica</tabstop>
+  <tabstop>statoDB</tabstop>
+  <tabstop>regioneDB</tabstop>
+  <tabstop>provinciaDB</tabstop>
+  <tabstop>comuneDB</tabstop>
+  <tabstop>locatoreDB</tabstop>
+  <tabstop>locatoreCentraDB</tabstop>
+  <tabstop>pulisciDB</tabstop>
+  <tabstop>locatoreDA</tabstop>
+  <tabstop>locatoreA</tabstop>
+  <tabstop>locatoreCentraDAA</tabstop>
+  <tabstop>coloriStatoTXT</tabstop>
+  <tabstop>coloreStato</tabstop>
+  <tabstop>coloreStatoOK</tabstop>
+  <tabstop>coloriRegioneTXT</tabstop>
+  <tabstop>coloreRegione</tabstop>
+  <tabstop>coloreRegioneOK</tabstop>
+  <tabstop>coloriProvinciaTXT</tabstop>
+  <tabstop>coloreProvincia</tabstop>
+  <tabstop>coloreProvinciaOK</tabstop>
+  <tabstop>coloriComuneTXT</tabstop>
+  <tabstop>coloreComune</tabstop>
+  <tabstop>coloreComuneOK</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

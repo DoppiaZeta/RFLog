@@ -5,6 +5,14 @@ DBResult::DBResult() {
     successo = true;
 }
 
+bool DBResult::isEmpty() const {
+    return tabella.size() == 0;
+}
+
+bool DBResult::hasRows() const {
+    return tabella.size() > 0;
+}
+
 Coordinate::Coordinate() {
     std::memset(locatore, 0, sizeof(locatore));
     colore_stato = 1;
@@ -95,6 +103,10 @@ QString DatabaseManager::escape(const QString &txt) {
     QString escaped = txt;
     escaped.replace("'", "''");  // Raddoppia i singoli apici, necessario per SQLite
     return escaped;
+}
+
+void DatabaseManager::executeQueryNoRes(const QString &queryStr) {
+    delete executeQuery(queryStr);
 }
 
 DBResult* DatabaseManager::executeQuery(const QString &queryStr) {

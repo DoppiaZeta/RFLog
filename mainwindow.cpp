@@ -79,7 +79,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(mappa, &Mappa::mouseLocatore, this, &MainWindow::locatoreDaMappa);
     connect(mappa, &Mappa::mouseLocatoreDPPCLK, this, &MainWindow::locatoreDaMappaDPPCLK);
-    connect(mappa, &Mappa::mouseOceano, this, &MainWindow::locatoreDaMappaOceano);
 
     connect(Nominativo, &QLineEdit::textChanged, this, &MainWindow::compilaNominativo);
     connect(Nominativo, &SuggestiveLineEdit::pressTab, this, &MainWindow::catturaTab);
@@ -90,10 +89,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Frequenza, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
-
     mappaConfig->tabWidget->setCurrentIndex(0);
 
     connect(mappaConfig->locatoreCentraOK, &QPushButton::clicked, this, &MainWindow::centraDaLocatore);
+    connect(mappa, &Mappa::matriceDaA, this, &MainWindow::caricaDaA);
+    connect(mappaConfig->locatoreCentraDAA, &QPushButton::clicked, this, &MainWindow::centraDAA);
 
     connect(mappaConfig->locatorePresetITA, &QPushButton::clicked, this, &MainWindow::centraPredefinitoITA);
     connect(mappaConfig->locatorePresetMondo, &QPushButton::clicked, this, &MainWindow::centraPredefinitoMondo);
@@ -110,22 +110,44 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
 
-    QTimer *t = new QTimer(this);
-    connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
-    t->start(1000);
-
-
     mappaConfig->statoDB->addItem(QString());
     mappaConfig->regioneDB->addItem(QString());
     mappaConfig->provinciaDB->addItem(QString());
     mappaConfig->comuneDB->addItem(QString());
 
-    QString q = QString("select distinct stato from locatori where stato is not null order by stato");
-    DBResult *res = db->executeQuery(q);
+    connect(mappaConfig->coloriStatoTXT, &QComboBox::textActivated, this, &MainWindow::caricaColoreStato);
+    connect(mappaConfig->coloriRegioneTXT, &QComboBox::textActivated, this, &MainWindow::caricaColoreRegione);
+    connect(mappaConfig->coloriProvinciaTXT, &QComboBox::textActivated, this, &MainWindow::caricaColoreProvincia);
+    connect(mappaConfig->coloriComuneTXT, &QComboBox::textActivated, this, &MainWindow::caricaColoreComune);
+
+    connect(mappaConfig->coloreStatoOK, &QPushButton::clicked, this, &MainWindow::salvaColoreStato);
+    connect(mappaConfig->coloreRegioneOK, &QPushButton::clicked, this, &MainWindow::salvaColoreRegione);
+    connect(mappaConfig->coloreProvinciaOK, &QPushButton::clicked, this, &MainWindow::salvaColoreProvincia);
+    connect(mappaConfig->coloreComuneOK, &QPushButton::clicked, this, &MainWindow::salvaColoreComune);
+
+    mappaConfig->coloreStato->addItem(tr("Grigio"));
+    mappaConfig->coloreStato->addItem(tr("Viola"));
+    mappaConfig->coloreStato->addItem(tr("Blu"));
+    mappaConfig->coloreStato->addItem(tr("Verde"));
+    mappaConfig->coloreStato->addItem(tr("Giallo"));
+    mappaConfig->coloreStato->addItem(tr("Marrone"));
+    mappaConfig->coloreStato->addItem(tr("Arancione"));
+
+    for(int i = 0; i < 10; i++) {
+        mappaConfig->coloreRegione->addItem(QString::number(i));
+        mappaConfig->coloreProvincia->addItem(QString::number(i));
+        mappaConfig->coloreComune->addItem(QString::number(i));
+    }
+
+    DBResult *res = caricaStatiDB();
 
     for(int i = 0; i < res->tabella.size(); i++) {
         mappaConfig->statoDB->addItem(res->tabella[i][0]);
+        mappaConfig->coloriStatoTXT->addItem(res->tabella[i][0]);
     }
+
+    if(res->hasRows())
+        caricaColoreStato(mappaConfig->coloriStatoTXT->currentText());
 
     delete res;
 
@@ -137,8 +159,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->locatoreCentraDB, &QPushButton::clicked, this, &MainWindow::confermaCerca);
 
 
-    centraPredefinitoITA();
 
+    QTimer *t = new QTimer(this);
+    connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
+    t->start(1000);
+
+    centraPredefinitoITA();
 
     // Linee che rientrano nel range
     mappa->addLinea({"JN56PK", "JN40UC"});
@@ -249,16 +275,29 @@ void MainWindow::locatoreDaMappa(QString loc) {
     DBResult *res = db->executeQuery(q);
     mappaConfig->Locatore->setText(loc);
 
-    mappaConfig->Stato->setText(tr("Stato: ") + res->tabella[0][5]);
-    mappaConfig->Regione->setText(tr("Regione: ") + res->tabella[0][6]);
-    mappaConfig->Provincia->setText(tr("Provincia: ") + res->tabella[0][7]);
-    mappaConfig->Comune->setText(tr("Comune: ") + res->tabella[0][8]);
-    mappaConfig->lat_min->setText(res->tabella[0][1]);
-    mappaConfig->lat_max->setText(res->tabella[0][2]);
-    mappaConfig->lon_min->setText(res->tabella[0][3]);
-    mappaConfig->lon_max->setText(res->tabella[0][4]);
+    if(res->tabella.size() > 0) {
+        mappaConfig->Stato->setText(tr("Stato: ") + res->tabella[0][5]);
+        mappaConfig->Regione->setText(tr("Regione: ") + res->tabella[0][6]);
+        mappaConfig->Provincia->setText(tr("Provincia: ") + res->tabella[0][7]);
+        mappaConfig->Comune->setText(tr("Comune: ") + res->tabella[0][8]);
+        mappaConfig->lat_min->setText(res->tabella[0][1]);
+        mappaConfig->lat_max->setText(res->tabella[0][2]);
+        mappaConfig->lon_min->setText(res->tabella[0][3]);
+        mappaConfig->lon_max->setText(res->tabella[0][4]);
+    } else {
+        QString vuoto;
+        mappaConfig->Stato->setText(vuoto);
+        mappaConfig->Regione->setText(vuoto);
+        mappaConfig->Provincia->setText(vuoto);
+        mappaConfig->Comune->setText(vuoto);
+        mappaConfig->lat_min->setText(vuoto);
+        mappaConfig->lat_max->setText(vuoto);
+        mappaConfig->lon_min->setText(vuoto);
+        mappaConfig->lon_max->setText(vuoto);
+    }
 
     mappaConfig->locatoreCentra->setText(loc);
+
     delete res;
 }
 
@@ -267,34 +306,19 @@ void MainWindow::locatoreDaMappaDPPCLK(QString loc) {
     centraDaLocatore();
 }
 
-void MainWindow::locatoreDaMappaOceano() {
-    QString vuoto;
-    mappaConfig->Locatore->setText(vuoto);
-    mappaConfig->Stato->setText(vuoto);
-    mappaConfig->Regione->setText(vuoto);
-    mappaConfig->Provincia->setText(vuoto);
-    mappaConfig->Comune->setText(vuoto);
-
-    mappaConfig->lat_min->setText(vuoto);
-    mappaConfig->lat_max->setText(vuoto);
-    mappaConfig->lon_min->setText(vuoto);
-    mappaConfig->lon_max->setText(vuoto);
-
-    mappaConfig->locatoreCentra->setText(vuoto);
-}
-
 void MainWindow::centraDaLocatore() {
-    if(Coordinate::validaLocatore(mappaConfig->locatoreCentra->text().trimmed())) {
+    QString loc = mappaConfig->locatoreCentra->text().trimmed().toUpper();
+    if(Coordinate::validaLocatore(loc)) {
         QString lato1, lato2;
         int offset = mappaConfig->locatoreOffset->value() / 2;
-        lato1 = Coordinate::calcolaCoordinate(mappaConfig->locatoreCentra->text().trimmed(), -offset, -offset);
-        lato2 = Coordinate::calcolaCoordinate(mappaConfig->locatoreCentra->text().trimmed(), offset, offset);
+        lato1 = Coordinate::calcolaCoordinate(loc, -offset, -offset);
+        lato2 = Coordinate::calcolaCoordinate(loc, offset, offset);
         mappa->setMatrice(lato1, lato2);
     }
 }
 
 void MainWindow::centraPredefinitoITA() {
-    mappa->setMatrice("JM26XJ", "JN97NG");
+    mappa->setMatrice("JM06UL", "KN17QH");
 }
 void MainWindow::centraPredefinitoMondo() {
     mappa->setMatrice("AC00AA", "RR89PX");
@@ -318,16 +342,29 @@ void MainWindow::centraPredefinitoOceania() {
     mappa->setMatrice("NK34HS", "RD95AX");
 }
 
-void MainWindow::cercaRegione(const QString &txt) {
-    if (txt.isEmpty())
-        return;
+DBResult * MainWindow::caricaStatiDB() {
+    QString q = QString("select distinct stato from locatori where stato is not null order by stato");
+
+    return db->executeQuery(q);
+}
+
+DBResult * MainWindow::caricaRegioniDB(const QString & stato) {
+    if(stato.isEmpty())
+        return new DBResult();
 
     QString q = QString(
                     "SELECT DISTINCT regione FROM locatori "
                     "WHERE stato = '%1' AND regione IS NOT NULL ORDER BY regione"
-                    ).arg(DatabaseManager::escape(txt.trimmed()));
+                    ).arg(DatabaseManager::escape(stato.trimmed()));
 
-    DBResult *res = db->executeQuery(q);
+    return db->executeQuery(q);
+}
+
+void MainWindow::cercaRegione(const QString &txt) {
+    if (txt.isEmpty())
+        return;
+
+    DBResult *res = caricaRegioniDB(txt);
 
     while (mappaConfig->regioneDB->count() > 1) {
         mappaConfig->regioneDB->removeItem(1);
@@ -349,19 +386,26 @@ void MainWindow::cercaRegione(const QString &txt) {
     delete res;
 }
 
-void MainWindow::cercaProvincia(const QString &txt) {
-    if (txt.isEmpty())
-        return;
+DBResult * MainWindow::caricaProvinceDB(const QString & stato, const QString & regione) {
+    if(stato.isEmpty() || regione.isEmpty())
+        return new DBResult();
 
     QString q = QString(
                     "SELECT DISTINCT provincia FROM locatori "
                     "WHERE stato = '%1' AND regione = '%2' AND provincia IS NOT NULL ORDER BY provincia"
                     ).arg(
-                        DatabaseManager::escape(mappaConfig->statoDB->currentText().trimmed()),
-                        DatabaseManager::escape(txt.trimmed())
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed())
                         );
 
-    DBResult *res = db->executeQuery(q);
+    return db->executeQuery(q);
+}
+
+void MainWindow::cercaProvincia(const QString &txt) {
+    if (txt.isEmpty())
+        return;
+
+    DBResult *res = caricaProvinceDB(mappaConfig->statoDB->currentText(), txt);
 
     while (mappaConfig->provinciaDB->count() > 1) {
         mappaConfig->provinciaDB->removeItem(1);
@@ -379,20 +423,27 @@ void MainWindow::cercaProvincia(const QString &txt) {
     delete res;
 }
 
-void MainWindow::cercaComune(const QString &txt) {
-    if (txt.isEmpty())
-        return;
+DBResult * MainWindow::caricaComuniDB(const QString & stato, const QString & regione, const QString & provincia) {
+    if(stato.isEmpty() || regione.isEmpty() || provincia.isEmpty())
+        return new DBResult();
 
     QString q = QString(
                     "SELECT DISTINCT comune FROM locatori "
                     "WHERE stato = '%1' AND regione = '%2' AND provincia = '%3' AND comune IS NOT NULL ORDER BY comune"
                     ).arg(
-                        DatabaseManager::escape(mappaConfig->statoDB->currentText().trimmed()),
-                        DatabaseManager::escape(mappaConfig->regioneDB->currentText().trimmed()),
-                        DatabaseManager::escape(txt.trimmed())
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed()),
+                        DatabaseManager::escape(provincia.trimmed())
                         );
 
-    DBResult *res = db->executeQuery(q);
+    return db->executeQuery(q);
+}
+
+void MainWindow::cercaComune(const QString &txt) {
+    if (txt.isEmpty())
+        return;
+
+    DBResult *res = caricaComuniDB(mappaConfig->statoDB->currentText(), mappaConfig->regioneDB->currentText(), txt);
 
     while (mappaConfig->comuneDB->count() > 1) {
         mappaConfig->comuneDB->removeItem(1);
@@ -406,21 +457,28 @@ void MainWindow::cercaComune(const QString &txt) {
     delete res;
 }
 
-void MainWindow::cercaLocatore(const QString &txt) {
-    if (txt.isEmpty())
-        return;
+DBResult * MainWindow::caricaLocatoriDB(const QString & stato, const QString & regione, const QString & provincia, const QString & comune) {
+    if(stato.isEmpty() || regione.isEmpty() || provincia.isEmpty() || comune.isEmpty())
+        return new DBResult();
 
     QString q = QString(
                     "SELECT locatore FROM locatori "
                     "WHERE stato = '%1' AND regione = '%2' AND provincia = '%3' AND comune = '%4' ORDER BY locatore"
                     ).arg(
-                        DatabaseManager::escape(mappaConfig->statoDB->currentText().trimmed()),
-                        DatabaseManager::escape(mappaConfig->regioneDB->currentText().trimmed()),
-                        DatabaseManager::escape(mappaConfig->provinciaDB->currentText().trimmed()),
-                        DatabaseManager::escape(txt.trimmed())
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed()),
+                        DatabaseManager::escape(provincia.trimmed()),
+                        DatabaseManager::escape(comune.trimmed())
                         );
 
-    DBResult *res = db->executeQuery(q);
+    return db->executeQuery(q);
+}
+
+void MainWindow::cercaLocatore(const QString &txt) {
+    if (txt.isEmpty())
+        return;
+
+    DBResult *res = caricaLocatoriDB(mappaConfig->statoDB->currentText(), mappaConfig->regioneDB->currentText(), mappaConfig->provinciaDB->currentText(), txt);
 
     mappaConfig->locatoreDB->clear();
 
@@ -440,7 +498,7 @@ void MainWindow::pulisciCerca() {
 }
 
 void MainWindow::confermaCerca() {
-    QString loc = mappaConfig->locatoreDB->currentText().trimmed();
+    QString loc = mappaConfig->locatoreDB->currentText().trimmed().toUpper();
     if(Coordinate::validaLocatore(loc)) {
         QString lato1, lato2;
         int offset = 20;
@@ -451,5 +509,202 @@ void MainWindow::confermaCerca() {
         mappaConfig->locatoreCentra->setText(loc);
         locatoreDaMappa(loc);
     }
+}
+
+void MainWindow::caricaDaA(QString da, QString a) {
+    mappaConfig->locatoreDA->setText(da);
+    mappaConfig->locatoreA->setText(a);
+}
+
+void MainWindow::centraDAA() {
+    QString da, a;
+    da = mappaConfig->locatoreDA->text().trimmed().toUpper();
+    a = mappaConfig->locatoreA->text().trimmed().toUpper();
+    if(Coordinate::validaLocatore(da) && Coordinate::validaLocatore(a))
+        mappa->setMatrice(da, a);
+}
+
+DBResult * MainWindow::caricaColoreStatoDB(const QString & stato) {
+    if(stato.isEmpty())
+        return new DBResult();
+
+    QString q = QString(
+                    "SELECT colore_stato FROM locatori "
+                    "WHERE stato = '%1' ORDER BY stato limit 1"
+                    ).arg(
+                        DatabaseManager::escape(stato.trimmed())
+                        );
+
+    return db->executeQuery(q);
+}
+
+DBResult * MainWindow::caricaColoreRegioneDB(const QString & stato, const QString & regione) {
+    if(stato.isEmpty() || regione.isEmpty())
+        return new DBResult();
+
+    QString q = QString(
+                    "SELECT colore_regione FROM locatori "
+                    "WHERE stato = '%1' AND regione = '%2' ORDER BY regione limit 1"
+                    ).arg(
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed())
+                        );
+
+    return db->executeQuery(q);
+}
+
+DBResult * MainWindow::caricaColoreProvinciaDB(const QString & stato, const QString & regione, const QString & provincia) {
+    if(stato.isEmpty() || regione.isEmpty() || provincia.isEmpty())
+        return new DBResult();
+
+    QString q = QString(
+                    "SELECT colore_provincia FROM locatori "
+                    "WHERE stato = '%1' AND regione = '%2' AND provincia = '%3' ORDER BY provincia limit 1"
+                    ).arg(
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed()),
+                        DatabaseManager::escape(provincia.trimmed())
+                        );
+
+    return db->executeQuery(q);
+}
+
+DBResult * MainWindow::caricaColoreComuneDB(const QString & stato, const QString & regione, const QString & provincia, const QString & comune) {
+    if(stato.isEmpty() || regione.isEmpty() || provincia.isEmpty() || comune.isEmpty())
+        return new DBResult();
+
+    QString q = QString(
+                    "SELECT colore_comune FROM locatori "
+                    "WHERE stato = '%1' AND regione = '%2' AND provincia = '%3' AND comune = '%4' ORDER BY comune limit 1"
+                    ).arg(
+                        DatabaseManager::escape(stato.trimmed()),
+                        DatabaseManager::escape(regione.trimmed()),
+                        DatabaseManager::escape(provincia.trimmed()),
+                        DatabaseManager::escape(comune.trimmed())
+                        );
+
+    return db->executeQuery(q);
+}
+
+void MainWindow::caricaColoreStato(const QString & txt) {
+    DBResult *colore = caricaColoreStatoDB(txt);
+    if(colore->hasRows()) {
+        mappaConfig->coloreStato->setCurrentIndex(colore->tabella[0][0].toInt());
+
+        DBResult * tabella = caricaRegioniDB(txt);
+        mappaConfig->coloriRegioneTXT->clear();
+
+        if(tabella->hasRows()) {
+            for(int i = 0; i < tabella->tabella.size(); i++)
+                mappaConfig->coloriRegioneTXT->addItem(tabella->tabella[i][0]);
+            mappaConfig->coloriRegioneTXT->setCurrentIndex(0);
+            caricaColoreRegione(tabella->tabella[0][0]);
+        }
+        delete tabella;
+    }
+    delete colore;
+}
+
+void MainWindow::caricaColoreRegione(const QString & txt) {
+    DBResult *colore = caricaColoreRegioneDB(mappaConfig->coloriStatoTXT->currentText(), txt);
+    if(colore->hasRows()) {
+        mappaConfig->coloreRegione->setCurrentIndex(colore->tabella[0][0].toInt());
+
+        DBResult * tabella = caricaProvinceDB(mappaConfig->coloriStatoTXT->currentText(), txt);
+        mappaConfig->coloriProvinciaTXT->clear();
+
+        if(tabella->hasRows()) {
+            for(int i = 0; i < tabella->tabella.size(); i++)
+                mappaConfig->coloriProvinciaTXT->addItem(tabella->tabella[i][0]);
+            mappaConfig->coloriProvinciaTXT->setCurrentIndex(0);
+            caricaColoreProvincia(tabella->tabella[0][0]);
+        }
+        delete tabella;
+    }
+    delete colore;
+}
+
+void MainWindow::caricaColoreProvincia(const QString & txt) {
+    DBResult *colore = caricaColoreProvinciaDB(mappaConfig->coloriStatoTXT->currentText(), mappaConfig->coloriRegioneTXT->currentText(), txt);
+    if(colore->hasRows()) {
+        mappaConfig->coloreProvincia->setCurrentIndex(colore->tabella[0][0].toInt());
+
+        DBResult * tabella = caricaComuniDB(mappaConfig->coloriStatoTXT->currentText(), mappaConfig->coloriRegioneTXT->currentText(), txt);
+        mappaConfig->coloriComuneTXT->clear();
+
+        if(tabella->hasRows()) {
+            for(int i = 0; i < tabella->tabella.size(); i++)
+                mappaConfig->coloriComuneTXT->addItem(tabella->tabella[i][0]);
+            mappaConfig->coloriComuneTXT->setCurrentIndex(0);
+            caricaColoreComune(tabella->tabella[0][0]);
+        }
+        delete tabella;
+    }
+    delete colore;
+}
+
+void MainWindow::caricaColoreComune(const QString & txt) {
+    DBResult *colore = caricaColoreComuneDB(mappaConfig->coloriStatoTXT->currentText(), mappaConfig->coloriRegioneTXT->currentText(), mappaConfig->coloriProvinciaTXT->currentText(), txt);
+    if(colore->hasRows())
+        mappaConfig->coloreComune->setCurrentIndex(colore->tabella[0][0].toInt());
+    delete colore;
+}
+
+void MainWindow::salvaColoreStato() {
+    QString q = QString(
+                    "update locatori set colore_stato = %1 "
+                    "WHERE stato = '%2'"
+                    ).arg(
+                        DatabaseManager::escape(QString::number(mappaConfig->coloreStato->currentIndex())),
+                        DatabaseManager::escape(mappaConfig->coloriStatoTXT->currentText().trimmed())
+                        );
+
+    db->executeQueryNoRes(q);
+    mappa->reload();
+}
+
+void MainWindow::salvaColoreRegione() {
+    QString q = QString(
+                    "update locatori set colore_regione = %1 "
+                    "WHERE stato = '%2' and regione = '%3'"
+                    ).arg(
+                        DatabaseManager::escape(QString::number(mappaConfig->coloreRegione->currentIndex())),
+                        DatabaseManager::escape(mappaConfig->coloriStatoTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriRegioneTXT->currentText().trimmed())
+                        );
+
+    db->executeQueryNoRes(q);
+    mappa->reload();
+}
+
+void MainWindow::salvaColoreProvincia() {
+    QString q = QString(
+                    "update locatori set colore_provincia = %1 "
+                    "WHERE stato = '%2' and regione = '%3' and provincia = '%4'"
+                    ).arg(
+                        DatabaseManager::escape(QString::number(mappaConfig->coloreProvincia->currentIndex())),
+                        DatabaseManager::escape(mappaConfig->coloriStatoTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriRegioneTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriProvinciaTXT->currentText().trimmed())
+                        );
+
+    db->executeQueryNoRes(q);
+    mappa->reload();
+}
+
+void MainWindow::salvaColoreComune() {
+    QString q = QString(
+                    "update locatori set colore_provincia = %1 "
+                    "WHERE stato = '%2' and regione = '%3' and provincia = '%4' and comune = '%5'"
+                    ).arg(
+                        DatabaseManager::escape(QString::number(mappaConfig->coloreComune->currentIndex())),
+                        DatabaseManager::escape(mappaConfig->coloriStatoTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriRegioneTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriProvinciaTXT->currentText().trimmed()),
+                        DatabaseManager::escape(mappaConfig->coloriComuneTXT->currentText().trimmed())
+                        );
+
+    db->executeQueryNoRes(q);
+    mappa->reload();
 }
 
