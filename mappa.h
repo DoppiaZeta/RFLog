@@ -4,6 +4,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QtConcurrent/QtConcurrent>
+#include <QElapsedTimer>
 #include "databasemanager.h"
 
 class Linee {
@@ -50,6 +51,7 @@ private:
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
 
     QString calcolaLocatoreMouse(QMouseEvent *event);
+    void clessidra();
 
     QList<Linee> *linee;
     QString primoLocatore;
@@ -57,6 +59,9 @@ private:
 
     DatabaseManager *db;
     QMutex mutex;
+
+    QElapsedTimer timer;
+    float progress;
 
 private slots:
     void setPrimoLoatore(QString primo, QString secondo);

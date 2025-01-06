@@ -159,6 +159,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->locatoreCentraDB, &QPushButton::clicked, this, &MainWindow::confermaCerca);
 
 
+    connect(mappaConfig->modificaCerca, &QPushButton::clicked, this, &MainWindow::modificaCercaLocatore);
+    connect(mappaConfig->modificaStato, &QComboBox::textActivated, this, &MainWindow::modificaCercaRegione);
+    connect(mappaConfig->modificaRegione, &QComboBox::textActivated, this, &MainWindow::modificaCercaProvincia);
+    connect(mappaConfig->modificaProvincia, &QComboBox::textActivated, this, &MainWindow::modificaCercaComune);
+    connect(mappaConfig->modificaOK, &QPushButton::clicked, this, &MainWindow::modificaSalva);
+
 
     QTimer *t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
@@ -268,14 +274,21 @@ void MainWindow::aggiornaOrario() {
     }
 }
 
-void MainWindow::locatoreDaMappa(QString loc) {
+DBResult * MainWindow::caricaInfoLocatore(const QString & loc) {
+    if(!Coordinate::validaLocatore(loc))
+        return new DBResult;
+
     QString q = QString(
                     "select locatore, lat_min, lat_max, lon_min, lon_max, stato, regione, provincia, comune from locatori where locatore = '%1'"
                     ).arg(DatabaseManager::escape(loc));
-    DBResult *res = db->executeQuery(q);
+    return db->executeQuery(q);
+}
+
+void MainWindow::locatoreDaMappa(QString loc) {
+    DBResult *res = caricaInfoLocatore(loc);
     mappaConfig->Locatore->setText(loc);
 
-    if(res->tabella.size() > 0) {
+    if(res->hasRows()) {
         mappaConfig->Stato->setText(tr("Stato: ") + res->tabella[0][5]);
         mappaConfig->Regione->setText(tr("Regione: ") + res->tabella[0][6]);
         mappaConfig->Provincia->setText(tr("Provincia: ") + res->tabella[0][7]);
@@ -298,7 +311,196 @@ void MainWindow::locatoreDaMappa(QString loc) {
 
     mappaConfig->locatoreCentra->setText(loc);
 
+    mappaConfig->modificaLocatore->setText(loc);
+    modificaCercaLocatore();
+
     delete res;
+}
+
+void MainWindow::modificaCercaLocatore() {
+    QString loc = mappaConfig->modificaLocatore->text().trimmed();
+    if(Coordinate::validaLocatore(loc)) {
+        DBResult *dbRS = caricaStatiDB();
+        if(dbRS->hasRows()) {
+            mappaConfig->modificaStato->clear();
+            mappaConfig->modificaStato->addItem(QString());
+            for(int i = 0; i < dbRS->tabella.size(); i++) {
+                mappaConfig->modificaStato->addItem(dbRS->tabella[i][0]);
+            }
+
+            DBResult *locAttuale = caricaInfoLocatore(loc);
+            if(locAttuale->hasRows())
+                mappaConfig->modificaStato->setCurrentText(locAttuale->tabella[0][5]);
+            else
+                mappaConfig->modificaStato->setCurrentIndex(0);
+
+            caricaModificaRegione();
+
+            if(locAttuale->hasRows())
+                mappaConfig->modificaRegione->setCurrentText(locAttuale->tabella[0][6]);
+            else
+                mappaConfig->modificaRegione->setCurrentIndex(0);
+
+            caricaModificaProvincia();
+
+            if(locAttuale->hasRows())
+                mappaConfig->modificaProvincia->setCurrentText(locAttuale->tabella[0][7]);
+            else
+                mappaConfig->modificaProvincia->setCurrentIndex(0);
+
+            caricaModificaComune();
+
+            if(locAttuale->hasRows())
+                mappaConfig->modificaComune->setCurrentText(locAttuale->tabella[0][8]);
+            else
+                mappaConfig->modificaComune->setCurrentIndex(0);
+
+            delete locAttuale;
+        }
+        delete dbRS;
+    }
+}
+
+void MainWindow::modificaCercaRegione(const QString & txt) {
+    Q_UNUSED(txt);
+
+    if(!mappaConfig->modificaAutoCompleta->isChecked())
+        return;
+
+    QString loc = mappaConfig->modificaLocatore->text().trimmed();
+    if(Coordinate::validaLocatore(loc)) {
+        DBResult *locAttuale = caricaInfoLocatore(loc);
+
+        caricaModificaRegione();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaRegione->setCurrentText(locAttuale->tabella[0][6]);
+        else
+            mappaConfig->modificaRegione->setCurrentIndex(0);
+
+        caricaModificaProvincia();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaProvincia->setCurrentText(locAttuale->tabella[0][7]);
+        else
+            mappaConfig->modificaProvincia->setCurrentIndex(0);
+
+        caricaModificaComune();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaComune->setCurrentText(locAttuale->tabella[0][8]);
+        else
+            mappaConfig->modificaComune->setCurrentIndex(0);
+
+        delete locAttuale;
+    }
+}
+
+void MainWindow::modificaCercaProvincia(const QString & txt) {
+    Q_UNUSED(txt);
+    if(!mappaConfig->modificaAutoCompleta->isChecked())
+        return;
+
+    QString loc = mappaConfig->modificaLocatore->text().trimmed();
+    if(Coordinate::validaLocatore(loc)) {
+        DBResult *locAttuale = caricaInfoLocatore(loc);
+
+        caricaModificaProvincia();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaProvincia->setCurrentText(locAttuale->tabella[0][7]);
+        else
+            mappaConfig->modificaProvincia->setCurrentIndex(0);
+
+        caricaModificaComune();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaComune->setCurrentText(locAttuale->tabella[0][8]);
+        else
+            mappaConfig->modificaComune->setCurrentIndex(0);
+
+        delete locAttuale;
+    }
+}
+
+void MainWindow::modificaCercaComune(const QString & txt) {
+    Q_UNUSED(txt);
+    if(!mappaConfig->modificaAutoCompleta->isChecked())
+        return;
+
+    QString loc = mappaConfig->modificaLocatore->text().trimmed();
+    if(Coordinate::validaLocatore(loc)) {
+        DBResult *locAttuale = caricaInfoLocatore(loc);
+
+        caricaModificaComune();
+
+        if(locAttuale->hasRows())
+            mappaConfig->modificaComune->setCurrentText(locAttuale->tabella[0][8]);
+        else
+            mappaConfig->modificaComune->setCurrentIndex(0);
+
+        delete locAttuale;
+    }
+}
+
+void MainWindow::modificaSalva() {
+    QString loc = mappaConfig->modificaLocatore->text().trimmed();
+    if(Coordinate::validaLocatore(loc)) {
+        QString q = QString(
+                        "INSERT INTO locatori (locatore, stato, regione, provincia, comune) "
+                        "VALUES ('%1', '%2', '%3', '%4', '%5') "
+                        "ON CONFLICT(locatore) DO UPDATE SET "
+                        "stato = '%2', "
+                        "regione = '%3', "
+                        "provincia = '%4', "
+                        "comune = '%5' "
+                        ).arg(
+                            DatabaseManager::escape(loc),
+                            DatabaseManager::escape(mappaConfig->modificaStato->currentText().trimmed()),
+                            DatabaseManager::escape(mappaConfig->modificaRegione->currentText().trimmed()),
+                            DatabaseManager::escape(mappaConfig->modificaProvincia->currentText().trimmed()),
+                            DatabaseManager::escape(mappaConfig->modificaComune->currentText().trimmed())
+                            );
+
+        db->executeQueryNoRes(q);
+        mappa->reload();
+    }
+}
+
+void MainWindow::caricaModificaRegione() {
+    DBResult *dbRS = caricaRegioniDB(mappaConfig->modificaStato->currentText().trimmed());
+    if(dbRS->hasRows()) {
+        mappaConfig->modificaRegione->clear();
+        mappaConfig->modificaRegione->addItem(QString());
+        for(int i = 0; i < dbRS->tabella.size(); i++) {
+            mappaConfig->modificaRegione->addItem(dbRS->tabella[i][0]);
+        }
+    }
+    delete dbRS;
+}
+
+void MainWindow::caricaModificaProvincia() {
+    DBResult *dbRS = caricaProvinceDB(mappaConfig->modificaStato->currentText().trimmed(), mappaConfig->modificaRegione->currentText().trimmed());
+    if(dbRS->hasRows()) {
+        mappaConfig->modificaProvincia->clear();
+        mappaConfig->modificaProvincia->addItem(QString());
+        for(int i = 0; i < dbRS->tabella.size(); i++) {
+            mappaConfig->modificaProvincia->addItem(dbRS->tabella[i][0]);
+        }
+    }
+    delete dbRS;
+}
+
+void MainWindow::caricaModificaComune() {
+    DBResult *dbRS = caricaComuniDB(mappaConfig->modificaStato->currentText().trimmed(), mappaConfig->modificaRegione->currentText().trimmed(), mappaConfig->modificaProvincia->currentText().trimmed());
+    if(dbRS->hasRows()) {
+        mappaConfig->modificaComune->clear();
+        mappaConfig->modificaComune->addItem(QString());
+        for(int i = 0; i < dbRS->tabella.size(); i++) {
+            mappaConfig->modificaComune->addItem(dbRS->tabella[i][0]);
+        }
+    }
+    delete dbRS;
 }
 
 void MainWindow::locatoreDaMappaDPPCLK(QString loc) {

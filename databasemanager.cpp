@@ -265,15 +265,17 @@ QVector<QVector<Coordinate*>>* DatabaseManager::caricaMatriceDaDb(QString locato
 
     // Calcola il passo di riduzione progressivo
     auto calculateStep = [](int total) -> int {
-        if (total <= 1000) return 1;   // Precisione massima
-        if (total <= 1500) return 2;   // Salta 1 ogni 2
-        if (total <= 2000) return 4;   // Salta 3 ogni 4
+        if (total <= 500) return 1;   // Precisione massima
+        if (total <= 1200) return 2;   // Salta 1 ogni 2
+        if (total <= 1800) return 4;   // Salta 3 ogni 4
         if (total <= 2500) return 7;   // Salta 7 ogni 8
         return 12;
     };
 
     int colStep = calculateStep(totalCols);
     int rowStep = calculateStep(totalRows);
+
+    //qDebug() << "Moltiplicatori" << colStep << rowStep;
 
     emit primoLocatore(Coordinate::fromRowCol(rBottom, cRight), Coordinate::fromRowCol(rTop, cLeft));
 

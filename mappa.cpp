@@ -16,6 +16,8 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *parent)
     connect(db, &DatabaseManager::primoLocatore, this, &Mappa::setPrimoLoatore);
     primoLocatore = QString();
     ultimoLocatore = QString();
+    timer.start();
+    progress = 0;
 }
 
 Mappa::~Mappa() {
@@ -46,6 +48,9 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
         delete m_matrice;
         m_matrice = nullptr; // Evita dangling pointers
     }
+
+    timer.start();
+    update();
 
     auto future = QtConcurrent::run([this, locatore_da, locatore_a]() {
         // Carica la matrice direttamente dal database
@@ -85,9 +90,93 @@ void Mappa::delAllLinee() {
     linee->empty();
 }
 
+void Mappa::clessidra() {
+    // Cancella lo schermo con un colore di sfondo
+    glClearColor(20 / 255.0f, 50 / 255.0f, 100 / 255.0f, 1.0f); // Blu oceano molto scuro
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glLoadIdentity(); // Resetta la matrice del modello
+
+    // Colore della clessidra
+    glColor3f(0.8f, 0.8f, 0.8f); // Bianco
+    glLineWidth(3.0f); // Imposta lo spessore della linea a 2
+
+    // Disegna il contorno della clessidra
+    glBegin(GL_LINES);
+    glVertex2f(-0.2f, 0.5f);  // Angolo superiore sinistro
+    glVertex2f(0.2f, 0.5f);   // Angolo superiore destro
+
+    glVertex2f(-0.2f, 0.5f);  // Angolo superiore sinistro
+    glVertex2f(0.0f, 0.0f);   // Centro
+
+    glVertex2f(0.2f, 0.5f);   // Angolo superiore destro
+    glVertex2f(0.0f, 0.0f);   // Centro
+
+    glVertex2f(-0.2f, -0.5f); // Angolo inferiore sinistro
+    glVertex2f(0.2f, -0.5f);  // Angolo inferiore destro
+
+    glVertex2f(-0.2f, -0.5f); // Angolo inferiore sinistro
+    glVertex2f(0.0f, 0.0f);   // Centro
+
+    glVertex2f(0.2f, -0.5f);  // Angolo inferiore destro
+    glVertex2f(0.0f, 0.0f);   // Centro
+    glEnd();
+
+    // Aggiorna il riempimento in base al tempo
+    int elapsed = timer.elapsed();
+    float totalTime = 3000.0f;  // Tempo totale per il ciclo (3 secondi)
+    float progress = (elapsed % int(totalTime)) / totalTime / 2;        // Progress parte inferiore
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Colore del riempimento (sabbia)
+
+
+    auto yellowSandTransparent = []() {
+        glColor4f(1.0f, 0.8f, 0.2f, 0.0f); // Giallo sabbia completamente trasparente
+    };
+
+    auto yellowSandOpaque = []() {
+        glColor4f(1.0f, 0.8f, 0.2f, 1.0f); // Giallo sabbia completamente opaco
+    };
+
+
+    // Disegna il riempimento superiore (sabbia che scende)
+    glBegin(GL_TRIANGLES);
+    yellowSandOpaque();
+    glVertex2f(-0.2f, 0.5f);          // Angolo superiore sinistro
+    yellowSandTransparent();
+    glVertex2f(0.0f, 0.5f - progress);           // Angolo superiore destro
+    yellowSandOpaque();
+    glVertex2f(0.0f, 0.0f); // Punto variabile (altezza sabbia)
+    glEnd();
+
+    // Disegna il riempimento superiore (sabbia che scende)
+    glBegin(GL_TRIANGLES);
+    yellowSandTransparent();
+    glVertex2f(0.0f, 0.5f - progress);          // Angolo superiore sinistro
+    yellowSandOpaque();
+    glVertex2f(0.2f, 0.5f);           // Angolo superiore destro
+    glVertex2f(0.0f, 0.0f); // Punto variabile (altezza sabbia)
+    glEnd();
+
+    // Disegna il riempimento inferiore (sabbia accumulata)
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-0.2f, -0.5f);           // Angolo inferiore sinistro
+    glVertex2f(0.2f, -0.5f);            // Angolo inferiore destro
+    yellowSandTransparent();
+    glVertex2f(0.0f, -0.5f + progress); // Punto variabile (altezza sabbia)
+    glEnd();
+
+    glDisable(GL_BLEND);
+
+    // Richiedi il ridisegno per l'animazione continua
+    update();
+}
+
+
 void Mappa::initializeGL() {
     initializeOpenGLFunctions();
-    glClearColor(50 / 255.0f, 100 / 255.0f, 200 / 255.0f, 1.0f); // Blu oceano profondo pastello
 }
 
 void Mappa::resizeGL(int w, int h) {
@@ -168,8 +257,8 @@ QColor Mappa::generateHierarchicalColor(const QColor &nationalColor, int regionC
 
     // Parametri base per le variazioni
     float baseRegionHueShift = 0.1f;
-    float baseProvinceHueShift = 0.02f;
-    float baseMunicipalityLightShift = 0.05f;
+    float baseProvinceHueShift = 0.03f;
+    float baseMunicipalityLightShift = 0.005f;
 
     float baseRegionSaturationShift = 0.2f;
     float baseProvinceSaturationShift = 0.1f;
@@ -206,10 +295,14 @@ QColor Mappa::generateHierarchicalColor(const QColor &nationalColor, int regionC
 }
 
 void Mappa::paintGL() {
+    glClearColor(50 / 255.0f, 100 / 255.0f, 200 / 255.0f, 1.0f); // Blu oceano profondo pastello
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_matrice == nullptr || m_matrice->isEmpty())
+
+    if (m_matrice == nullptr || m_matrice->isEmpty()) {
+        clessidra();
         return;
+    }
 
     int rows = m_matrice->size();
     int cols = m_matrice->at(0).size();

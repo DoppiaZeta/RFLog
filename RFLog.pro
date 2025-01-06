@@ -5,6 +5,8 @@ INCLUDEPATH += .
 # Aggiungi i moduli necessari
 QT += core gui widgets sql opengl openglwidgets
 
+win32: LIBS += -lopengl32
+
 # Input
 HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h
 FORMS += mainwindow.ui \

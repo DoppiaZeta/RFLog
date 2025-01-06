@@ -70,6 +70,11 @@ private slots:
     void caricaDaA(QString da, QString a);
     void centraDAA();
 
+    void modificaCercaLocatore();
+    void modificaCercaRegione(const QString & txt);
+    void modificaCercaProvincia(const QString & txt);
+    void modificaCercaComune(const QString & txt);
+    void modificaSalva();
 
 private:
     DBResult * caricaStatiDB();
@@ -82,6 +87,12 @@ private:
     DBResult * caricaColoreRegioneDB(const QString & stato, const QString & regione);
     DBResult * caricaColoreProvinciaDB(const QString & stato, const QString & regione, const QString & provincia);
     DBResult * caricaColoreComuneDB(const QString & stato, const QString & regione, const QString & provincia, const QString & comune);
+
+    DBResult * caricaInfoLocatore(const QString & loc);
+
+    void caricaModificaRegione();
+    void caricaModificaProvincia();
+    void caricaModificaComune();
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
