@@ -8,6 +8,7 @@
 #include <QColor>
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
+#include <QFileDialog>
 #include <QDebug>
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -40,7 +41,6 @@ private slots:
     void catturaTab();
     void centraDaLocatore();
 
-
     void centraPredefinitoITA();
     void centraPredefinitoEU();
     void centraPredefinitoNordAmerica();
@@ -69,12 +69,15 @@ private slots:
     void confermaCerca();
     void caricaDaA(QString da, QString a);
     void centraDAA();
+    void centraLinee();
 
     void modificaCercaLocatore();
     void modificaCercaRegione(const QString & txt);
     void modificaCercaProvincia(const QString & txt);
     void modificaCercaComune(const QString & txt);
     void modificaSalva();
+
+    void menuApriAdif();
 
 private:
     DBResult * caricaStatiDB();

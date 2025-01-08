@@ -1,5 +1,6 @@
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "mainwindow.h"
+#include "adif.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -94,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->locatoreCentraOK, &QPushButton::clicked, this, &MainWindow::centraDaLocatore);
     connect(mappa, &Mappa::matriceDaA, this, &MainWindow::caricaDaA);
     connect(mappaConfig->locatoreCentraDAA, &QPushButton::clicked, this, &MainWindow::centraDAA);
+    connect(mappaConfig->locatoreCentraLinee, &QPushButton::clicked, this, &MainWindow::centraLinee);
 
     connect(mappaConfig->locatorePresetITA, &QPushButton::clicked, this, &MainWindow::centraPredefinitoITA);
     connect(mappaConfig->locatorePresetMondo, &QPushButton::clicked, this, &MainWindow::centraPredefinitoMondo);
@@ -166,22 +168,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->modificaOK, &QPushButton::clicked, this, &MainWindow::modificaSalva);
 
 
+    connect(ui->menuApriAdif, &QAction::triggered, this, &MainWindow::menuApriAdif);
+
+
     QTimer *t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
     t->start(1000);
 
     centraPredefinitoITA();
-
-    // Linee che rientrano nel range
-    mappa->addLinea({"JN56PK", "JN40UC"});
-    mappa->addLinea({"JN56PK", "RR99XX"});
-    mappa->addLinea({"JN56PK", "LQ22ES"});
-    mappa->addLinea({"JN56PK", "JI64DF"}); // Punto vicino all'origine
-
-    // Linee che escono dal range
-    mappa->addLinea({"JN56PK", "FF33OU"}); // Lontano dall'origine, fuori dal range
-    mappa->addLinea({"JN56PK", "BO38SH"}); // Estremo superiore fuori dal range
-    mappa->addLinea({"JN56PK", "AA00AA"}); // Vicino all'origine ma fuori
 }
 
 
@@ -726,6 +720,10 @@ void MainWindow::centraDAA() {
         mappa->setMatrice(da, a);
 }
 
+void MainWindow::centraLinee() {
+    mappa->adattaMappaLinee();
+}
+
 DBResult * MainWindow::caricaColoreStatoDB(const QString & stato) {
     if(stato.isEmpty())
         return new DBResult();
@@ -908,5 +906,26 @@ void MainWindow::salvaColoreComune() {
 
     db->executeQueryNoRes(q);
     mappa->reload();
+}
+
+void MainWindow::menuApriAdif() {
+    // Imposta il filtro per mostrare solo i file .ADF
+    QString filter = "ADIF files (*.adf *.adi)";
+    // Apre il dialogo di selezione file, impostando la directory iniziale su quella di default dell'utente
+    QString filePath = QFileDialog::getOpenFileName(this, "Seleziona File ADIF", QDir::homePath(), filter);
+
+    Adif ad;
+    Adif::parseAdif(filePath, ad);
+
+    // Supponendo che tu abbia già un'istanza di Adif chiamata adif
+    const auto& contatti = ad.getContatti();
+    for (const auto& contatto : contatti) {
+        QString myGridSquare = contatto.value("my_gridsquare");
+        QString gridSquare = contatto.value("gridsquare");
+
+        mappa->addLinea(Linee(myGridSquare, gridSquare), false);
+    }
+
+    mappa->adattaMappaLinee();
 }
 

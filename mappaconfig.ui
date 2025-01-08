@@ -103,23 +103,6 @@ font-weight: bold;</string>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="0" column="4">
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Locatore:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="4">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Offset su giu:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="6">
-              <widget class="QLineEdit" name="locatoreCentra"/>
-             </item>
              <item row="2" column="6">
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
@@ -152,6 +135,23 @@ font-weight: bold;</string>
                 </widget>
                </item>
               </layout>
+             </item>
+             <item row="0" column="6">
+              <widget class="QLineEdit" name="locatoreCentra"/>
+             </item>
+             <item row="0" column="4">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Locatore:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="4">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Offset su giu:</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -237,9 +237,16 @@ mappa</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout_13">
          <item row="0" column="0">
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
             <layout class="QGridLayout" name="gridLayout_12">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>DA:</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_13">
                <property name="text">
@@ -250,19 +257,12 @@ mappa</string>
              <item row="0" column="2">
               <widget class="QLineEdit" name="locatoreDA"/>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_12">
-               <property name="text">
-                <string>DA:</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="2">
               <widget class="QLineEdit" name="locatoreA"/>
              </item>
             </layout>
            </item>
-           <item>
+           <item row="0" column="1">
             <widget class="QPushButton" name="locatoreCentraDAA">
              <property name="text">
               <string>Centra
@@ -270,6 +270,19 @@ nella
 mappa</string>
              </property>
             </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QPushButton" name="locatoreCentraLinee">
+               <property name="text">
+                <string>Centra
+da
+linee</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
@@ -728,6 +741,7 @@ modifiche</string>
   <tabstop>locatoreDA</tabstop>
   <tabstop>locatoreA</tabstop>
   <tabstop>locatoreCentraDAA</tabstop>
+  <tabstop>locatoreCentraLinee</tabstop>
   <tabstop>statoDB</tabstop>
   <tabstop>regioneDB</tabstop>
   <tabstop>provinciaDB</tabstop>

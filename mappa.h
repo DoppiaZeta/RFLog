@@ -5,7 +5,11 @@
 #include <QOpenGLFunctions>
 #include <QtConcurrent/QtConcurrent>
 #include <QElapsedTimer>
+#include <QVector>
+#include <QPair>
+#include <cmath>
 #include "databasemanager.h"
+#include "coordinate.h"
 
 class Linee {
 public:
@@ -28,6 +32,7 @@ public:
     void addLinea(const Linee l, bool refresh = true);
     void delLinea(const Linee l);
     void delAllLinee();
+    void adattaMappaLinee();
     void reload();
 
 signals:
@@ -47,11 +52,17 @@ protected:
 private:
     QVector<QVector<Coordinate*>> *m_matrice;
 
+    QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
+
     void drawSquare(float x, float y, float width, float height, const QColor &color, bool border = false);
+    void drawLine(float &x1f, float &y1f, float &x2f, float &y2f);
+    void drawPin(float &x, float &y);
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
 
     QString calcolaLocatoreMouse(QMouseEvent *event);
     void clessidra();
+
+    QPair<float, float> bezier(float t, const QVector<QPair<float, float>>& controlPoints);
 
     QList<Linee> *linee;
     QString primoLocatore;
@@ -62,9 +73,6 @@ private:
 
     QElapsedTimer timer;
     float progress;
-
-private slots:
-    void setPrimoLoatore(QString primo, QString secondo);
 };
 
 #endif // MAPPA_H
