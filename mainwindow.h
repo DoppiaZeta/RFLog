@@ -9,6 +9,7 @@
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
 #include <QFileDialog>
+#include <QClipboard>
 #include <QDebug>
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -76,6 +77,10 @@ private slots:
     void modificaCercaProvincia(const QString & txt);
     void modificaCercaComune(const QString & txt);
     void modificaSalva();
+
+    void setPolitica();
+    void setGeografica();
+    void mappaScreenshot();
 
     void menuApriAdif();
 

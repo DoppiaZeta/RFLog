@@ -53,6 +53,14 @@ void Coordinate::setColoreProvincia(unsigned char c) {
     colore_provincia = c;
 }
 
+float Coordinate::getAltezza() const {
+    return altezza;
+}
+
+void Coordinate::setAltezza(float a) {
+    altezza = a;
+}
+
 unsigned char Coordinate::getColoreComune() const {
     return colore_comune;
 }

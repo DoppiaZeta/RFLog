@@ -25,6 +25,8 @@ class Mappa : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
+    enum class tipoMappa {polica, geografica};
+
     explicit Mappa(DatabaseManager *dbm, QWidget *parent = nullptr);
     ~Mappa();
 
@@ -34,6 +36,7 @@ public:
     void delAllLinee();
     void adattaMappaLinee();
     void reload();
+    void setTipoMappa(tipoMappa t);
 
 signals:
     void mouseLocatore(QString locatore); // Segnale per il quadrato sotto il mouse
@@ -50,19 +53,21 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
-    QVector<QVector<Coordinate*>> *m_matrice;
-
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
 
     void drawSquare(float x, float y, float width, float height, const QColor &color, bool border = false);
     void drawLine(float &x1f, float &y1f, float &x2f, float &y2f);
     void drawPin(float &x, float &y);
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
+    QColor calcolaColoreAltitudine(const float &altitudine);
 
     QString calcolaLocatoreMouse(QMouseEvent *event);
     void clessidra();
 
     QPair<float, float> bezier(float t, const QVector<QPair<float, float>>& controlPoints);
+
+
+    QVector<QVector<Coordinate*>> *m_matrice;
 
     QList<Linee> *linee;
     QString primoLocatore;
@@ -73,6 +78,8 @@ private:
 
     QElapsedTimer timer;
     float progress;
+
+    tipoMappa tipomappa;
 };
 
 #endif // MAPPA_H

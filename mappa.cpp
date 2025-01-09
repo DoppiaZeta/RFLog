@@ -17,6 +17,7 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *parent)
     ultimoLocatore = QString();
     timer.start();
     progress = 0;
+    tipomappa = tipoMappa::geografica;
 }
 
 Mappa::~Mappa() {
@@ -84,6 +85,11 @@ void Mappa::delAllLinee() {
     linee->empty();
 }
 
+void Mappa::setTipoMappa(tipoMappa t) {
+    tipomappa = t;
+    update();
+}
+
 QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QString locatore_a) {
     int rowDa, colDa, rowA, colA;
     Coordinate::toRowCol(locatore_da, rowDa, colDa);
@@ -141,7 +147,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             QString createTempTableQuery = "CREATE TEMP TABLE temp_locatori (locatore TEXT);";
             QString insertTempTableQuery = QString("INSERT INTO temp_locatori (locatore) VALUES %1;").arg(values);
             QString queryString = R"(
-              SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune
+              SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza
               FROM locatori l
               JOIN temp_locatori t
                 ON l.locatore = t.locatore
@@ -167,6 +173,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
                         coord->setColoreRegione(data[2].toInt());
                         coord->setColoreProvincia(data[3].toInt());
                         coord->setColoreComune(data[4].toInt());
+                        coord->setAltezza(data[5].toFloat());
                     } else {
                         delete coord;
                         coord = nullptr;
@@ -185,6 +192,56 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     return matrix;
 }
 
+QColor Mappa::calcolaColoreAltitudine(const float &altitudine) {
+    // Definizione dei range di altitudine e colori associati
+    const float pianuraMax = 100.0f;  // Fino a 200 metri - Verde
+    const float collinaMax = 500.0f;  // Fino a 800 metri - Giallo
+    const float montagnaMax = 2000.0f; // Fino a 2000 metri - Marrone
+    const float montagnaAltaMax = 8000.0f; // Oltre 4000 metri - Grigio neve
+
+    QColor pianuraColor(28, 100, 28); // Verde più scuro e profondo
+    QColor collinaColor(189, 183, 107); // Verde-giallo oliva
+    QColor montagnaColor(139, 69, 19);  // Marrone (montagna)
+    QColor montagnaAltaColor(240, 248, 255); // Bianco azzurrato (Alice Blue)
+
+
+    // Se l'altitudine è inferiore alla pianura
+    if (altitudine <= pianuraMax) {
+        return pianuraColor;
+    }
+    // Se l'altitudine è tra pianura e collina
+    else if (altitudine <= collinaMax) {
+        float t = (altitudine - pianuraMax) / (collinaMax - pianuraMax);
+        return QColor(
+            pianuraColor.red() + t * (collinaColor.red() - pianuraColor.red()),
+            pianuraColor.green() + t * (collinaColor.green() - pianuraColor.green()),
+            pianuraColor.blue() + t * (collinaColor.blue() - pianuraColor.blue())
+            );
+    }
+    // Se l'altitudine è tra collina e montagna
+    else if (altitudine <= montagnaMax) {
+        float t = (altitudine - collinaMax) / (montagnaMax - collinaMax);
+        return QColor(
+            collinaColor.red() + t * (montagnaColor.red() - collinaColor.red()),
+            collinaColor.green() + t * (montagnaColor.green() - collinaColor.green()),
+            collinaColor.blue() + t * (montagnaColor.blue() - collinaColor.blue())
+            );
+    }
+    // Se l'altitudine è tra montagna e montagna alta
+    else if (altitudine <= montagnaAltaMax) {
+        float t = (altitudine - montagnaMax) / (montagnaAltaMax - montagnaMax);
+        return QColor(
+            montagnaColor.red() + t * (montagnaAltaColor.red() - montagnaColor.red()),
+            montagnaColor.green() + t * (montagnaAltaColor.green() - montagnaColor.green()),
+            montagnaColor.blue() + t * (montagnaAltaColor.blue() - montagnaColor.blue())
+            );
+    }
+    // Se l'altitudine è superiore alla montagna alta
+    else {
+        return montagnaAltaColor;
+    }
+}
+
 void Mappa::clessidra() {
     // Cancella lo schermo con un colore di sfondo
     glClearColor(20 / 255.0f, 50 / 255.0f, 100 / 255.0f, 1.0f); // Blu oceano molto scuro
@@ -192,75 +249,75 @@ void Mappa::clessidra() {
 
     glLoadIdentity(); // Resetta la matrice del modello
 
+    // Ridimensionamento della clessidra
+    float scale = 0.3f; // Fattore di scala per rendere la clessidra più piccola
+
     // Colore della clessidra
     glColor3f(0.8f, 0.8f, 0.8f); // Bianco
-    glLineWidth(3.0f); // Imposta lo spessore della linea a 2
+    glLineWidth(2.0f); // Imposta lo spessore della linea
 
     // Disegna il contorno della clessidra
     glBegin(GL_LINES);
-    glVertex2f(-0.2f, 0.5f);  // Angolo superiore sinistro
-    glVertex2f(0.2f, 0.5f);   // Angolo superiore destro
+    glVertex2f(-0.2f * scale, 0.5f * scale);  // Angolo superiore sinistro
+    glVertex2f(0.2f * scale, 0.5f * scale);   // Angolo superiore destro
 
-    glVertex2f(-0.2f, 0.5f);  // Angolo superiore sinistro
-    glVertex2f(0.0f, 0.0f);   // Centro
+    glVertex2f(-0.2f * scale, 0.5f * scale);  // Angolo superiore sinistro
+    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
 
-    glVertex2f(0.2f, 0.5f);   // Angolo superiore destro
-    glVertex2f(0.0f, 0.0f);   // Centro
+    glVertex2f(0.2f * scale, 0.5f * scale);   // Angolo superiore destro
+    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
 
-    glVertex2f(-0.2f, -0.5f); // Angolo inferiore sinistro
-    glVertex2f(0.2f, -0.5f);  // Angolo inferiore destro
+    glVertex2f(-0.2f * scale, -0.5f * scale); // Angolo inferiore sinistro
+    glVertex2f(0.2f * scale, -0.5f * scale);  // Angolo inferiore destro
 
-    glVertex2f(-0.2f, -0.5f); // Angolo inferiore sinistro
-    glVertex2f(0.0f, 0.0f);   // Centro
+    glVertex2f(-0.2f * scale, -0.5f * scale); // Angolo inferiore sinistro
+    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
 
-    glVertex2f(0.2f, -0.5f);  // Angolo inferiore destro
-    glVertex2f(0.0f, 0.0f);   // Centro
+    glVertex2f(0.2f * scale, -0.5f * scale);  // Angolo inferiore destro
+    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
     glEnd();
 
     // Aggiorna il riempimento in base al tempo
     int elapsed = timer.elapsed();
     float totalTime = 3000.0f;  // Tempo totale per il ciclo (3 secondi)
-    float progress = (elapsed % int(totalTime)) / totalTime / 2;        // Progress parte inferiore
+    float progress = (elapsed % int(totalTime)) / totalTime / 2; // Progress parte inferiore
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // Colore del riempimento (sabbia)
-
-
     auto yellowSandTransparent = []() {
-        glColor4f(1.0f, 0.8f, 0.2f, 0.0f); // Giallo sabbia completamente trasparente
+        glColor4f(1.0f, 0.8f, 0.2f, 0.3f); // Giallo sabbia più trasparente
     };
 
     auto yellowSandOpaque = []() {
-        glColor4f(1.0f, 0.8f, 0.2f, 1.0f); // Giallo sabbia completamente opaco
+        glColor4f(1.0f, 0.8f, 0.2f, 0.8f); // Giallo sabbia meno opaco
     };
 
-
     // Disegna il riempimento superiore (sabbia che scende)
     glBegin(GL_TRIANGLES);
     yellowSandOpaque();
-    glVertex2f(-0.2f, 0.5f);          // Angolo superiore sinistro
+    glVertex2f(-0.2f * scale, 0.5f * scale);          // Angolo superiore sinistro
     yellowSandTransparent();
-    glVertex2f(0.0f, 0.5f - progress);           // Angolo superiore destro
+    glVertex2f(0.0f * scale, (0.5f - progress) * scale); // Punto variabile (altezza sabbia)
     yellowSandOpaque();
-    glVertex2f(0.0f, 0.0f); // Punto variabile (altezza sabbia)
+    glVertex2f(0.0f * scale, 0.0f * scale);          // Centro
     glEnd();
 
-    // Disegna il riempimento superiore (sabbia che scende)
     glBegin(GL_TRIANGLES);
     yellowSandTransparent();
-    glVertex2f(0.0f, 0.5f - progress);          // Angolo superiore sinistro
+    glVertex2f(0.0f * scale, (0.5f - progress) * scale); // Punto variabile (altezza sabbia)
     yellowSandOpaque();
-    glVertex2f(0.2f, 0.5f);           // Angolo superiore destro
-    glVertex2f(0.0f, 0.0f); // Punto variabile (altezza sabbia)
+    glVertex2f(0.2f * scale, 0.5f * scale);           // Angolo superiore destro
+    glVertex2f(0.0f * scale, 0.0f * scale);          // Centro
     glEnd();
 
     // Disegna il riempimento inferiore (sabbia accumulata)
     glBegin(GL_TRIANGLES);
-    glVertex2f(-0.2f, -0.5f);           // Angolo inferiore sinistro
-    glVertex2f(0.2f, -0.5f);            // Angolo inferiore destro
+    glVertex2f(-0.2f * scale, -0.5f * scale);           // Angolo inferiore sinistro
+    glVertex2f(0.2f * scale, -0.5f * scale);            // Angolo inferiore destro
     yellowSandTransparent();
-    glVertex2f(0.0f, -0.5f + progress); // Punto variabile (altezza sabbia)
+    glVertex2f(0.0f * scale, (-0.5f + progress) * scale); // Punto variabile (altezza sabbia)
     glEnd();
 
     glDisable(GL_BLEND);
@@ -268,6 +325,7 @@ void Mappa::clessidra() {
     // Richiedi il ridisegno per l'animazione continua
     update();
 }
+
 
 
 void Mappa::initializeGL() {
@@ -532,7 +590,7 @@ void Mappa::drawLine(float &x1f, float &y1f, float &x2f, float &y2f) {
 }
 
 void Mappa::paintGL() {
-    glClearColor(102 / 255.0f, 208 / 255.0f, 230 / 255.0f, 1.0f); // Blu oceano profondo pastello
+    glClearColor(108 / 255.0f, 210 / 255.0f, 231 / 255.0f, 1.0f); // Blu oceano profondo pastello
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -562,30 +620,34 @@ void Mappa::paintGL() {
             float y = 1.0f - row * cellHeight - cellHeight;
 
             QColor colore;
-            switch (coord->getColoreStato()) {
-            case 1:
-                colore = QColor(120, 90, 160); // Viola più scuro
-                break;
-            case 2:
-                colore = QColor(60, 100, 160); // Blu più scuro
-                break;
-            case 3:
-                colore = QColor(70, 120, 70); // Verde oliva scuro
-                break;
-            case 4:
-                colore = QColor(220, 220, 100); // Giallo pastello scuro
-                break;
-            case 5:
-                colore = QColor(180, 140, 100); // Marrone sabbia pastello scuro
-                break;
-            case 6:
-                colore = QColor(230, 150, 80); // Arancione pastello scuro
-                break;
-            default:
-                colore = QColor(170, 170, 170); // Grigio pastello scuro
-            }
+            if(tipomappa == tipoMappa::polica) {
+                switch (coord->getColoreStato()) {
+                case 1:
+                    colore = QColor(120, 90, 160); // Viola più scuro
+                    break;
+                case 2:
+                    colore = QColor(60, 100, 160); // Blu più scuro
+                    break;
+                case 3:
+                    colore = QColor(70, 120, 70); // Verde oliva scuro
+                    break;
+                case 4:
+                    colore = QColor(220, 220, 100); // Giallo pastello scuro
+                    break;
+                case 5:
+                    colore = QColor(180, 140, 100); // Marrone sabbia pastello scuro
+                    break;
+                case 6:
+                    colore = QColor(230, 150, 80); // Arancione pastello scuro
+                    break;
+                default:
+                    colore = QColor(170, 170, 170); // Grigio pastello scuro
+                }
 
-            colore = generateHierarchicalColor(colore, coord->getColoreRegione(), coord->getColoreProvincia(), coord->getColoreComune(), 1.5);
+                colore = generateHierarchicalColor(colore, coord->getColoreRegione(), coord->getColoreProvincia(), coord->getColoreComune(), 1.5);
+            } else if (tipomappa == tipoMappa::geografica) {
+                colore = calcolaColoreAltitudine(coord->getAltezza());
+            }
 
             drawSquare(x, y, cellWidth, cellHeight, colore, cols <= 110);
         }

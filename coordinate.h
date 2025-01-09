@@ -39,6 +39,8 @@ public:
     void setColoreProvincia(unsigned char c);
     unsigned char getColoreComune() const;
     void setColoreComune(unsigned char c);
+    float getAltezza() const;
+    void setAltezza(float a);
 
 private:
     char locatore[6];
@@ -46,6 +48,7 @@ private:
     unsigned char colore_regione;
     unsigned char colore_provincia;
     unsigned char colore_comune;
+    float altezza;
 };
 
 #endif // COORDINATE_H

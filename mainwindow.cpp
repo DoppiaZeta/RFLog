@@ -45,12 +45,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
-    ui->Griglia->addWidget(Nominativo, 1, 0);
-    ui->Griglia->addWidget(Locatore, 1, 1);
-    ui->Griglia->addWidget(Segnale, 1, 2);
-    ui->Griglia->addWidget(Frequenza, 1, 3);
-    ui->Griglia->addWidget(Orario, 1, 4);
-    ui->Griglia->addWidget(Tabella, 2, 0, 2, 5);
+    ui->grigliaInput->addWidget(Nominativo, 1, 1);
+    ui->grigliaInput->addWidget(Locatore, 1, 2);
+    ui->grigliaInput->addWidget(Segnale, 1, 3);
+    ui->grigliaInput->addWidget(Frequenza, 1, 4);
+    ui->grigliaInput->addWidget(Orario, 1, 5);
+    ui->grigliaVerticale->addWidget(Tabella);
 
     QWidget::setTabOrder(Nominativo, Locatore);
     QWidget::setTabOrder(Locatore, Segnale);
@@ -60,23 +60,15 @@ MainWindow::MainWindow(QWidget *parent)
     mappa = new Mappa(db, this);
     mappa->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    ui->Griglia->addWidget(mappa, 1, 5, 2, 1);
+    ui->grigliaDestra->addWidget(mappa, 10);
     QWidget *mappaConfigW = new QWidget(this);
     mappaConfig->setupUi(mappaConfigW);
-    ui->Griglia->addWidget(mappaConfigW, 3, 5, 1, 1);
+    ui->grigliaDestra->addWidget(mappaConfigW);
 
 
-    // Configura lo stretch per le colonne
-    ui->Griglia->setColumnStretch(0, 1); // Colonne 0-4 occupano metà schermo
-    ui->Griglia->setColumnStretch(1, 1);
-    ui->Griglia->setColumnStretch(2, 1);
-    ui->Griglia->setColumnStretch(3, 1);
-    ui->Griglia->setColumnStretch(4, 1);
-    ui->Griglia->setColumnStretch(5, 5); // La colonna mappa occupa metà schermo
-
-    // Configura lo stretch per le righe
-    ui->Griglia->setRowStretch(2, 2); // La terza riga torna a occupare meno spazio
-    ui->Griglia->setRowStretch(2, 1);
+    connect(ui->mappaGeografica, &QPushButton::clicked, this, &MainWindow::setGeografica);
+    connect(ui->mappaPolitica, &QPushButton::clicked, this, &MainWindow::setPolitica);
+    connect(ui->mappaScreenshot, &QPushButton::clicked, this, &MainWindow::mappaScreenshot);
 
     connect(mappa, &Mappa::mouseLocatore, this, &MainWindow::locatoreDaMappa);
     connect(mappa, &Mappa::mouseLocatoreDPPCLK, this, &MainWindow::locatoreDaMappaDPPCLK);
@@ -198,6 +190,25 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     QWidget::keyPressEvent(event);
 }
 
+void MainWindow::setPolitica() {
+    mappa->setTipoMappa(Mappa::tipoMappa::polica);
+}
+
+void MainWindow::setGeografica() {
+    mappa->setTipoMappa(Mappa::tipoMappa::geografica);
+}
+
+void MainWindow::mappaScreenshot() {
+    // Cattura il contenuto dell'OpenGLWidget come QImage
+    QImage screenshot = mappa->grabFramebuffer();
+
+    // Ottieni l'istanza degli appunti di sistema
+    QClipboard *clipboard = QGuiApplication::clipboard();
+
+    // Copia l'immagine negli appunti
+    clipboard->setImage(screenshot);
+}
+
 void MainWindow::catturaTab() {
     qDebug() << Nominativo->text();
 }
@@ -273,7 +284,7 @@ DBResult * MainWindow::caricaInfoLocatore(const QString & loc) {
         return new DBResult;
 
     QString q = QString(
-                    "select locatore, lat_min, lat_max, lon_min, lon_max, stato, regione, provincia, comune from locatori where locatore = '%1'"
+                    "select locatore, lat_min, lat_max, lon_min, lon_max, stato, regione, provincia, comune, altezza from locatori where locatore = '%1'"
                     ).arg(DatabaseManager::escape(loc));
     return db->executeQuery(q);
 }
@@ -291,6 +302,7 @@ void MainWindow::locatoreDaMappa(QString loc) {
         mappaConfig->lat_max->setText(res->tabella[0][2]);
         mappaConfig->lon_min->setText(res->tabella[0][3]);
         mappaConfig->lon_max->setText(res->tabella[0][4]);
+        mappaConfig->altezza->setText(res->tabella[0][9]);
     } else {
         QString vuoto;
         mappaConfig->Stato->setText(vuoto);
@@ -301,6 +313,7 @@ void MainWindow::locatoreDaMappa(QString loc) {
         mappaConfig->lat_max->setText(vuoto);
         mappaConfig->lon_min->setText(vuoto);
         mappaConfig->lon_max->setText(vuoto);
+        mappaConfig->altezza->setText(vuoto);
     }
 
     mappaConfig->locatoreCentra->setText(loc);
@@ -313,6 +326,13 @@ void MainWindow::locatoreDaMappa(QString loc) {
 
 void MainWindow::modificaCercaLocatore() {
     QString loc = mappaConfig->modificaLocatore->text().trimmed();
+
+    DBResult *res = caricaInfoLocatore(loc);
+    if(res->hasRows()) {
+        mappaConfig->modificaAltezza->setValue(res->tabella[0][9].toFloat());
+    }
+    delete res;
+
     if(Coordinate::validaLocatore(loc)) {
         DBResult *dbRS = caricaStatiDB();
         if(dbRS->hasRows()) {
@@ -441,19 +461,21 @@ void MainWindow::modificaSalva() {
     QString loc = mappaConfig->modificaLocatore->text().trimmed();
     if(Coordinate::validaLocatore(loc)) {
         QString q = QString(
-                        "INSERT INTO locatori (locatore, stato, regione, provincia, comune) "
-                        "VALUES ('%1', '%2', '%3', '%4', '%5') "
+                        "INSERT INTO locatori (locatore, stato, regione, provincia, comune, altezza) "
+                        "VALUES ('%1', '%2', '%3', '%4', '%5', '%6') "
                         "ON CONFLICT(locatore) DO UPDATE SET "
                         "stato = '%2', "
                         "regione = '%3', "
                         "provincia = '%4', "
-                        "comune = '%5' "
+                        "comune = '%5', "
+                        "altezza = '%6' "
                         ).arg(
                             DatabaseManager::escape(loc),
                             DatabaseManager::escape(mappaConfig->modificaStato->currentText().trimmed()),
                             DatabaseManager::escape(mappaConfig->modificaRegione->currentText().trimmed()),
                             DatabaseManager::escape(mappaConfig->modificaProvincia->currentText().trimmed()),
-                            DatabaseManager::escape(mappaConfig->modificaComune->currentText().trimmed())
+                            DatabaseManager::escape(mappaConfig->modificaComune->currentText().trimmed()),
+                            DatabaseManager::escape(QString::number(mappaConfig->modificaAltezza->value()))
                             );
 
         db->executeQueryNoRes(q);
