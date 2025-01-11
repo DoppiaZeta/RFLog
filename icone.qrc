@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>antenna_log_trasparente.png</file>
+    </qresource>
+</RCC>

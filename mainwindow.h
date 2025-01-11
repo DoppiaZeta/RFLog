@@ -11,9 +11,13 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QDebug>
+#include <QOpenGLFramebufferObject>
+
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
 #include "mappa.h"
+#include "locatoripreferiti.h"
+#include "nuovolog.h"
 
 #include "ui_mainwindow.h"
 #include "ui_mappaconfig.h"
@@ -83,6 +87,8 @@ private slots:
     void mappaScreenshot();
 
     void menuApriAdif();
+    void menuLocatoriPreferiti();
+    void menuIniziaLog();
 
 private:
     DBResult * caricaStatiDB();
@@ -113,6 +119,7 @@ private:
     QTableWidget *Tabella;
 
     DatabaseManager *db;
+    DatabaseManager *RFLog;
     Mappa *mappa;
 
 };

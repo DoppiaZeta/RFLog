@@ -19,6 +19,10 @@ public:
     DBResult();
     bool isEmpty() const;
     bool hasRows() const;
+    int getRigheCount() const;
+
+    QString getCella(int riga, const QString &colonna);
+    QString getCella(const QString &colonna); // monoriga
 
     QVector<QString> colonne;
     QVector<QVector<QString>> tabella;
@@ -32,12 +36,14 @@ public:
     explicit DatabaseManager(const QString &databasePath, QObject *parent = nullptr);
     ~DatabaseManager();
 
-    bool openDatabase();
-    void closeDatabase();
-
+    QSqlQuery * getQueryBind();
     DBResult* executeQuery(const QString &queryStr);
+    DBResult* executeQuery(QSqlQuery *query);
     void executeQueryNoRes(const QString &queryStr);
+    void executeQueryNoRes(QSqlQuery *query);
     QString lastError() const;
+
+    unsigned int uniqueId();
 
     static QString escape(const QString &txt);
 
@@ -46,6 +52,7 @@ private:
     QString m_databasePath;
 
     QMutex mutex;
+    unsigned int uid;
 };
 
 #endif // DATABASEMANAGER_H

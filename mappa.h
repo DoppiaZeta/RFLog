@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <QVector>
 #include <QPair>
+#include <QMouseEvent>
 #include <cmath>
 #include "databasemanager.h"
 #include "coordinate.h"
@@ -33,7 +34,7 @@ public:
     void setMatrice(const QString& locatore_da, const QString& locatore_a);
     void addLinea(const Linee l, bool refresh = true);
     void delLinea(const Linee l);
-    void delAllLinee();
+    void delAllLinee(bool refresh = true);
     void adattaMappaLinee();
     void reload();
     void setTipoMappa(tipoMappa t);

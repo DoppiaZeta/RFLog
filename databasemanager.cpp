@@ -1,5 +1,6 @@
 #include "databasemanager.h"
-#include <cstring>
+
+static unsigned int DatabaseManager_id_univoco_static = 0;
 
 DBResult::DBResult() {
     successo = true;
@@ -13,29 +14,43 @@ bool DBResult::hasRows() const {
     return tabella.size() > 0;
 }
 
+int DBResult::getRigheCount() const {
+    return tabella.length();
+}
+
+QString DBResult::getCella(int riga, const QString &colonna) {
+    if(tabella.size() > riga) {
+        int c = colonne.indexOf(colonna);
+        if(c >= 0)
+            return tabella[riga][c];
+    }
+
+    return QString();
+}
+
+QString DBResult::getCella(const QString &colonna) {
+    return getCella(0, colonna);
+}
+
 DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
     : QObject(parent), m_databasePath(databasePath)
 {
-    m_database = QSqlDatabase::addDatabase("QSQLITE");
+    uid= 0;
+    // Genera un nome unico per la connessione
+    QString connectionName = QString("connection_%1").arg(QString::number(DatabaseManager_id_univoco_static++));
+    m_database = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     m_database.setDatabaseName(m_databasePath);
+    m_database.open();
 }
 
 DatabaseManager::~DatabaseManager() {
-    closeDatabase();
-}
-
-bool DatabaseManager::openDatabase() {
-    if (!m_database.open()) {
-        qWarning() << "Failed to open database:" << m_database.lastError().text();
-        return false;
-    }
-    return true;
-}
-
-void DatabaseManager::closeDatabase() {
     if (m_database.isOpen()) {
         m_database.close();
     }
+}
+
+QSqlQuery * DatabaseManager::getQueryBind() {
+    return new QSqlQuery(m_database);
 }
 
 QString DatabaseManager::escape(const QString &txt) {
@@ -48,7 +63,16 @@ void DatabaseManager::executeQueryNoRes(const QString &queryStr) {
     delete executeQuery(queryStr);
 }
 
+void DatabaseManager::executeQueryNoRes(QSqlQuery *query) {
+    delete executeQuery(query);
+}
+
 DBResult* DatabaseManager::executeQuery(const QString &queryStr) {
+    QSqlQuery query(queryStr, m_database);
+    return executeQuery(&query);
+}
+
+DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
     QMutexLocker locker(&mutex);
     DBResult *ret = new DBResult;
 
@@ -58,23 +82,23 @@ DBResult* DatabaseManager::executeQuery(const QString &queryStr) {
         return ret;
     }
 
-    QSqlQuery query(m_database);
-
-    if (!query.exec(queryStr)) {
-        qWarning() << "Failed to execute query:" << query.lastError().text();
+    if (!query->exec()) {
+        qWarning() << "Failed to execute query:" << query->lastError().text();
+        qWarning() << "Query:" << query->lastQuery();
         ret->successo = false;
         return ret;
     }
 
-    QSqlRecord riga = query.record();
+
+    QSqlRecord riga = query->record();
     for (int i = 0; i < riga.count(); ++i) {
         ret->colonne.append(riga.fieldName(i));
     }
 
-    while (query.next()) {
+    while (query->next()) {
         QVector<QString> row;
         for (int i = 0; i < riga.count(); ++i) {
-            row.append(query.value(i).toString());
+            row.append(query->value(i).toString());
         }
         ret->tabella.append(row);
     }
@@ -87,5 +111,8 @@ QString DatabaseManager::lastError() const {
     return m_database.lastError().text();
 }
 
-
+unsigned int DatabaseManager::uniqueId() {
+    QMutexLocker locker(&mutex);
+    return uid++;
+}
 

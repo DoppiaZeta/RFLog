@@ -1,6 +1,4 @@
 #include "mappa.h"
-#include <QMouseEvent>
-#include <cmath>
 
 bool Linee::operator==(const Linee& other) const {
     return locatore_da == other.locatore_da && locatore_a == other.locatore_a;
@@ -81,8 +79,10 @@ void Mappa::delLinea(const Linee l) {
     }
 }
 
-void Mappa::delAllLinee() {
+void Mappa::delAllLinee(bool refresh) {
     linee->empty();
+    if(refresh)
+        update();
 }
 
 void Mappa::setTipoMappa(tipoMappa t) {
@@ -141,22 +141,33 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             locatoriQuoted.append(QString("('%1')").arg(newLoc));
         }
 
-        // Inserisce i locatori in una tabella temporanea e recupera i dati aggiornati
         if (!locatoriQuoted.isEmpty()) {
             QString values = locatoriQuoted.join(", ");
-            QString createTempTableQuery = "CREATE TEMP TABLE temp_locatori (locatore TEXT);";
-            QString insertTempTableQuery = QString("INSERT INTO temp_locatori (locatore) VALUES %1;").arg(values);
-            QString queryString = R"(
-              SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza
-              FROM locatori l
-              JOIN temp_locatori t
-                ON l.locatore = t.locatore
-            )";
 
+            // Genera un nome univoco per la tabella temporanea
+            QString tempTableName = QString("temp_locatori_%1").arg(QString::number(db->uniqueId()));
+
+            // 1. Crea la tabella temporanea
+            QString createTempTableQuery = QString("CREATE TEMP TABLE if not exists %1 (locatore TEXT);").arg(tempTableName);
             db->executeQueryNoRes(createTempTableQuery);
+
+            // 2. Inserisci i dati nella tabella temporanea
+            QString insertTempTableQuery = QString("INSERT INTO %1 (locatore) VALUES %2;").arg(tempTableName, values);
             db->executeQueryNoRes(insertTempTableQuery);
 
-            DBResult* resQuery = db->executeQuery(queryString);
+            // 3. Esegui la query per ottenere i dati
+            QString selectQuery = QString(R"(
+    SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza
+    FROM locatori l
+    JOIN %1 t
+    ON l.locatore = t.locatore
+)").arg(tempTableName);
+            DBResult* resQuery = db->executeQuery(selectQuery);
+
+            // 4. Elimina la tabella temporanea
+            QString dropTempTableQuery = QString("DROP TABLE if exists %1;").arg(tempTableName);
+            db->executeQueryNoRes(dropTempTableQuery);
+
 
             // Mappa per aggiornare i dati della riga corrente
             QHash<QString, QVector<QString>> queryMap;
@@ -182,8 +193,8 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             }
 
             delete resQuery;
-            db->executeQueryNoRes("DROP TABLE temp_locatori;"); // Rimuove la tabella temporanea
         }
+
 
         // Aggiunge la riga aggiornata alla matrice
         matrix->push_back(rowVector);
@@ -592,7 +603,6 @@ void Mappa::drawLine(float &x1f, float &y1f, float &x2f, float &y2f) {
 void Mappa::paintGL() {
     glClearColor(108 / 255.0f, 210 / 255.0f, 231 / 255.0f, 1.0f); // Blu oceano profondo pastello
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
     if (m_matrice == nullptr || m_matrice->isEmpty()) {
         clessidra();

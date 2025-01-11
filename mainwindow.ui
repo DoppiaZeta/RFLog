@@ -106,6 +106,8 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="menuIniziaLog"/>
+    <addaction name="menuLocatoriPreferiti"/>
     <addaction name="menuApriAdif"/>
    </widget>
    <addaction name="menuFile"/>
@@ -114,6 +116,16 @@
   <action name="menuApriAdif">
    <property name="text">
     <string>Apri Adif...</string>
+   </property>
+  </action>
+  <action name="menuLocatoriPreferiti">
+   <property name="text">
+    <string>Locatori preferiti...</string>
+   </property>
+  </action>
+  <action name="menuIniziaLog">
+   <property name="text">
+    <string>Inizia log...</string>
    </property>
   </action>
  </widget>

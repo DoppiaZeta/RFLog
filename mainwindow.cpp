@@ -1,3 +1,4 @@
+#include <QOpenGLFramebufferObjectFormat>
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
 #include "adif.h"
@@ -8,11 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     , mappaConfig(new Ui::MappaConfig)
 {
     db = new DatabaseManager("locatori_fine.db", this);
-
-    if (!db->openDatabase()) {
-        qWarning() << "Failed to open database.";
-        return;
-    }
+    RFLog = new DatabaseManager("RFLog.db", this);
 
     QString formato = "border: none;\n"
                       "color: blue;\n"
@@ -159,8 +156,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->modificaProvincia, &QComboBox::textActivated, this, &MainWindow::modificaCercaComune);
     connect(mappaConfig->modificaOK, &QPushButton::clicked, this, &MainWindow::modificaSalva);
 
-
+    //menu
     connect(ui->menuApriAdif, &QAction::triggered, this, &MainWindow::menuApriAdif);
+    connect(ui->menuLocatoriPreferiti, &QAction::triggered, this, &MainWindow::menuLocatoriPreferiti);
+    connect(ui->menuIniziaLog, &QAction::triggered, this, &MainWindow::menuIniziaLog);
 
 
     QTimer *t = new QTimer(this);
@@ -173,8 +172,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete ui; // Pulisci la memoria
-    db->closeDatabase();
+    delete ui;
+    delete mappaConfig;
 }
 
 void MainWindow::compilaNominativo(const QString &txt) {
@@ -936,8 +935,15 @@ void MainWindow::menuApriAdif() {
     // Apre il dialogo di selezione file, impostando la directory iniziale su quella di default dell'utente
     QString filePath = QFileDialog::getOpenFileName(this, "Seleziona File ADIF", QDir::homePath(), filter);
 
+    // Controlla se il percorso del file è vuoto (l'utente ha chiuso il dialogo senza scegliere un file)
+    if (filePath.isEmpty()) {
+        return; // Termina la funzione se nessun file è stato selezionato
+    }
+
     Adif ad;
     Adif::parseAdif(filePath, ad);
+
+    mappa->delAllLinee(false);
 
     // Supponendo che tu abbia già un'istanza di Adif chiamata adif
     const auto& contatti = ad.getContatti();
@@ -949,5 +955,16 @@ void MainWindow::menuApriAdif() {
     }
 
     mappa->adattaMappaLinee();
+}
+
+void MainWindow::menuLocatoriPreferiti() {
+    LocatoriPreferiti lp(RFLog, this);
+    lp.exec();
+}
+
+void MainWindow::menuIniziaLog() {
+    NuovoLog nl(RFLog, this);
+    nl.exec();
+    qDebug() << "log n" << nl.getLogSelezionato();
 }
 
