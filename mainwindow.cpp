@@ -1,15 +1,22 @@
-#include <QOpenGLFramebufferObjectFormat>
+#include <QGridLayout>
+
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
 #include "adif.h"
+#include "locatoripreferiti.h"
+#include "nuovolog.h"
+#include "miaradio.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , mappaConfig(new Ui::MappaConfig)
+    , tx(new Ui::Tx)
 {
     db = new DatabaseManager("locatori_fine.db", this);
     RFLog = new DatabaseManager("RFLog.db", this);
+
+    DBResult *res;
 
     QString formato = "border: none;\n"
                       "color: blue;\n"
@@ -24,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     Tabella = new QTableWidget(0, 5, this);
     Tabella->horizontalHeader()->setVisible(false);
     Tabella->verticalHeader()->setVisible(false);
+    Tabella->setAttribute(Qt::WA_StyledBackground);
 
     QHeaderView *header = Tabella->horizontalHeader();
     header->setSectionResizeMode(QHeaderView::Stretch);
@@ -41,13 +49,18 @@ MainWindow::MainWindow(QWidget *parent)
     Tabella->setStyleSheet("border: none;");
 
     ui->setupUi(this);
+    QWidget *txW = new QWidget(this);
+    tx->setupUi(txW);
+    txW->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    ui->grigliaSinistra->insertWidget(0, txW, 0);
+
+    ui->grigliaSinistra->addWidget(Tabella, 1);
 
     ui->grigliaInput->addWidget(Nominativo, 1, 1);
     ui->grigliaInput->addWidget(Locatore, 1, 2);
     ui->grigliaInput->addWidget(Segnale, 1, 3);
     ui->grigliaInput->addWidget(Frequenza, 1, 4);
     ui->grigliaInput->addWidget(Orario, 1, 5);
-    ui->grigliaVerticale->addWidget(Tabella);
 
     QWidget::setTabOrder(Nominativo, Locatore);
     QWidget::setTabOrder(Locatore, Segnale);
@@ -130,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
         mappaConfig->coloreComune->addItem(QString::number(i));
     }
 
-    DBResult *res = caricaStatiDB();
+    res = caricaStatiDB();
 
     for(int i = 0; i < res->tabella.size(); i++) {
         mappaConfig->statoDB->addItem(res->tabella[i][0]);
@@ -160,12 +173,31 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->menuApriAdif, &QAction::triggered, this, &MainWindow::menuApriAdif);
     connect(ui->menuLocatoriPreferiti, &QAction::triggered, this, &MainWindow::menuLocatoriPreferiti);
     connect(ui->menuIniziaLog, &QAction::triggered, this, &MainWindow::menuIniziaLog);
+    connect(ui->menuMieRadio, &QAction::triggered, this, &MainWindow::menuMiaRadio);
+    connect(ui->menuInformazioniSu, &QAction::triggered, this, &MainWindow::menuInformazioniSu);
+
+    //top widget
+    connect(tx->preferitiOK, &QPushButton::clicked, this, &MainWindow::usaLocatorePreferito);
 
 
     QTimer *t = new QTimer(this);
     connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
     t->start(1000);
 
+    tx->preferiti->setColumnCount(2); // Imposta il numero di colonne
+    tx->preferiti->horizontalHeader()->hide(); // Nascondi l'header orizzontale
+    tx->preferiti->verticalHeader()->hide();   // Nascondi l'header verticale
+    // Riduci l'altezza delle righe
+    tx->preferiti->verticalHeader()->setDefaultSectionSize(10);
+    // Riduci il font
+    QFont font = tx->preferiti->font();
+    font.setPointSize(8); // Dimensione più piccola
+    tx->preferiti->setFont(font);
+    // streccia
+    tx->preferiti->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    caricaLocatoriPreferiti();
+    caricaMieRadio();
     centraPredefinitoITA();
 }
 
@@ -957,14 +989,69 @@ void MainWindow::menuApriAdif() {
     mappa->adattaMappaLinee();
 }
 
+void MainWindow::menuMiaRadio() {
+    MiaRadio mr(RFLog, this);
+    mr.exec();
+    caricaMieRadio();
+}
+
 void MainWindow::menuLocatoriPreferiti() {
     LocatoriPreferiti lp(RFLog, this);
     lp.exec();
+    caricaLocatoriPreferiti();
 }
 
 void MainWindow::menuIniziaLog() {
     NuovoLog nl(RFLog, this);
     nl.exec();
     qDebug() << "log n" << nl.getLogSelezionato();
+}
+
+void MainWindow::caricaLocatoriPreferiti() {
+    DBResult *    res = RFLog->executeQuery("select locatore, nome from locatoripreferiti order by nome");
+    tx->preferiti->setRowCount(res->getRigheCount());
+    for (int i = 0; i < res->getRigheCount(); i++) {
+        QTableWidgetItem *locItem = new QTableWidgetItem(res->getCella(i, 0));
+        QTableWidgetItem *nomeItem = new QTableWidgetItem(res->getCella(i, 1));
+        tx->preferiti->setItem(i, 0, locItem);
+        tx->preferiti->setItem(i, 1, nomeItem);
+    }
+    delete res;
+}
+
+void MainWindow::caricaMieRadio() {
+    DBResult *res = RFLog->executeQuery("select nome from radio order by nome");
+    tx->radio->clear();
+    for(int i = 0; i < res->getRigheCount(); i++) {
+        tx->radio->addItem(res->getCella(i, 0));
+    }
+    delete res;
+}
+
+void MainWindow::usaLocatorePreferito() {
+    int selectedRow = tx->preferiti->currentRow();
+    if (selectedRow != -1) {
+        tx->locatore->setText(tx->preferiti->item(selectedRow, 0)->text());
+    }
+}
+
+void MainWindow::menuInformazioniSu() {
+    QDialog d;
+
+    QGridLayout *griglia = new QGridLayout(&d);
+    d.setLayout(griglia);
+    d.setWindowTitle(tr("Informazioni su RFLog"));
+
+    QLabel img;
+    QPixmap pix(":/antenna_log_trasparente.png");
+    img.setPixmap(pix);
+    img.setScaledContents(true);
+    img.resize(50, 50);
+
+    griglia->addWidget(&img, 1, 0, 1, 2);
+
+    d.resize(400, 300);
+
+    d.exec();
 }
 

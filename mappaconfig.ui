@@ -50,7 +50,8 @@
         <widget class="QLineEdit" name="Locatore">
          <property name="styleSheet">
           <string notr="true">color: blue;
-font-weight: bold;</string>
+font-weight: bold;
+background-color: white;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -480,7 +481,8 @@ linee</string>
                 <widget class="QLineEdit" name="modificaLocatore">
                  <property name="styleSheet">
                   <string notr="true">color: darkblue;
-font-weight: bold;</string>
+font-weight: bold;
+background-color: white;</string>
                  </property>
                 </widget>
                </item>

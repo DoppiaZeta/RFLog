@@ -14,51 +14,68 @@
    <string>RFLog</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_2">
+   <layout class="QGridLayout" name="griglia_2">
     <item row="1" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QVBoxLayout" name="grigliaSinistra">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
-       <layout class="QVBoxLayout" name="grigliaVerticale">
-        <item>
-         <layout class="QGridLayout" name="grigliaInput">
-          <item row="0" column="1">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Nominativo</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Segnale</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Orario</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Frequenza</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Locatore</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="grigliaInput">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Locatore</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Segnale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Orario</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Frequenza</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Nominativo</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
@@ -107,10 +124,24 @@
      <string>File</string>
     </property>
     <addaction name="menuIniziaLog"/>
-    <addaction name="menuLocatoriPreferiti"/>
     <addaction name="menuApriAdif"/>
    </widget>
+   <widget class="QMenu" name="menuMioDB">
+    <property name="title">
+     <string>Mio DB</string>
+    </property>
+    <addaction name="menuLocatoriPreferiti"/>
+    <addaction name="menuMieRadio"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>?</string>
+    </property>
+    <addaction name="menuInformazioniSu"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMioDB"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="menuApriAdif">
@@ -126,6 +157,16 @@
   <action name="menuIniziaLog">
    <property name="text">
     <string>Inizia log...</string>
+   </property>
+  </action>
+  <action name="menuMieRadio">
+   <property name="text">
+    <string>Le mie radio...</string>
+   </property>
+  </action>
+  <action name="menuInformazioniSu">
+   <property name="text">
+    <string>Informazioni su RFLog</string>
    </property>
   </action>
  </widget>

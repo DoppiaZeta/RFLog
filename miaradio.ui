@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MiaRadio</class>
+ <widget class="QDialog" name="MiaRadio">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Le mie radio</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="2">
+    <widget class="QPushButton" name="nomeRadioOK">
+     <property name="text">
+      <string>Aggiungi</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="nomeRadio"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Nome radio:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="eliminaRadioOK">
+     <property name="text">
+      <string>Elimina
+selezionato</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QListWidget" name="radioList"/>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>nomeRadio</tabstop>
+  <tabstop>nomeRadioOK</tabstop>
+  <tabstop>radioList</tabstop>
+  <tabstop>eliminaRadioOK</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

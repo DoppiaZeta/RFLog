@@ -16,11 +16,10 @@
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
 #include "mappa.h"
-#include "locatoripreferiti.h"
-#include "nuovolog.h"
 
 #include "ui_mainwindow.h"
 #include "ui_mappaconfig.h"
+#include "ui_tx.h"
 
 class MainWindow : public QMainWindow
 {
@@ -89,6 +88,10 @@ private slots:
     void menuApriAdif();
     void menuLocatoriPreferiti();
     void menuIniziaLog();
+    void menuMiaRadio();
+    void menuInformazioniSu();
+
+    void usaLocatorePreferito();
 
 private:
     DBResult * caricaStatiDB();
@@ -108,8 +111,13 @@ private:
     void caricaModificaProvincia();
     void caricaModificaComune();
 
+    void caricaLocatoriPreferiti();
+    void caricaMieRadio();
+
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
+    Ui::Tx *tx;
+
     SuggestiveLineEdit *Nominativo;
     SuggestiveLineEdit *Locatore;
     SuggestiveLineEdit *Segnale;

@@ -12,11 +12,14 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    adif.h \
    coordinate.h \
    locatoripreferiti.h \
+   miaradio.h \
    nuovolog.h
 FORMS += mainwindow.ui \
    locatoripreferiti.ui \
    mappaconfig.ui \
-   nuovolog.ui
+   miaradio.ui \
+   nuovolog.ui \
+   tx.ui
 SOURCES += databasemanager.cpp \
            adif.cpp \
            coordinate.cpp \
@@ -24,6 +27,7 @@ SOURCES += databasemanager.cpp \
            main.cpp \
            mainwindow.cpp \
            mappa.cpp \
+           miaradio.cpp \
            nuovolog.cpp \
            suggestivelineedit.cpp
 
@@ -34,5 +38,8 @@ RESOURCES += \
    icone.qrc
 
 RC_FILE = appicon.rc
+
+DISTFILES += \
+   LICENSE
 
 

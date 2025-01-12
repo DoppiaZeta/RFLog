@@ -51,71 +51,8 @@ void LocatoriPreferiti::onItemClicked(QTableWidgetItem *item) {
     }
 }
 
-
 void LocatoriPreferiti::cercaLatLon() {
-    QString loc;
-    double lat = ui->cercaLat->value();
-    double lon = ui->cercaLon->value();
-
-    qDebug() << "Input Latitudine:" << lat << "Longitudine:" << lon;
-
-    // Verifica che lat e lon siano nei limiti validi
-    if (lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0) {
-        ui->aggiungiLocatore->setText("Coordinate non valide");
-        return;
-    }
-
-    // Funzione per convertire un numero in una lettera
-    auto numeroToLettera = [](int n) -> QChar {
-        return QChar('A' + n);
-    };
-
-    // Primo livello (blocchi principali)
-    int lonLetter = static_cast<int>((lon + 180) / 20);
-    int latLetter = static_cast<int>((lat + 90) / 10);
-
-    qDebug() << "Primo livello: lonLetter=" << lonLetter << "latLetter=" << latLetter;
-
-    // Secondo livello (blocchi numerici)
-    double lonRemainder = (lon + 180) - lonLetter * 20;
-    double latRemainder = (lat + 90) - latLetter * 10;
-
-    int lonDigit = static_cast<int>(lonRemainder / 2);
-    int latDigit = static_cast<int>(latRemainder / 1);
-
-    qDebug() << "Secondo livello: lonDigit=" << lonDigit << "latDigit=" << latDigit;
-    qDebug() << "Residui dopo secondo livello: lonRemainder=" << lonRemainder << "latRemainder=" << latRemainder;
-
-    // Residuo dopo il secondo livello
-    lonRemainder -= lonDigit * 2;  // ora lonRemainder è in [0..2)
-    latRemainder -= latDigit * 1;  // ora latRemainder è in [0..1)
-
-    // Terzo livello:
-    // - per la longitudine, 24 sottogriglie in 2 gradi => ciascuna è 1/12°
-    // - per la latitudine, 24 sottogriglie in 1 grado => ciascuna è 1/24°
-
-    int lonSubLetter = static_cast<int>(lonRemainder * 12);
-    int latSubLetter = static_cast<int>(latRemainder * 24);
-
-    // Aggiusta eventuali errori di arrotondamento
-    lonSubLetter = std::clamp(lonSubLetter, 0, 23);
-    latSubLetter = std::clamp(latSubLetter, 0, 23);
-
-
-    qDebug() << "Terzo livello: lonSubLetter=" << lonSubLetter << "latSubLetter=" << latSubLetter;
-
-    // Costruzione del locatore
-    loc.append(numeroToLettera(lonLetter));       // Lettera longitudine principale
-    loc.append(numeroToLettera(latLetter));       // Lettera latitudine principale
-    loc.append(QString::number(lonDigit));       // Numero longitudine secondaria
-    loc.append(QString::number(latDigit));       // Numero latitudine secondaria
-    loc.append(numeroToLettera(lonSubLetter));   // Lettera longitudine terziaria
-    loc.append(numeroToLettera(latSubLetter));   // Lettera latitudine terziaria
-
-    qDebug() << "Locatore generato:" << loc;
-
-    // Mostra il risultato
-    ui->aggiungiLocatore->setText(loc);
+    ui->aggiungiLocatore->setText(Coordinate::calcolaLocatoreLatLon(ui->cercaLat->value(), ui->cercaLon->value()));
 }
 
 void LocatoriPreferiti::addLocatoreOK() {

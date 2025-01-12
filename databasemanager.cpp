@@ -18,8 +18,8 @@ int DBResult::getRigheCount() const {
     return tabella.length();
 }
 
-QString DBResult::getCella(int riga, const QString &colonna) {
-    if(tabella.size() > riga) {
+QString DBResult::getCella(const int & riga, const QString &colonna) {
+    if(tabella.size() > riga && riga >= 0) {
         int c = colonne.indexOf(colonna);
         if(c >= 0)
             return tabella[riga][c];
@@ -29,6 +29,18 @@ QString DBResult::getCella(int riga, const QString &colonna) {
 }
 
 QString DBResult::getCella(const QString &colonna) {
+    return getCella(0, colonna);
+}
+
+QString DBResult::getCella(const int & riga, const int & colonna) {
+    if(tabella.size() > riga && colonne.size() > colonna && riga >= 0 && colonna >= 0) {
+            return tabella[riga][colonna];
+    }
+
+    return QString();
+}
+
+QString DBResult::getCella(const int & colonna) {
     return getCella(0, colonna);
 }
 

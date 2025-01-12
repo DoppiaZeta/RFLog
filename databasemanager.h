@@ -21,8 +21,11 @@ public:
     bool hasRows() const;
     int getRigheCount() const;
 
-    QString getCella(int riga, const QString &colonna);
+    QString getCella(const int & riga, const QString &colonna);
     QString getCella(const QString &colonna); // monoriga
+
+    QString getCella(const int & riga, const int & colonna);
+    QString getCella(const int & colonna); // monoriga
 
     QVector<QString> colonne;
     QVector<QVector<QString>> tabella;

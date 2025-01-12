@@ -31,6 +31,9 @@ public:
     QString getLocatore() const;
     void setLocatore(const QString &loc);
 
+    static QString calcolaLocatoreLatLon(int lat, int lon);
+    static void calcolaLatLonLocatore(int lat, int lon, QString &loc);
+
     unsigned char getColoreStato() const;
     void setColoreStato(unsigned char c);
     unsigned char getColoreRegione() const;

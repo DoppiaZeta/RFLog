@@ -107,7 +107,7 @@
         <item row="3" column="3">
          <widget class="QPushButton" name="aggiungiOK">
           <property name="text">
-           <string>Aggiungi
+           <string>Aggiungi o
 modifica</string>
           </property>
          </widget>
