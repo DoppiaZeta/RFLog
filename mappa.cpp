@@ -7,6 +7,7 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *parent)
     timer.start();
     progress = 0;
     tipomappa = tipoMappa::geografica;
+    disattivaClick = false;
 }
 
 Mappa::~Mappa() {
@@ -22,6 +23,8 @@ Mappa::~Mappa() {
 }
 
 void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
+    disattivaClick = true;
+
     // Libera la matrice precedente se esiste
     if (m_matrice) {
         for (auto& row : *m_matrice) {
@@ -52,6 +55,7 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
             // Emetti il segnale che la matrice è stata caricata
             emit matriceCaricata();
             emit matriceDaA(locatore_da, locatore_a);
+            disattivaClick = false;
         }, Qt::QueuedConnection);
     });
 }
@@ -392,6 +396,8 @@ QString Mappa::calcolaLocatoreMouse(QMouseEvent *event) {
 }
 
 void Mappa::mousePressEvent(QMouseEvent *event) {
+    if(disattivaClick)
+        return;
     QString loc = calcolaLocatoreMouse(event);
 
     if(Coordinate::validaLocatore(loc))
@@ -399,6 +405,8 @@ void Mappa::mousePressEvent(QMouseEvent *event) {
 }
 
 void Mappa::mouseDoubleClickEvent(QMouseEvent *event) {
+    if(disattivaClick)
+        return;
     QString loc = calcolaLocatoreMouse(event);
 
     if(Coordinate::validaLocatore(loc))

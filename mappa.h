@@ -72,6 +72,7 @@ private:
     float progress;
 
     tipoMappa tipomappa;
+    bool disattivaClick;
 };
 
 #endif // MAPPA_H
