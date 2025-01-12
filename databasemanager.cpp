@@ -18,6 +18,14 @@ int DBResult::getRigheCount() const {
     return tabella.length();
 }
 
+int DBResult::size() const {
+    return tabella.length();
+}
+
+int DBResult::count() const {
+    return tabella.length();
+}
+
 QString DBResult::getCella(const int & riga, const QString &colonna) {
     if(tabella.size() > riga && riga >= 0) {
         int c = colonne.indexOf(colonna);
@@ -53,6 +61,7 @@ DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
     m_database = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     m_database.setDatabaseName(m_databasePath);
     m_database.open();
+    executeQueryNoRes("PRAGMA foreign_keys = ON;");
 }
 
 DatabaseManager::~DatabaseManager() {
@@ -116,6 +125,8 @@ DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
     }
 
     ret->successo = true;
+
+    m_database.commit();
     return ret;
 }
 

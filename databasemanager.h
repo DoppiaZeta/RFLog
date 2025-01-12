@@ -20,6 +20,8 @@ public:
     bool isEmpty() const;
     bool hasRows() const;
     int getRigheCount() const;
+    int size() const;
+    int count() const;
 
     QString getCella(const int & riga, const QString &colonna);
     QString getCella(const QString &colonna); // monoriga

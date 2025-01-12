@@ -16,6 +16,7 @@
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
 #include "mappa.h"
+#include "qso.h"
 
 #include "ui_mainwindow.h"
 #include "ui_mappaconfig.h"
@@ -85,6 +86,8 @@ private slots:
     void setGeografica();
     void mappaScreenshot();
 
+    void setSelectedNominativoDB(const QString & txt);
+
     void menuApriAdif();
     void menuLocatoriPreferiti();
     void menuIniziaLog();
@@ -92,6 +95,8 @@ private slots:
     void menuInformazioniSu();
 
     void usaLocatorePreferito();
+    void aggiungiNominativo();
+    void eliminaNominativo();
 
 private:
     DBResult * caricaStatiDB();
@@ -113,6 +118,9 @@ private:
 
     void caricaLocatoriPreferiti();
     void caricaMieRadio();
+    void caricaNominativiDaDb();
+
+    void updateMappaLocatori();
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
@@ -124,11 +132,12 @@ private:
     SuggestiveLineEdit *Frequenza;
     SuggestiveLineEdit *Orario;
 
-    QTableWidget *Tabella;
-
     DatabaseManager *db;
     DatabaseManager *RFLog;
     Mappa *mappa;
+
+    QList<Qso*> qsoList;
+    int numeroLog;
 
 };
 

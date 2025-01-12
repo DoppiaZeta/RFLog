@@ -16,6 +16,11 @@ MainWindow::MainWindow(QWidget *parent)
     db = new DatabaseManager("locatori_fine.db", this);
     RFLog = new DatabaseManager("RFLog.db", this);
 
+    numeroLog = 0;
+
+    ui->setupUi(this);
+    tx->setupUi(ui->tx);
+
     DBResult *res;
 
     QString formato = "border: none;\n"
@@ -28,15 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
     Frequenza = new SuggestiveLineEdit(this);
     Orario = new SuggestiveLineEdit(this);
 
-    Tabella = new QTableWidget(0, 5, this);
-    Tabella->horizontalHeader()->setVisible(false);
-    Tabella->verticalHeader()->setVisible(false);
-    Tabella->setAttribute(Qt::WA_StyledBackground);
-
-    QHeaderView *header = Tabella->horizontalHeader();
-    header->setSectionResizeMode(QHeaderView::Stretch);
-    header->setStretchLastSection(false);
-
     QStringList suggestions = {"in3kgw", "in3ivc", "in3ktt", "in3hkz"};
     Nominativo->setCompleter(suggestions);
 
@@ -45,16 +41,6 @@ MainWindow::MainWindow(QWidget *parent)
     Segnale->setStyleSheet(formato);
     Frequenza->setStyleSheet(formato);
     Orario->setStyleSheet(formato);
-
-    Tabella->setStyleSheet("border: none;");
-
-    ui->setupUi(this);
-    QWidget *txW = new QWidget(this);
-    tx->setupUi(txW);
-    txW->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    ui->grigliaSinistra->insertWidget(0, txW, 0);
-
-    ui->grigliaSinistra->addWidget(Tabella, 1);
 
     ui->grigliaInput->addWidget(Nominativo, 1, 1);
     ui->grigliaInput->addWidget(Locatore, 1, 2);
@@ -178,6 +164,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     //top widget
     connect(tx->preferitiOK, &QPushButton::clicked, this, &MainWindow::usaLocatorePreferito);
+    connect(tx->aggiungi, &QPushButton::clicked, this, &MainWindow::aggiungiNominativo);
+    connect(tx->togli, &QPushButton::clicked, this, &MainWindow::eliminaNominativo);
+    connect(tx->nominativo, &QComboBox::textActivated, this, &MainWindow::setSelectedNominativoDB);
 
 
     QTimer *t = new QTimer(this);
@@ -185,8 +174,6 @@ MainWindow::MainWindow(QWidget *parent)
     t->start(1000);
 
     tx->preferiti->setColumnCount(2); // Imposta il numero di colonne
-    tx->preferiti->horizontalHeader()->hide(); // Nascondi l'header orizzontale
-    tx->preferiti->verticalHeader()->hide();   // Nascondi l'header verticale
     // Riduci l'altezza delle righe
     tx->preferiti->verticalHeader()->setDefaultSectionSize(10);
     // Riduci il font
@@ -196,8 +183,11 @@ MainWindow::MainWindow(QWidget *parent)
     // streccia
     tx->preferiti->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    tx->nominativiList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
     caricaLocatoriPreferiti();
     caricaMieRadio();
+    caricaNominativiDaDb();
     centraPredefinitoITA();
 }
 
@@ -261,8 +251,8 @@ void MainWindow::confermaLinea() {
 
     // Controlla se il nominativo è già presente
     bool nominativoDuplicato = false;
-    for (int row = 0; row < Tabella->rowCount(); ++row) {
-        QTableWidgetItem *item = Tabella->item(row, 0); // Colonna del nominativo
+    for (int row = 0; row < ui->Tabella->rowCount(); ++row) {
+        QTableWidgetItem *item = ui->Tabella->item(row, 0); // Colonna del nominativo
         if (item && item->text() == nominativoText) {
             qDebug() << "Nominativo duplicato: " << nominativoText;
             nominativoDuplicato = true;
@@ -277,20 +267,20 @@ void MainWindow::confermaLinea() {
 
     // Aggiungi una nuova riga in cima
     qDebug() << "Inserisci riga in cima";
-    Tabella->insertRow(0); // Inserisce la nuova riga nella posizione 0
+    ui->Tabella->insertRow(0); // Inserisce la nuova riga nella posizione 0
 
     // Inserisci dati nella nuova riga
     QTableWidgetItem *nominativoItem = new QTableWidgetItem(nominativoText);
-    Tabella->setItem(0, 0, nominativoItem);
-    Tabella->setItem(0, 1, new QTableWidgetItem(Locatore->text().trimmed()));
-    Tabella->setItem(0, 2, new QTableWidgetItem(Segnale->text().trimmed()));
-    Tabella->setItem(0, 3, new QTableWidgetItem(Frequenza->text().trimmed()));
-    Tabella->setItem(0, 4, new QTableWidgetItem(currentDateTimeGMT));
+    ui->Tabella->setItem(0, 0, nominativoItem);
+    ui->Tabella->setItem(0, 1, new QTableWidgetItem(Locatore->text().trimmed()));
+    ui->Tabella->setItem(0, 2, new QTableWidgetItem(Segnale->text().trimmed()));
+    ui->Tabella->setItem(0, 3, new QTableWidgetItem(Frequenza->text().trimmed()));
+    ui->Tabella->setItem(0, 4, new QTableWidgetItem(currentDateTimeGMT));
 
     // Se duplicato, colora la nuova riga di rosso
     if (nominativoDuplicato) {
-        for (int col = 0; col < Tabella->columnCount(); ++col) {
-            QTableWidgetItem *rowItem = Tabella->item(0, col);
+        for (int col = 0; col < ui->Tabella->columnCount(); ++col) {
+            QTableWidgetItem *rowItem = ui->Tabella->item(0, col);
             if (rowItem) {
                 rowItem->setBackground(QColor(190, 190, 255));
             }
@@ -975,18 +965,27 @@ void MainWindow::menuApriAdif() {
     Adif ad;
     Adif::parseAdif(filePath, ad);
 
-    mappa->delAllLinee(false);
 
-    // Supponendo che tu abbia già un'istanza di Adif chiamata adif
-    const auto& contatti = ad.getContatti();
-    for (const auto& contatto : contatti) {
-        QString myGridSquare = contatto.value("my_gridsquare");
-        QString gridSquare = contatto.value("gridsquare");
+    if(numeroLog > 0) {
+        const auto& contatti = ad.getContatti();
+        for(int i = 0; i < contatti.count(); i++) {
+            Qso *qso = new Qso(RFLog, numeroLog);
+            qso->insertDaAdif(contatti[i]);
+            qsoList.push_back(qso);
+        }
 
-        mappa->addLinea(Linee(myGridSquare, gridSquare), false);
+        updateMappaLocatori();
     }
+}
 
-    mappa->adattaMappaLinee();
+void MainWindow::updateMappaLocatori() {
+    mappa->delAllLinee(false);
+    for(int i = 0; i < qsoList.count(); i++)
+        mappa->addLinea(qsoList[i]->getLinea(), false);
+    if(qsoList.count() > 0)
+        mappa->adattaMappaLinee();
+    else
+        centraPredefinitoITA();
 }
 
 void MainWindow::menuMiaRadio() {
@@ -1004,11 +1003,65 @@ void MainWindow::menuLocatoriPreferiti() {
 void MainWindow::menuIniziaLog() {
     NuovoLog nl(RFLog, this);
     nl.exec();
-    qDebug() << "log n" << nl.getLogSelezionato();
+    int n = nl.getLogSelezionato();
+    if(n > 0) {
+        numeroLog = n;
+        for(int i = 0; i < qsoList.count(); i++) {
+            delete qsoList[i];
+        }
+        qsoList.clear();
+
+        auto listaId = Qso::getListaQso(RFLog, numeroLog);
+        Qso *ultimo = nullptr;
+        for(int i = 0; i < listaId.count(); i++) {
+            Qso *qso = new Qso(RFLog, numeroLog, listaId[i]);
+            qsoList.push_back(qso);
+            ultimo = qso;
+        }
+
+        if(ultimo != nullptr) {
+            tx->locatore->setText(ultimo->locatoreTx);
+            tx->radio->setCurrentText(ultimo->radioTx);
+            tx->potenza->setValue(ultimo->potenzaTx);
+            tx->trasmissione->setCurrentText(ultimo->trasmissioneTx);
+            for(int i = 0; i < ultimo->nominativoTx.count(); i++) {
+                int rowCount = tx->nominativiList->rowCount();
+
+                // Aggiungi una nuova riga
+                tx->nominativiList->insertRow(rowCount);
+
+                // Crea gli elementi per la nuova riga
+                QTableWidgetItem *nomItem = new QTableWidgetItem(ultimo->nominativoTx[i].nominativo);
+                QTableWidgetItem *opItem = new QTableWidgetItem(ultimo->nominativoTx[i].operatore);
+
+                // Imposta gli elementi nella nuova riga
+                tx->nominativiList->setItem(rowCount, 0, nomItem);
+                tx->nominativiList->setItem(rowCount, 1, opItem);
+            }
+        }
+
+        updateMappaLocatori();
+
+        QSqlQuery *q = RFLog->getQueryBind();
+        q->prepare("select nome from log where id = :id");
+        q->bindValue(":id", numeroLog);
+        DBResult *res = RFLog->executeQuery(q);
+
+        QString css = R"(
+font-weight: bold;
+background-color: #cff;
+color: darkblue;
+)";
+        ui->attualeLog->setStyleSheet(css);
+        ui->attualeLog->setText(tr("Stai lavorando con il log:") + " " + res->getCella(0).toUpper());
+
+        delete q;
+        delete res;
+    }
 }
 
 void MainWindow::caricaLocatoriPreferiti() {
-    DBResult *    res = RFLog->executeQuery("select locatore, nome from locatoripreferiti order by nome");
+    DBResult *res = RFLog->executeQuery("select locatore, nome from locatoripreferiti order by nome");
     tx->preferiti->setRowCount(res->getRigheCount());
     for (int i = 0; i < res->getRigheCount(); i++) {
         QTableWidgetItem *locItem = new QTableWidgetItem(res->getCella(i, 0));
@@ -1026,6 +1079,18 @@ void MainWindow::caricaMieRadio() {
         tx->radio->addItem(res->getCella(i, 0));
     }
     delete res;
+}
+
+void MainWindow::caricaNominativiDaDb() {
+    DBResult *res = RFLog->executeQuery("select distinct nominativo, count(nominativo) as conta from qsoNominativi order by conta desc, nominativo");
+    tx->nominativo->clear();
+    for(int i = 0; i < res->getRigheCount(); i++) {
+        tx->nominativo->addItem(res->getCella(i, 0));
+    }
+    delete res;
+
+    if (tx->nominativo->count() > 0)
+        setSelectedNominativoDB(tx->nominativo->currentText());
 }
 
 void MainWindow::usaLocatorePreferito() {
@@ -1053,5 +1118,60 @@ void MainWindow::menuInformazioniSu() {
     d.resize(400, 300);
 
     d.exec();
+}
+
+void MainWindow::aggiungiNominativo() {
+    QString nominativo = tx->nominativo->currentText().trimmed().toUpper();
+    QString operatore = tx->operatore->text().trimmed().toUpper();
+
+    if (!nominativo.isEmpty() && !operatore.isEmpty()) {
+        // Controlla se il nominativo è già presente nella prima colonna
+        bool duplicato = false;
+        for (int row = 0; row < tx->nominativiList->rowCount(); ++row) {
+            QTableWidgetItem *item = tx->nominativiList->item(row, 0);
+            if (item && item->text() == nominativo) {
+                duplicato = true;
+                break;
+            }
+        }
+
+        if (!duplicato) {
+            // Ottieni il numero di righe esistenti
+            int rowCount = tx->nominativiList->rowCount();
+
+            // Aggiungi una nuova riga
+            tx->nominativiList->insertRow(rowCount);
+
+            // Crea gli elementi per la nuova riga
+            QTableWidgetItem *nomItem = new QTableWidgetItem(nominativo);
+            QTableWidgetItem *opItem = new QTableWidgetItem(operatore);
+
+            // Imposta gli elementi nella nuova riga
+            tx->nominativiList->setItem(rowCount, 0, nomItem);
+            tx->nominativiList->setItem(rowCount, 1, opItem);
+        }
+    }
+}
+
+
+void MainWindow::eliminaNominativo() {
+    // Ottieni l'indice della riga selezionata
+    int selectedRow = tx->nominativiList->currentRow();
+
+    // Verifica se una riga è selezionata
+    if (selectedRow != -1) {
+        // Rimuovi la riga selezionata
+        tx->nominativiList->removeRow(selectedRow);
+    }
+}
+
+void MainWindow::setSelectedNominativoDB(const QString & txt) {
+    QSqlQuery *q = RFLog->getQueryBind();
+    q->prepare("select operatore from qsoNominativi where nominativo = :nominativo order by operatore limit 1");
+    q->bindValue(":nominativo", txt);
+    DBResult *res = RFLog->executeQuery(q);
+    tx->operatore->setText(res->getCella(0));
+    delete q;
+    delete res;
 }
 

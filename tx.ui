@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>965</width>
-    <height>176</height>
+    <height>304</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>200</height>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -84,7 +84,7 @@ QDoubleSpinBox
         <property name="title">
          <string/>
         </property>
-        <layout class="QGridLayout" name="gridLayout_3" columnstretch="1,0,0,0,0">
+        <layout class="QGridLayout" name="gridLayout_3" rowstretch="1,0,0,0,0,0,0" columnstretch="1,0">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -98,12 +98,206 @@ QDoubleSpinBox
           <number>0</number>
          </property>
          <property name="horizontalSpacing">
-          <number>1</number>
+          <number>3</number>
          </property>
          <property name="verticalSpacing">
           <number>0</number>
          </property>
-         <item row="0" column="2" rowspan="5">
+         <item row="0" column="0" rowspan="4">
+          <layout class="QGridLayout" name="gridLayout_2" columnstretch="2,2,0">
+           <property name="spacing">
+            <number>1</number>
+           </property>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Nome</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Nominativo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QComboBox" name="nominativo">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="aggiungi">
+             <property name="text">
+              <string>Aggiungi</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="operatore"/>
+           </item>
+           <item row="6" column="0" colspan="3">
+            <widget class="QPushButton" name="togli">
+             <property name="text">
+              <string>Togli</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="3">
+            <widget class="QTableWidget" name="nominativiList">
+             <property name="styleSheet">
+              <string notr="true">background-color: #dff;
+color: black;</string>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+             </property>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Nominativo</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Operatore</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="6" column="0" colspan="2">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1,0,1">
+           <property name="spacing">
+            <number>1</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Radio:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="radio">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Potenza (Watt):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="potenza">
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Trasmissione:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="trasmissione">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>LSB</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>USB</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>AM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>FM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>CW</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>DMR</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>RTTY</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>PSK31</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>FT8</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>JT65</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>ATV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Satellitare</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Altri modi digitali</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Sperimentale</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="0" column="1" rowspan="6">
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="label_4">
@@ -118,7 +312,8 @@ QDoubleSpinBox
               <string notr="true">min-height: 20px;
 color: blue;
 font-weight: bold;
-background-color: #ffd;</string>
+background-color: #dff;
+letter-spacing: 2px;</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -164,88 +359,18 @@ QTableWidget::item {
                <property name="horizontalScrollBarPolicy">
                 <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+               </property>
+               <attribute name="horizontalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
               </widget>
              </item>
             </layout>
-           </item>
-           <item row="4" column="0" colspan="2">
-            <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
-             <property name="spacing">
-              <number>1</number>
-             </property>
-             <property name="topMargin">
-              <number>5</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Radio:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="radio">
-               <property name="editable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item row="4" column="0">
-          <widget class="QPushButton" name="togli">
-           <property name="text">
-            <string>Togli</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" rowspan="4">
-          <layout class="QGridLayout" name="gridLayout_2" columnstretch="2,2,1">
-           <property name="spacing">
-            <number>1</number>
-           </property>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Nominativo</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Nome</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="aggiungi">
-             <property name="text">
-              <string>Aggiungi</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0" colspan="3">
-            <widget class="QListWidget" name="listWidget">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QComboBox" name="nominativo">
-             <property name="editable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="operatore"/>
            </item>
           </layout>
          </item>
@@ -258,13 +383,17 @@ QTableWidget::item {
   </layout>
  </widget>
  <tabstops>
+  <tabstop>checkBox</tabstop>
   <tabstop>nominativo</tabstop>
   <tabstop>operatore</tabstop>
   <tabstop>aggiungi</tabstop>
-  <tabstop>listWidget</tabstop>
   <tabstop>togli</tabstop>
   <tabstop>locatore</tabstop>
+  <tabstop>preferiti</tabstop>
   <tabstop>preferitiOK</tabstop>
+  <tabstop>radio</tabstop>
+  <tabstop>potenza</tabstop>
+  <tabstop>trasmissione</tabstop>
  </tabstops>
  <resources/>
  <connections>

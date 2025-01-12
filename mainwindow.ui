@@ -15,74 +15,98 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="griglia_2">
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
+     <number>3</number>
+    </property>
+    <property name="horizontalSpacing">
+     <number>3</number>
+    </property>
+    <property name="verticalSpacing">
+     <number>6</number>
+    </property>
     <item row="1" column="0">
-     <layout class="QVBoxLayout" name="grigliaSinistra">
-      <property name="spacing">
-       <number>0</number>
-      </property>
+     <layout class="QVBoxLayout" name="grigliaSinistra" stretch="0,0,10">
       <item>
-       <widget class="QWidget" name="widget" native="true">
-        <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item row="0" column="0">
-          <layout class="QGridLayout" name="grigliaInput">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item row="1" column="2">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Locatore</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Segnale</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="5">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Orario</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="4">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Frequenza</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Nominativo</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
+       <widget class="QWidget" name="tx" native="true"/>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="grigliaInput">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <item row="1" column="2">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Locatore</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Orario</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Nominativo</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Segnale</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Frequenza</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="Tabella"/>
       </item>
      </layout>
     </item>
-    <item row="1" column="1">
+    <item row="0" column="0">
+     <widget class="QLabel" name="attualeLog">
+      <property name="styleSheet">
+       <string notr="true">font-weight: bold;
+background-color: #f99;
+color: white;</string>
+      </property>
+      <property name="text">
+       <string>Devi impostare un file di log prima di iniziare</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" rowspan="2">
      <layout class="QVBoxLayout" name="grigliaDestra" stretch="0">
+      <property name="spacing">
+       <number>2</number>
+      </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QPushButton" name="mappaGeografica">
           <property name="text">
@@ -156,7 +180,7 @@
   </action>
   <action name="menuIniziaLog">
    <property name="text">
-    <string>Inizia log...</string>
+    <string>Inizia con il log...</string>
    </property>
   </action>
   <action name="menuMieRadio">

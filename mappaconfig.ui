@@ -51,7 +51,8 @@
          <property name="styleSheet">
           <string notr="true">color: blue;
 font-weight: bold;
-background-color: white;</string>
+background-color: white;
+letter-spacing: 2px;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -150,7 +151,7 @@ background-color: white;</string>
              <item row="2" column="4">
               <widget class="QLabel" name="label_2">
                <property name="text">
-                <string>Offset su giu:</string>
+                <string>Zoom:</string>
                </property>
               </widget>
              </item>
@@ -482,7 +483,8 @@ linee</string>
                  <property name="styleSheet">
                   <string notr="true">color: darkblue;
 font-weight: bold;
-background-color: white;</string>
+background-color: white;
+letter-spacing: 2px;</string>
                  </property>
                 </widget>
                </item>

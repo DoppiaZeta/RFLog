@@ -1,13 +1,4 @@
 #include "mappa.h"
-
-bool Linee::operator==(const Linee& other) const {
-    return locatore_da == other.locatore_da && locatore_a == other.locatore_a;
-}
-
-Linee::Linee(const QString &da, const QString &a) :
-    locatore_da(da.trimmed().toUpper()), locatore_a(a.trimmed().toUpper()) {
-}
-
 Mappa::Mappa(DatabaseManager *dbm, QWidget *parent)
     : QOpenGLWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
@@ -80,7 +71,7 @@ void Mappa::delLinea(const Linee l) {
 }
 
 void Mappa::delAllLinee(bool refresh) {
-    linee->empty();
+    linee->clear();
     if(refresh)
         update();
 }

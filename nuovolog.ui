@@ -44,7 +44,11 @@
       <item row="0" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QTableWidget" name="logPassato"/>
+         <widget class="QTableWidget" name="logPassato">
+          <property name="editTriggers">
+           <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="logPassatoOK">
