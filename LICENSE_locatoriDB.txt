@@ -1,0 +1,11 @@
+Geographic data sourced from GADM.
+
+License: Creative Commons Attribution-Share Alike 4.0 (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Attribution:
+The data was originally obtained from GADM (https://gadm.org).
+Modifications to the data were made by [Your Name/Organization].
+
+Obligations:
+If you redistribute or use the data, including in modified form, you must provide proper attribution, include a reference to the original license, and maintain this same license (CC BY-SA 4.0).

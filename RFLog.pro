@@ -46,6 +46,7 @@ RC_FILE = appicon.rc
 
 DISTFILES += \
    LICENSE \
+   LICENSE_locatoriDB.txt \
    appicon.rc
 
 
