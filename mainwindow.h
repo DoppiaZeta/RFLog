@@ -122,6 +122,9 @@ private:
 
     void updateMappaLocatori();
 
+    void aggiornaTabella();
+    void aggiungiATabella(const Qso & qso, int row);
+
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
     Ui::Tx *tx;

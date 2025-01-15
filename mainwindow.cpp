@@ -1,4 +1,5 @@
 #include <QGridLayout>
+#include <QLocale>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -6,7 +7,6 @@
 #include "locatoripreferiti.h"
 #include "nuovolog.h"
 #include "miaradio.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     db = new DatabaseManager("locatori_fine.db", this);
     RFLog = new DatabaseManager("RFLog.db", this);
+
+    //Coordinate mondo[18][18][10][10][24][24];
+    //qDebug() << sizeof(Coordinate) * 6151325 + 18*18*10*10*20*24;
 
     numeroLog = 0;
 
@@ -53,12 +56,13 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget::setTabOrder(Segnale, Frequenza);
     QWidget::setTabOrder(Frequenza, Orario);
 
-    mappa = new Mappa(db, this);
-    mappa->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    ui->grigliaDestra->addWidget(mappa, 10);
     QWidget *mappaConfigW = new QWidget(this);
     mappaConfig->setupUi(mappaConfigW);
+
+    mappa = new Mappa(db, mappaConfigW, this);
+    ui->grigliaDestra->addWidget(mappa, 10);
+
+    mappa->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ui->grigliaDestra->addWidget(mappaConfigW);
 
 
@@ -77,6 +81,28 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Segnale, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Frequenza, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
+
+
+    ui->Tabella->setColumnCount(7);
+    ui->Tabella->setHorizontalHeaderLabels(
+        QStringList() << tr("TX Locatore")
+                      << tr("TX")
+                      << tr("RX Locatore")
+                      << tr("RX")
+                      << tr("TX dettagli")
+                      << tr("Data/Ora UTC")
+                      << tr("QSL")
+        );
+
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+
+
 
     mappaConfig->tabWidget->setCurrentIndex(0);
 
@@ -244,6 +270,7 @@ void MainWindow::svuotaLineEdit() {
 }
 
 void MainWindow::confermaLinea() {
+    /*
     QString nominativoText = Nominativo->text().trimmed(); // Elimina spazi inutili
     if (nominativoText.isEmpty()) {
         return; // Interrompe l'inserimento
@@ -290,6 +317,8 @@ void MainWindow::confermaLinea() {
     if(!nominativoDuplicato && Coordinate::validaLocatore(Locatore->text().trimmed())) {
         mappa->addLinea(Linee("JN56PK", Locatore->text().trimmed().left(6)));
     }
+*/
+    aggiornaTabella();
 }
 
 void MainWindow::aggiornaOrario() {
@@ -974,7 +1003,7 @@ void MainWindow::menuApriAdif() {
             qsoList.push_back(qso);
         }
 
-        updateMappaLocatori();
+        aggiornaTabella();
     }
 }
 
@@ -1012,27 +1041,31 @@ void MainWindow::menuIniziaLog() {
         qsoList.clear();
 
         auto listaId = Qso::getListaQso(RFLog, numeroLog);
-        Qso *ultimo = nullptr;
+
+        Qso *qsoAttingi = nullptr;
+
         for(int i = 0; i < listaId.count(); i++) {
             Qso *qso = new Qso(RFLog, numeroLog, listaId[i]);
             qsoList.push_back(qso);
-            ultimo = qso;
+            if(qsoAttingi == nullptr)
+                qsoAttingi = qso;
         }
 
-        if(ultimo != nullptr) {
-            tx->locatore->setText(ultimo->locatoreTx);
-            tx->radio->setCurrentText(ultimo->radioTx);
-            tx->potenza->setValue(ultimo->potenzaTx);
-            tx->trasmissione->setCurrentText(ultimo->trasmissioneTx);
-            for(int i = 0; i < ultimo->nominativoTx.count(); i++) {
+        if(qsoAttingi != nullptr) {
+            tx->locatore->setText(qsoAttingi->locatoreTx);
+            tx->radio->setCurrentText(qsoAttingi->radioTx);
+            tx->potenza->setValue(qsoAttingi->potenzaTx);
+            tx->trasmissione->setCurrentText(qsoAttingi->trasmissioneTx);
+            tx->qsl->setCheckState(qsoAttingi->qsl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+            for(int i = 0; i < qsoAttingi->nominativoTx.count(); i++) {
                 int rowCount = tx->nominativiList->rowCount();
 
                 // Aggiungi una nuova riga
                 tx->nominativiList->insertRow(rowCount);
 
                 // Crea gli elementi per la nuova riga
-                QTableWidgetItem *nomItem = new QTableWidgetItem(ultimo->nominativoTx[i].nominativo);
-                QTableWidgetItem *opItem = new QTableWidgetItem(ultimo->nominativoTx[i].operatore);
+                QTableWidgetItem *nomItem = new QTableWidgetItem(qsoAttingi->nominativoTx[i].nominativo);
+                QTableWidgetItem *opItem = new QTableWidgetItem(qsoAttingi->nominativoTx[i].operatore);
 
                 // Imposta gli elementi nella nuova riga
                 tx->nominativiList->setItem(rowCount, 0, nomItem);
@@ -1057,6 +1090,8 @@ color: darkblue;
 
         delete q;
         delete res;
+
+        aggiornaTabella();
     }
 }
 
@@ -1173,5 +1208,193 @@ void MainWindow::setSelectedNominativoDB(const QString & txt) {
     tx->operatore->setText(res->getCella(0));
     delete q;
     delete res;
+}
+
+void MainWindow::aggiornaTabella()
+{
+    // Svuota la tabella (sia contenuto sia intestazioni).
+    ui->Tabella->clearContents();
+
+    // Imposta il numero di righe e di colonne (se serve).
+    // Se la tabella è già configurata, puoi evitare queste righe.
+    ui->Tabella->setRowCount(qsoList.count());
+
+    for (int i = 0; i < qsoList.count(); i++) {
+        aggiungiATabella(*qsoList[i], i);
+    }
+}
+
+void MainWindow::aggiungiATabella(const Qso & qso, int row)
+{
+        QString txt;
+        QTableWidgetItem* item;
+        QColor rosso(0xff, 0xdf, 0xdf);
+        QColor verde(0xdf, 0xff, 0xdf);
+        QColor verdescuro(0x0, 0x40, 0x0);
+        QString freccia(QString(' ') + QChar(0x279C) + QString(' '));
+        QFont font;
+
+        // TX LOCATORE
+        item = new QTableWidgetItem(qso.locatoreTx);
+
+        item->setForeground(QBrush(verdescuro));
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 0, item);
+
+
+        int numNominativi = qso.nominativoTx.count();
+        for (int j = 0; j < numNominativi; j++) {
+            // Aggiungi sempre il nominativo
+            txt += qso.nominativoTx[j].nominativo;
+
+            // Se c'è l'operatore, appendi " -> operatore"
+            if (!qso.nominativoTx[j].operatore.isEmpty()) {
+                txt += freccia + qso.nominativoTx[j].operatore;
+            }
+
+            // Aggiungi il newline solo se NON siamo sull'ultimo elemento
+            if (j < numNominativi - 1) {
+                txt += "\n";
+            }
+        }
+
+        // Crea l'item per la cella (riga = i, colonna = 1)
+        item = new QTableWidgetItem(txt);
+
+        item->setForeground(QBrush(verdescuro));
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Font in grassetto
+        font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 1, item);
+
+
+        // RX LOCATORE
+        item = new QTableWidgetItem(qso.locatoreRx);
+
+        // Se duplicato == false, colore blu; altrimenti rosso
+        if (!qso.duplicato) {
+            item->setForeground(QBrush(Qt::blue));
+        } else {
+            item->setForeground(QBrush(Qt::red));
+        }
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 2, item);
+
+
+        // RX NOMINATIVO
+        txt = qso.nominativoRx;
+        if(!qso.operatoreRx.isEmpty())
+            txt += freccia + qso.operatoreRx;
+
+        item = new QTableWidgetItem(txt);
+
+        // Se duplicato == false, colore blu; altrimenti rosso
+        if (!qso.duplicato)
+            item->setForeground(QBrush(Qt::blue));
+        else
+            item->setForeground(QBrush(Qt::red));
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Font in grassetto
+        font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 3, item);
+
+
+        // TX DETTAGLI
+        txt = QString::number(qso.frequenzaRx) + "MHz";
+        txt += " " + QString::number(qso.segnaleRx) + tr("R/S");
+        txt += "\n";
+        txt += qso.trasmissioneTx;
+        txt += " " + QString::number(qso.potenzaTx) + "W";
+
+        item = new QTableWidgetItem(txt);
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 4, item);
+
+
+        // ORA
+        QLocale locale = QLocale::system();
+        txt = locale.toString(qso.orarioRx, QLocale::ShortFormat);
+        item = new QTableWidgetItem(txt);
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 5, item);
+
+
+        // QSL
+        item = new QTableWidgetItem(qso.qsl ? tr("Si") : tr("No"));
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 6, item);
+
+
+        // Facoltativo: adatta l'altezza della riga al contenuto
+        ui->Tabella->resizeRowToContents(row);
 }
 

@@ -12,6 +12,13 @@ bool Coordinate::operator==(const Coordinate &other) const {
     return std::strncmp(locatore, other.locatore, sizeof(locatore)) == 0;
 }
 
+bool Coordinate::operator==(const QString &other) const {
+    char otherLoc[6];
+    std::memcpy(otherLoc, other.toUtf8().constData(), sizeof(otherLoc));
+
+    return std::strncmp(locatore, otherLoc, sizeof(locatore)) == 0;
+}
+
 bool Coordinate::operator!=(const Coordinate &other) const {
     return !(*this == other);
 }
@@ -67,6 +74,10 @@ unsigned char Coordinate::getColoreComune() const {
 
 void Coordinate::setColoreComune(unsigned char c) {
     colore_comune = c;
+}
+
+const char* Coordinate::getRawLocatore() const {
+    return locatore;
 }
 
 bool Coordinate::validaLocatore(const QString & locatore) {

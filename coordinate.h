@@ -19,6 +19,7 @@ class Coordinate {
 public:
     Coordinate();
     bool operator==(const Coordinate &other) const;
+    bool operator==(const QString &other) const;
     bool operator!=(const Coordinate &other) const;
     bool operator<(const Coordinate &other) const;
 
@@ -33,6 +34,8 @@ public:
 
     static QString calcolaLocatoreLatLon(int lat, int lon);
     static void calcolaLatLonLocatore(int lat, int lon, QString &loc);
+
+    const char* getRawLocatore() const;
 
     unsigned char getColoreStato() const;
     void setColoreStato(unsigned char c);

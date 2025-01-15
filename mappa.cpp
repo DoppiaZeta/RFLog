@@ -1,7 +1,8 @@
 #include "mappa.h"
-Mappa::Mappa(DatabaseManager *dbm, QWidget *parent)
+Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QOpenGLWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
+    mappaConfigWidget = mappaConfig;
     primoLocatore = QString();
     ultimoLocatore = QString();
     timer.start();
@@ -24,6 +25,7 @@ Mappa::~Mappa() {
 
 void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
     disattivaClick = true;
+    mappaConfigWidget->setDisabled(true);
 
     // Libera la matrice precedente se esiste
     if (m_matrice) {
@@ -56,6 +58,7 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
             emit matriceCaricata();
             emit matriceDaA(locatore_da, locatore_a);
             disattivaClick = false;
+            mappaConfigWidget->setDisabled(false);
         }, Qt::QueuedConnection);
     });
 }
@@ -398,19 +401,21 @@ QString Mappa::calcolaLocatoreMouse(QMouseEvent *event) {
 void Mappa::mousePressEvent(QMouseEvent *event) {
     if(disattivaClick)
         return;
-    QString loc = calcolaLocatoreMouse(event);
 
-    if(Coordinate::validaLocatore(loc))
-        emit mouseLocatore(loc);
-}
+    // Controlla se è stato premuto il pulsante destro del mouse
+    if(event->button() == Qt::RightButton) {
+        QString loc = calcolaLocatoreMouse(event);
+        if(Coordinate::validaLocatore(loc))
+            emit mouseLocatoreDPPCLK(loc);
+        return; // Ritorna subito per evitare di eseguire altro codice
+    }
 
-void Mappa::mouseDoubleClickEvent(QMouseEvent *event) {
-    if(disattivaClick)
-        return;
-    QString loc = calcolaLocatoreMouse(event);
-
-    if(Coordinate::validaLocatore(loc))
-        emit mouseLocatoreDPPCLK(loc);
+    // Tratta il clic sinistro normalmente
+    if(event->button() == Qt::LeftButton) {
+        QString loc = calcolaLocatoreMouse(event);
+        if(Coordinate::validaLocatore(loc))
+            emit mouseLocatore(loc);
+    }
 }
 
 void Mappa::adattaMappaLinee() {

@@ -40,7 +40,11 @@ selezionato</string>
     </widget>
    </item>
    <item row="1" column="0" colspan="2">
-    <widget class="QListWidget" name="radioList"/>
+    <widget class="QListWidget" name="radioList">
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

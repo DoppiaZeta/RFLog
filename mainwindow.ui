@@ -78,7 +78,17 @@
        </layout>
       </item>
       <item>
-       <widget class="QTableWidget" name="Tabella"/>
+       <widget class="QTableWidget" name="Tabella">
+        <property name="editTriggers">
+         <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

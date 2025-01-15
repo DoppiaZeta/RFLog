@@ -6,6 +6,7 @@ INCLUDEPATH += .
 QT += core gui widgets sql opengl openglwidgets
 
 win32: LIBS += -lopengl32
+win32:LIBS += -lodbc32
 
 # Input
 HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
@@ -44,6 +45,7 @@ RESOURCES += \
 RC_FILE = appicon.rc
 
 DISTFILES += \
-   LICENSE
+   LICENSE \
+   appicon.rc
 
 

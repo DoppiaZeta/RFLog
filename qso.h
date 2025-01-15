@@ -27,6 +27,7 @@ public:
     };
 
     Qso(DatabaseManager *db, int log, int id = 0);
+    bool operator==(const Qso &q) const;
 
     void insertAggiornaDB();
     void eliminaDB();
@@ -47,6 +48,8 @@ public:
     double segnaleRx;
     double frequenzaRx;
     QDateTime orarioRx;
+    bool qsl;
+    bool duplicato;
 
     QVector<AltriParametri> altro;
 

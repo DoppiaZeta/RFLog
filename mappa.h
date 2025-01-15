@@ -19,7 +19,7 @@ class Mappa : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
     enum class tipoMappa {polica, geografica};
 
-    explicit Mappa(DatabaseManager *dbm, QWidget *parent = nullptr);
+    explicit Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent = nullptr);
     ~Mappa();
 
     void setMatrice(const QString& locatore_da, const QString& locatore_a);
@@ -42,7 +42,6 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     void mousePressEvent(QMouseEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
@@ -73,6 +72,8 @@ private:
 
     tipoMappa tipomappa;
     bool disattivaClick;
+
+    QWidget *mappaConfigWidget;
 };
 
 #endif // MAPPA_H

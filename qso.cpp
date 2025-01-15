@@ -4,6 +4,7 @@ Qso::Qso(DatabaseManager *db, int log, int id) {
     RFLog = db;
     logId = log;
     mioId = id;
+    duplicato = false;
 
     if(log > 0 && id > 0) {
         QSqlQuery *q;
@@ -20,7 +21,8 @@ operatoreRx,
 locatoreRx,
 segnaleRx,
 frequenzaRx,
-orarioRx
+orarioRx,
+qsl
 from qso
 where id = :id
 )");
@@ -36,7 +38,8 @@ where id = :id
             operatoreRx = res->getCella("operatoreRx");
             segnaleRx = res->getCella("segnaleRx").toDouble();
             frequenzaRx = res->getCella("frequenzaRx").toDouble();
-            orarioRx = QDateTime::fromString(res->getCella("orarioRx"));
+            qsl = res->getCella("frequenzaRx") == 'S';
+            orarioRx = QDateTime::fromString(res->getCella("orarioRx"), Qt::ISODate);
         }
         delete res;
         delete q;
@@ -69,6 +72,15 @@ where id = :id
     }
 }
 
+bool Qso::operator==(const Qso &q) const {
+    bool ret = true;
+    ret = ret && orarioRx == q.orarioRx;
+    ret = ret && locatoreRx == q.locatoreRx;
+    ret = ret && locatoreTx == q.locatoreTx;
+    ret = ret && nominativoRx == q.nominativoRx;
+    return ret;
+}
+
 void Qso::eliminaDB() {
     if(mioId > 0 && logId > 0) {
         QSqlQuery *q = RFLog->getQueryBind();
@@ -98,7 +110,8 @@ void Qso::insertAggiornaDB() {
                     locatoreRx,
                     segnaleRx,
                     frequenzaRx,
-                    orarioRx
+                    orarioRx,
+                    qsl
                 ) VALUES (
                     :idLog,
                     :locatoreTx,
@@ -110,7 +123,8 @@ void Qso::insertAggiornaDB() {
                     :locatoreRx,
                     :segnaleRx,
                     :frequenzaRx,
-                    :orarioRx
+                    :orarioRx,
+                    :qsl
                 )
             )");
         } else {
@@ -127,7 +141,8 @@ void Qso::insertAggiornaDB() {
                     locatoreRx = :locatoreRx,
                     segnaleRx = :segnaleRx,
                     frequenzaRx = :frequenzaRx,
-                    orarioRx = :orarioRx
+                    orarioRx = :orarioRx,
+                    qsl = :qsl
                 WHERE id = :id and idLog = :idLog
             )");
             q->bindValue(":id", mioId);
@@ -144,6 +159,7 @@ void Qso::insertAggiornaDB() {
         q->bindValue(":segnaleRx", segnaleRx);
         q->bindValue(":frequenzaRx", frequenzaRx);
         q->bindValue(":orarioRx", orarioRx);
+        q->bindValue(":qsl", qsl ? 'S' : 'N');
         q->bindValue(":idLog", logId);
 
         RFLog->executeQueryNoRes(q);
@@ -194,7 +210,7 @@ QVector<int> Qso::getListaQso(DatabaseManager *db, int log) {
     QVector<int> ret;
 
     QSqlQuery *q = db->getQueryBind();
-    q->prepare("select id from qso where idLog = :id");
+    q->prepare("select id from qso where idLog = :id order by orarioRx desc");
     q->bindValue(":id", log);
     DBResult *res = db->executeQuery(q);
     for(int i = 0; i < res->getRigheCount(); i++) {
@@ -212,16 +228,40 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
         trasmissioneTx = contatto.value("mode");
 
         // Popola i dati del ricevitore
-        nominativoRx = contatto.value("name").toUpper();
-        operatoreRx = contatto.value("call").toUpper();
+        nominativoRx = contatto.value("call").toUpper();
+        operatoreRx = contatto.value("name").toUpper();
         locatoreRx = contatto.value("gridsquare").toUpper();
         segnaleRx = contatto.value("rst_sent").toDouble();
         frequenzaRx = contatto.value("freq").toDouble();
+        qsl = contatto.value("qsl_rcvd") == 'S';
 
-        // Converte la data e l'ora del QSO
-        QString qsoDate = contatto.value("qso_date"); // Formato: YYYYMMDD
-        QString timeOn = contatto.value("time_on");  // Formato: HHMM
-        orarioRx = QDateTime::fromString(qsoDate + timeOn, "yyyyMMddHHmm");
+
+        // Recuperi le stringhe dal contatto ADIF
+        QString qsoDate = contatto.value("qso_date");  // Es: "20250111" (8 caratteri: YYYYMMDD)
+        QString timeOn  = contatto.value("time_on");   // Es: "1317" (4 caratteri: HHmm)
+            //   o "131700" (6 caratteri: HHmmss)
+
+        // Se la parte dell'ora è 4 caratteri (HHmm), aggiungi "00" per i secondi
+        if (timeOn.size() == 4) {
+            timeOn.append("00");  // diventa "131700"
+        }
+        // Volendo, se l'ora è più corta/strana, puoi gestire anche quei casi:
+        // else if (timeOn.size() < 4) { ... }  // errore o altra logica
+
+        // Ora hai sempre YYYYMMDD (8 char) + HHmmss (6 char) = 14 caratteri
+        QString combined = qsoDate + timeOn; // Esempio: "20250111" + "131700" = "20250111131700"
+
+        // Parse come "yyyyMMddHHmmss"
+        QDateTime dt = QDateTime::fromString(combined, "yyyyMMddHHmmss");
+
+        // Verifica se valido
+        if (!dt.isValid()) {
+            qDebug() << "Errore nella conversione data/ora" << combined;
+        }
+
+        // Assegni al tuo campo orarioRx
+        orarioRx = dt;
+
 
         if (!orarioRx.isValid()) {
             qDebug() << "Errore nella conversione della data e ora del QSO.";
@@ -244,7 +284,8 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
                 it.key() != "call" && it.key() != "name" &&
                 it.key() != "gridsquare" && it.key() != "rst_sent" &&
                 it.key() != "freq" && it.key() != "qso_date" &&
-                it.key() != "time_on" && it.key() != "station_callsign") {
+                it.key() != "time_on" && it.key() != "station_callsign" &&
+                it.key() != "qsl_rcvd") {
                 AltriParametri parametro;
                 parametro.nome = it.key();
                 parametro.valore = it.value();

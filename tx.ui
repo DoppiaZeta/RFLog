@@ -155,6 +155,12 @@ color: black;</string>
              <property name="editTriggers">
               <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
              </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+             </property>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
@@ -173,9 +179,9 @@ color: black;</string>
           </layout>
          </item>
          <item row="6" column="0" colspan="2">
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1,0,1">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1,0,1,0">
            <property name="spacing">
-            <number>1</number>
+            <number>3</number>
            </property>
            <property name="topMargin">
             <number>3</number>
@@ -231,6 +237,11 @@ color: black;</string>
              <item>
               <property name="text">
                <string>USB</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>SSB</string>
               </property>
              </item>
              <item>
@@ -293,6 +304,13 @@ color: black;</string>
                <string>Sperimentale</string>
               </property>
              </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="qsl">
+             <property name="text">
+              <string>Qsl</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -361,6 +379,12 @@ QTableWidget::item {
                </property>
                <property name="editTriggers">
                 <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
                </property>
                <attribute name="horizontalHeaderVisible">
                 <bool>false</bool>
