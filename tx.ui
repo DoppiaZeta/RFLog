@@ -23,10 +23,10 @@
    <string notr="true">QPushButton,
 QComboBox,
 QLineEdit
-{ height: 12px; }
+{ height: 15px; }
 
 QDoubleSpinBox
-{ height: 16px; }
+{ height: 18px; }
 </string>
   </property>
   <layout class="QFormLayout" name="formLayout">

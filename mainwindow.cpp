@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     db = new DatabaseManager("locatori_fine.db", this);
     RFLog = new DatabaseManager("RFLog.db", this);
+    nDB = new DatabaseManager("nominativi.db", this);
 
     //Coordinate mondo[18][18][10][10][24][24];
     //qDebug() << sizeof(Coordinate) * 6151325 + 18*18*10*10*20*24;
@@ -1001,9 +1002,23 @@ void MainWindow::menuApriAdif() {
             Qso *qso = new Qso(RFLog, numeroLog);
             qso->insertDaAdif(contatti[i]);
             qsoList.push_back(qso);
+
+            if(qso->locatoreRx.isEmpty()) {
+                QSqlQuery *q = nDB->getQueryBind();
+                q->prepare("select locatore from nominativi where nominativo = :nominativo");
+                q->bindValue(":nominativo", qso->nominativoRx);
+                DBResult *res = nDB->executeQuery(q);
+                if(res->hasRows()) {
+                    qso->locatoreRx = res->getCella(0).toUpper();
+                    qso->insertAggiornaDB();
+                }
+                delete res;
+                delete q;
+            }
         }
 
         aggiornaTabella();
+        updateMappaLocatori();
     }
 }
 
@@ -1057,6 +1072,7 @@ void MainWindow::menuIniziaLog() {
             tx->potenza->setValue(qsoAttingi->potenzaTx);
             tx->trasmissione->setCurrentText(qsoAttingi->trasmissioneTx);
             tx->qsl->setCheckState(qsoAttingi->qsl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+            tx->nominativiList->setRowCount(0);
             for(int i = 0; i < qsoAttingi->nominativoTx.count(); i++) {
                 int rowCount = tx->nominativiList->rowCount();
 
@@ -1117,7 +1133,7 @@ void MainWindow::caricaMieRadio() {
 }
 
 void MainWindow::caricaNominativiDaDb() {
-    DBResult *res = RFLog->executeQuery("select distinct nominativo, count(nominativo) as conta from qsoNominativi order by conta desc, nominativo");
+    DBResult *res = RFLog->executeQuery("select nominativo, count(nominativo) as conta from qsoNominativi nominativo group by nominativo order by conta desc, nominativo");
     tx->nominativo->clear();
     for(int i = 0; i < res->getRigheCount(); i++) {
         tx->nominativo->addItem(res->getCella(i, 0));
@@ -1159,7 +1175,7 @@ void MainWindow::aggiungiNominativo() {
     QString nominativo = tx->nominativo->currentText().trimmed().toUpper();
     QString operatore = tx->operatore->text().trimmed().toUpper();
 
-    if (!nominativo.isEmpty() && !operatore.isEmpty()) {
+    if (!nominativo.isEmpty()) {
         // Controlla se il nominativo è già presente nella prima colonna
         bool duplicato = false;
         for (int row = 0; row < tx->nominativiList->rowCount(); ++row) {
@@ -1202,7 +1218,7 @@ void MainWindow::eliminaNominativo() {
 
 void MainWindow::setSelectedNominativoDB(const QString & txt) {
     QSqlQuery *q = RFLog->getQueryBind();
-    q->prepare("select operatore from qsoNominativi where nominativo = :nominativo order by operatore limit 1");
+    q->prepare("select operatore from qsoNominativi where nominativo = :nominativo and operatore is not null and operatore <> '' order by operatore limit 1");
     q->bindValue(":nominativo", txt);
     DBResult *res = RFLog->executeQuery(q);
     tx->operatore->setText(res->getCella(0));

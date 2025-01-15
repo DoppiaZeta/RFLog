@@ -137,6 +137,7 @@ private:
 
     DatabaseManager *db;
     DatabaseManager *RFLog;
+    DatabaseManager *nDB;
     Mappa *mappa;
 
     QList<Qso*> qsoList;
