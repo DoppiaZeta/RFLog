@@ -26,6 +26,8 @@ FORMS += mainwindow.ui \
 SOURCES += databasemanager.cpp \
            adif.cpp \
            coordinate.cpp \
+           coordinate_cq.cpp \
+           coordinate_itu.cpp \
            linee.cpp \
            locatoripreferiti.cpp \
            main.cpp \

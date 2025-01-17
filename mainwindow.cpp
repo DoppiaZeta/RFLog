@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Coordinate mondo[18][18][10][10][24][24];
     //qDebug() << sizeof(Coordinate) * 6151325 + 18*18*10*10*20*24;
+    //Coordinate::CqItu c = Coordinate::getCqItu("RE66CF");
+    //qDebug() << 60 << c.cq << c.itu;
 
     numeroLog = 0;
 
@@ -341,8 +343,22 @@ DBResult * MainWindow::caricaInfoLocatore(const QString & loc) {
 }
 
 void MainWindow::locatoreDaMappa(QString loc) {
+    QString vuoto;
     DBResult *res = caricaInfoLocatore(loc);
     mappaConfig->Locatore->setText(loc);
+    Coordinate::CqItu cqitu = Coordinate::getCqItu(loc);
+
+    if(cqitu.cq > 0) {
+        mappaConfig->cq->setText(QString::number(cqitu.cq));
+    } else {
+        mappaConfig->cq->setText(vuoto);
+    }
+
+    if(cqitu.itu > 0) {
+        mappaConfig->itu->setText(QString::number(cqitu.itu));
+    } else {
+        mappaConfig->itu->setText(vuoto);
+    }
 
     if(res->hasRows()) {
         mappaConfig->Stato->setText(tr("Stato: ") + res->tabella[0][5]);
@@ -355,7 +371,6 @@ void MainWindow::locatoreDaMappa(QString loc) {
         mappaConfig->lon_max->setText(res->tabella[0][4]);
         mappaConfig->altezza->setText(res->tabella[0][9]);
     } else {
-        QString vuoto;
         mappaConfig->Stato->setText(vuoto);
         mappaConfig->Regione->setText(vuoto);
         mappaConfig->Provincia->setText(vuoto);

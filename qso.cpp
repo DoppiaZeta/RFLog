@@ -73,12 +73,7 @@ where id = :id
 }
 
 bool Qso::operator==(const Qso &q) const {
-    bool ret = true;
-    ret = ret && orarioRx == q.orarioRx;
-    ret = ret && locatoreRx == q.locatoreRx;
-    ret = ret && locatoreTx == q.locatoreTx;
-    ret = ret && nominativoRx == q.nominativoRx;
-    return ret;
+    return nominativoRx == q.nominativoRx;
 }
 
 void Qso::eliminaDB() {

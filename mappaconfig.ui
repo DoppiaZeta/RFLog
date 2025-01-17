@@ -97,7 +97,7 @@ letter-spacing: 2px;</string>
      <item row="1" column="1">
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="CENTRALOC">
         <attribute name="title">
@@ -687,6 +687,10 @@ modifiche</string>
               </item>
               <item row="3" column="3">
                <widget class="QLabel" name="lon_min">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -697,6 +701,10 @@ modifiche</string>
               </item>
               <item row="1" column="1">
                <widget class="QLabel" name="lon_max">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -718,6 +726,10 @@ modifiche</string>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="lat_max">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -725,6 +737,10 @@ modifiche</string>
               </item>
               <item row="3" column="2">
                <widget class="QLabel" name="lat_min">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -747,6 +763,9 @@ modifiche</string>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="spacing">
+               <number>12</number>
+              </property>
               <item>
                <widget class="QLabel" name="label_23">
                 <property name="text">
@@ -756,10 +775,63 @@ modifiche</string>
               </item>
               <item>
                <widget class="QLabel" name="altezza">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
                </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_25">
+                <property name="text">
+                 <string>ITU:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="itu">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_26">
+                <property name="text">
+                 <string>CQ:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="cq">
+                <property name="styleSheet">
+                 <string notr="true">font-weight: bold;
+</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>

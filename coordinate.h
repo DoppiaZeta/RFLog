@@ -2,6 +2,8 @@
 #define COORDINATE_H
 
 #include <QString>
+#include <QPolygonF>
+#include <QPointF>
 #include <QDebug>
 
 #define numLetter 18
@@ -17,7 +19,13 @@
 
 class Coordinate {
 public:
+    struct CqItu {
+        int cq;
+        int itu;
+    };
+
     Coordinate();
+
     bool operator==(const Coordinate &other) const;
     bool operator==(const QString &other) const;
     bool operator!=(const Coordinate &other) const;
@@ -26,14 +34,16 @@ public:
     static bool validaLocatore(const QString & locatore);
     static QString calcolaCoordinate(const QString &locatore, int offsetX, int offsetY);
 
-    static void toRowCol(const QString &loc, int &row, int &col);
-    static QString fromRowCol(int row, int col);
+    static CqItu getCqItu(const QString & loc);
 
     QString getLocatore() const;
     void setLocatore(const QString &loc);
 
+    static void toRowCol(const QString &loc, int &row, int &col);
+    static QString fromRowCol(int row, int col);
+
     static QString calcolaLocatoreLatLon(int lat, int lon);
-    static void calcolaLatLonLocatore(int lat, int lon, QString &loc);
+    static void calcolaLatLonLocatore(const QString &loc, double &lat, double &lon);
 
     const char* getRawLocatore() const;
 
@@ -48,6 +58,27 @@ public:
     float getAltezza() const;
     void setAltezza(float a);
 
+protected:
+    struct ZoneItu {
+        int number;
+        QPolygonF polygon;
+    };
+    static const QVector<ZoneItu> zoneItu;
+    static const QVector<QRectF> zoneItuRect;
+
+    struct ZoneCq {
+        int number;
+        QPolygonF polygon;
+    };
+    static const QVector<ZoneCq> zoneCq;
+    static const QVector<QRectF> zoneCqRect;
+
+    // Funzione helper per inizializzare zoneItuRect e zoneCqRect
+    static QVector<QRectF> calculateRects(const QVector<QPolygonF>& polygons);
+
+    static int getCq(const QString & loc);
+    static int getItu(const QString & loc);
+
 private:
     char locatore[6];
     unsigned char colore_stato;
@@ -55,6 +86,9 @@ private:
     unsigned char colore_provincia;
     unsigned char colore_comune;
     float altezza;
+
+    static QVector<QRectF> initZoneItuRect();
+    static QVector<QRectF> initZoneCqRect();
 };
 
 #endif // COORDINATE_H
