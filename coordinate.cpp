@@ -342,12 +342,13 @@ int Coordinate::getCq(const QString & loc) {
     QVector<int> idQuadrato;
     double lat, lon;
     calcolaLatLonLocatore(loc, lat, lon);
-    QPointF puntoLatLonInverso(lon, lat);
+    QPoint puntoLatLonInverso(lon * cqitu_molt, lat * cqitu_molt);
+    QPoint puntoLatLonInversoOriginale(lon * cqitu_molt, lat * cqitu_molt);
     for(int i = 0; i < zoneCqRect.count(); i++)
         if(zoneCqRect[i].contains(puntoLatLonInverso))
             idQuadrato.push_back(i);
 
-    puntoLatLonInverso.setX(lon - 360);
+    puntoLatLonInverso.setX(lon * cqitu_molt - 360 * cqitu_molt);
     for(int i = 0; i < zoneCqRect.count(); i++) {
         if(zoneCqRect[i].contains(puntoLatLonInverso)) {
             idQuadrato.push_back(i);
@@ -355,7 +356,7 @@ int Coordinate::getCq(const QString & loc) {
     }
 
     for(int i = 0; i < idQuadrato.count(); i++)
-        if(zoneCq[idQuadrato[i]].polygon.containsPoint(puntoLatLonInverso, Qt::OddEvenFill))
+        if(zoneCq[idQuadrato[i]].polygon.containsPoint(puntoLatLonInversoOriginale, Qt::OddEvenFill))
             return zoneCq[idQuadrato[i]].number;
 
     if(idQuadrato.count() > 0)
@@ -368,21 +369,22 @@ int Coordinate::getItu(const QString & loc) {
     QVector<int> idQuadrato;
     double lat, lon;
     calcolaLatLonLocatore(loc, lat, lon);
-    QPointF puntoLatLonInverso(lon, lat);
+    QPoint puntoLatLonInverso(lon * cqitu_molt, lat * cqitu_molt);
+    QPoint puntoLatLonInversoOriginale(lon * cqitu_molt, lat * cqitu_molt);
     for(int i = 0; i < zoneItuRect.count(); i++) {
         if(zoneItuRect[i].contains(puntoLatLonInverso)) {
             idQuadrato.push_back(i);
         }
     }
 
-    puntoLatLonInverso.setX(lon - 360);
+    puntoLatLonInverso.setX(lon * cqitu_molt - 360 * cqitu_molt);
     for(int i = 0; i < zoneItuRect.count(); i++) {
         if(zoneItuRect[i].contains(puntoLatLonInverso)) {
             idQuadrato.push_back(i);
         }
     }
 
-    puntoLatLonInverso.setX(lon + 360);
+    puntoLatLonInverso.setX(lon * cqitu_molt + 360 * cqitu_molt);
     for(int i = 0; i < zoneItuRect.count(); i++) {
         if(zoneItuRect[i].contains(puntoLatLonInverso)) {
             idQuadrato.push_back(i);
@@ -390,7 +392,7 @@ int Coordinate::getItu(const QString & loc) {
     }
 
     for(int i = 0; i < idQuadrato.count(); i++)
-        if(zoneItu[idQuadrato[i]].polygon.containsPoint(puntoLatLonInverso, Qt::OddEvenFill))
+        if(zoneItu[idQuadrato[i]].polygon.containsPoint(puntoLatLonInversoOriginale, Qt::OddEvenFill))
             return zoneItu[idQuadrato[i]].number;
 
     if(idQuadrato.count() > 0)
@@ -400,8 +402,8 @@ int Coordinate::getItu(const QString & loc) {
 }
 
 // Helper per calcolare QRectF da un QVector<QPolygonF>
-QVector<QRectF> Coordinate::calculateRects(const QVector<QPolygonF>& polygons) {
-    QVector<QRectF> rects;
+QVector<QRect> Coordinate::calculateRects(const QVector<QPolygon>& polygons) {
+    QVector<QRect> rects;
     for (const auto& polygon : polygons) {
         rects.append(polygon.boundingRect());
     }
@@ -409,8 +411,8 @@ QVector<QRectF> Coordinate::calculateRects(const QVector<QPolygonF>& polygons) {
 }
 
 // Funzione per inizializzare zoneItuRect
-QVector<QRectF> Coordinate::initZoneItuRect() {
-    QVector<QRectF> ret;
+QVector<QRect> Coordinate::initZoneItuRect() {
+    QVector<QRect> ret;
     for (int i = 0; i < zoneItu.count(); i++) {
         ret.append(zoneItu[i].polygon.boundingRect());
     }
@@ -418,8 +420,8 @@ QVector<QRectF> Coordinate::initZoneItuRect() {
 }
 
 // Funzione per inizializzare zoneCqRect
-QVector<QRectF> Coordinate::initZoneCqRect() {
-    QVector<QRectF> ret;
+QVector<QRect> Coordinate::initZoneCqRect() {
+    QVector<QRect> ret;
     for (int i = 0; i < zoneCq.count(); i++) {
         ret.push_back(zoneCq[i].polygon.boundingRect());
     }

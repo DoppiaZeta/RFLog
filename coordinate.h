@@ -59,22 +59,24 @@ public:
     void setAltezza(float a);
 
 protected:
+    constexpr static int cqitu_molt = 100000;
+
     struct ZoneItu {
         int number;
-        QPolygonF polygon;
+        QPolygon polygon;
     };
     static const QVector<ZoneItu> zoneItu;
-    static const QVector<QRectF> zoneItuRect;
+    static const QVector<QRect> zoneItuRect;
 
     struct ZoneCq {
         int number;
-        QPolygonF polygon;
+        QPolygon polygon;
     };
     static const QVector<ZoneCq> zoneCq;
-    static const QVector<QRectF> zoneCqRect;
+    static const QVector<QRect> zoneCqRect;
 
     // Funzione helper per inizializzare zoneItuRect e zoneCqRect
-    static QVector<QRectF> calculateRects(const QVector<QPolygonF>& polygons);
+    static QVector<QRect> calculateRects(const QVector<QPolygon>& polygons);
 
     static int getCq(const QString & loc);
     static int getItu(const QString & loc);
@@ -87,8 +89,8 @@ private:
     unsigned char colore_comune;
     float altezza;
 
-    static QVector<QRectF> initZoneItuRect();
-    static QVector<QRectF> initZoneCqRect();
+    static QVector<QRect> initZoneItuRect();
+    static QVector<QRect> initZoneCqRect();
 };
 
 #endif // COORDINATE_H
