@@ -1,5 +1,8 @@
 #include <QGridLayout>
 #include <QLocale>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <QModelIndex>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -100,12 +103,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Tabella->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
-
-
 
 
     mappaConfig->tabWidget->setCurrentIndex(0);
@@ -1420,8 +1421,9 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row)
         txt = QString::number(qso.frequenzaRx) + "MHz";
         txt += freccia;
         txt += QString::number(qso.getBandaMt()) + "mt";
-        txt += "\n";
-        txt += QString::number(qso.segnaleRx) + " ";
+        txt += " | ";
+        txt += QString::number(qso.segnaleRx);
+        txt += " | ";
         txt += qso.trasmissioneTx;
 
         item = new QTableWidgetItem(txt);

@@ -97,7 +97,6 @@ DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
         return ret;
     }
 
-
     QSqlRecord riga = query->record();
     for (int i = 0; i < riga.count(); ++i) {
         ret->colonne.append(riga.fieldName(i));
@@ -121,7 +120,7 @@ QString DatabaseManager::lastError() {
 }
 
 QString DatabaseManager::getConnectionName() {
-    return QString("Conn_%1").arg(QString::number(m_int) + QString::number((quintptr)QThread::currentThreadId()));
+    return QString("Conn_%1").arg(QString::number(m_int) + "_" + QString::number((quintptr)QThread::currentThread()));
 }
 
 QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
