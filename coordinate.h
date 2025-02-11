@@ -24,12 +24,14 @@ public:
         int itu;
     };
 
-    Coordinate();
+    Coordinate(bool extra = false);
+    ~Coordinate();
 
     bool operator==(const Coordinate &other) const;
     bool operator==(const QString &other) const;
     bool operator!=(const Coordinate &other) const;
     bool operator<(const Coordinate &other) const;
+    Coordinate& operator=(const Coordinate &other);
 
     static bool validaLocatore(const QString & locatore);
     static QString calcolaCoordinate(const QString &locatore, int offsetX, int offsetY);
@@ -58,19 +60,48 @@ public:
     float getAltezza() const;
     void setAltezza(float a);
 
+    QString getStato() const;
+    void setStato(const QString & str);
+    QString getRegione() const;
+    void setRegione(const QString & str);
+    QString getProvincia() const;
+    void setProvincia(const QString & str);
+    QString getComune() const;
+    void setComune(const QString & str);
+
+    bool getGialloStato() const;
+    void setGialloStato(bool b);
+    bool getGialloRegione() const;
+    void setGialloRegione(bool b);
+    bool getGialloProvincia() const;
+    void setGialloProvincia(bool b);
+    bool getGialloComune() const;
+    void setGialloComune(bool b);
+
+    bool getConfineStato() const;
+    void setConfineStato(bool b);
+    bool getConfineRegione() const;
+    void setConfineRegione(bool b);
+    bool getConfineProvincia() const;
+    void setConfineProvincia(bool b);
+    bool getConfineComune() const;
+    void setConfineComune(bool b);
+
+    static double distanzaKm(const QString &loc1, const QString &loc2);
+
 protected:
     constexpr static int cqitu_molt = 100000;
 
     struct ZoneItu {
-        int number;
-        QPolygon polygon;
+        const int number;
+        const QPolygon polygon;
     };
     static const QVector<ZoneItu> zoneItu;
     static const QVector<QRect> zoneItuRect;
 
     struct ZoneCq {
-        int number;
-        QPolygon polygon;
+        const int number;
+        const QPolygon polygon;
     };
     static const QVector<ZoneCq> zoneCq;
     static const QVector<QRect> zoneCqRect;
@@ -82,12 +113,29 @@ protected:
     static int getItu(const QString & loc);
 
 private:
+    struct extraData {
+        extraData();
+        bool confine_stato;
+        bool confine_regione;
+        bool confine_provincia;
+        bool confine_comune;
+        bool giallo_stato;
+        bool giallo_regione;
+        bool giallo_provincia;
+        bool giallo_comune;
+        QString stato;
+        QString regione;
+        QString provincia;
+        QString comune;
+    };
+
     char locatore[6];
     unsigned char colore_stato;
     unsigned char colore_regione;
     unsigned char colore_provincia;
     unsigned char colore_comune;
     float altezza;
+    extraData *extraPtr;
 
     static QVector<QRect> initZoneItuRect();
     static QVector<QRect> initZoneCqRect();

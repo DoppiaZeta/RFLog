@@ -52,3 +52,26 @@ DISTFILES += \
    appicon.rc
 
 
+# Flag globali (opzionale)
+QMAKE_CXXFLAGS += -Wall
+
+# Flag comuni a tutte le configurazioni
+QMAKE_CXXFLAGS += -Wall
+
+# Flag specifici per la release
+QMAKE_CXXFLAGS_RELEASE = -O2 -DNDEBUG -Wall
+QMAKE_LFLAGS_RELEASE += -flto -Wl,--gc-sections
+
+# Flag specifici per il debug
+QMAKE_CXXFLAGS_DEBUG = -g -DDEBUG -Wall
+
+# Abilita il linking con LTO per minimizzare il codice finale
+QMAKE_LFLAGS += -flto -Wl,--gc-sections
+
+# OpenMP
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+win32:QMAKE_LFLAGS += -fopenmp -static-libgcc -static-libstdc++ -static
+msvc:QMAKE_CXXFLAGS += /openmp
+msvc:QMAKE_LFLAGS += /openmp
+

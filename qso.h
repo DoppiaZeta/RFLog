@@ -28,13 +28,19 @@ public:
 
     Qso(DatabaseManager *db, int log, int id = 0);
     bool operator==(const Qso &q) const;
+    bool operator<(const Qso &q) const;
+    bool operator>(const Qso &q) const;
 
     void insertAggiornaDB();
     void eliminaDB();
     void insertDaAdif(const QMap<QString, QString> &contatto);
     Linee getLinea() const;
 
+    double getBandaMt() const;
+    static double getFrequenza(double banda);
+
     static QVector<int> getListaQso(DatabaseManager *db, int log);
+    static void sort(QList<Qso*> & qsoList);
 
     QList<NominativoNome> nominativoTx;
     QString locatoreTx;
@@ -57,6 +63,8 @@ private:
     DatabaseManager *RFLog;
     int logId;
     int mioId;
+
+    static const std::map<double, double> bandaToFreq;
 };
 
 #endif // QSO_H

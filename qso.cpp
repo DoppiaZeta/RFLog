@@ -1,5 +1,12 @@
 #include "qso.h"
 
+const std::map<double, double> Qso::bandaToFreq = {
+    {160, 1.9}, {80, 3.5}, {60, 5.3}, {40, 7.1}, {30, 10.1}, {20, 14.1},
+    {17, 18.1}, {15, 21.1}, {12, 24.9}, {10, 28.5}, {6, 50.1}, {2, 144.1},
+    {0.7, 432.1}, {0.23, 1296.1}, {0.13, 2304.1}, {0.05, 5760.1},
+    {0.03, 10368.1}, {0.015, 24000.0}, {0.007, 47000.0}
+};
+
 Qso::Qso(DatabaseManager *db, int log, int id) {
     RFLog = db;
     logId = log;
@@ -74,6 +81,47 @@ where id = :id
 
 bool Qso::operator==(const Qso &q) const {
     return nominativoRx == q.nominativoRx;
+}
+
+bool Qso::operator<(const Qso &q) const {
+    return orarioRx < q.orarioRx;
+}
+
+bool Qso::operator>(const Qso &q) const {
+    return orarioRx > q.orarioRx;
+}
+
+void Qso::sort(QList<Qso*> & qsoList) {
+    std::sort(qsoList.begin(), qsoList.end(), [](Qso* a, Qso* b) {
+        return a->operator>(*b);
+    });
+}
+
+double Qso::getBandaMt() const {
+    if (frequenzaRx == 0) {
+        return 0.0; // Valore non valido
+    }
+
+    double bestBanda = 0.0;
+    double minDiff = std::numeric_limits<double>::max();
+
+    for (const auto& pair : bandaToFreq) {
+        double diff = std::abs(frequenzaRx - pair.second);
+        if (diff < minDiff) {
+            minDiff = diff;
+            bestBanda = pair.first;
+        }
+    }
+
+    return bestBanda;
+}
+
+double Qso::getFrequenza(double banda) {
+    auto it = bandaToFreq.find(banda);
+    if (it != bandaToFreq.end()) {
+        return it->second;
+    }
+    return 0.0; // Valore non valido
 }
 
 void Qso::eliminaDB() {

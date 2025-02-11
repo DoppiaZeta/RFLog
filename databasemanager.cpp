@@ -1,6 +1,6 @@
 #include "databasemanager.h"
 
-static unsigned int DatabaseManager_id_univoco_static = 0;
+int DatabaseManager::m_int_static = 0;
 
 DBResult::DBResult() {
     successo = true;
@@ -53,25 +53,19 @@ QString DBResult::getCella(const int & colonna) {
 }
 
 DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
-    : QObject(parent), m_databasePath(databasePath)
+    : QObject(parent), m_databasePath(databasePath), m_int(m_int_static++)
 {
-    uid= 0;
     // Genera un nome unico per la connessione
-    QString connectionName = QString("connection_%1").arg(QString::number(DatabaseManager_id_univoco_static++));
-    m_database = QSqlDatabase::addDatabase("QSQLITE", connectionName);
-    m_database.setDatabaseName(m_databasePath);
-    m_database.open();
+    QSqlDatabase m_database = getConnection(true);
     executeQueryNoRes("PRAGMA foreign_keys = ON;");
 }
 
 DatabaseManager::~DatabaseManager() {
-    if (m_database.isOpen()) {
-        m_database.close();
-    }
+    cleanUpConnections();
 }
 
 QSqlQuery * DatabaseManager::getQueryBind() {
-    return new QSqlQuery(m_database);
+    return new QSqlQuery(getConnection());
 }
 
 QString DatabaseManager::escape(const QString &txt) {
@@ -89,19 +83,12 @@ void DatabaseManager::executeQueryNoRes(QSqlQuery *query) {
 }
 
 DBResult* DatabaseManager::executeQuery(const QString &queryStr) {
-    QSqlQuery query(queryStr, m_database);
+    QSqlQuery query(queryStr, getConnection());
     return executeQuery(&query);
 }
 
 DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
-    QMutexLocker locker(&mutex);
     DBResult *ret = new DBResult;
-
-    if (!m_database.isOpen()) {
-        qWarning() << "Database is not open.";
-        ret->successo = false;
-        return ret;
-    }
 
     if (!query->exec()) {
         qWarning() << "Failed to execute query:" << query->lastError().text();
@@ -126,16 +113,72 @@ DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
 
     ret->successo = true;
 
-    m_database.commit();
     return ret;
 }
 
-QString DatabaseManager::lastError() const {
-    return m_database.lastError().text();
+QString DatabaseManager::lastError() {
+    return getConnection().lastError().text();
 }
 
-unsigned int DatabaseManager::uniqueId() {
-    QMutexLocker locker(&mutex);
-    return uid++;
+QString DatabaseManager::getConnectionName() {
+    return QString("Conn_%1").arg(QString::number(m_int) + QString::number((quintptr)QThread::currentThreadId()));
 }
+
+QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
+    QMutexLocker locker(&mutex);
+    QString connectionName = getConnectionName();
+
+    if (QSqlDatabase::contains(connectionName)) {
+        return QSqlDatabase::database(connectionName);
+    }
+
+    // Crea una nuova connessione per il thread
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    db.setDatabaseName(m_databasePath);
+    if (!db.open()) {
+        qDebug() << "Errore nell'apertura del database:" << db.lastError().text();
+    }
+
+    QSqlQuery q(db);
+    q.exec("PRAGMA temp_store=MEMORY;");
+
+    if(scrittura) {
+        q.exec("PRAGMA journal_mode=WAL;");
+        q.exec("PRAGMA synchronous=NORMAL;");
+        q.exec("PRAGMA cache_size=5000;");
+        q.exec("PRAGMA locking_mode=NORMAL;");
+        q.exec("PRAGMA busy_timeout=5000;");
+    } else {
+        db.setConnectOptions("QSQLITE_OPEN_READONLY");
+        q.exec("PRAGMA journal_mode=OFF;");
+        q.exec("PRAGMA synchronous=OFF;");
+    }
+
+    // Registra la connessione
+    activeConnections[connectionName] = QThread::currentThread();
+
+    return db;
+}
+
+void DatabaseManager::releaseConnection() {
+    QMutexLocker locker(&mutex);
+    QString connectionName = getConnectionName();
+
+    if (QSqlDatabase::contains(connectionName)) {
+        QSqlDatabase::removeDatabase(connectionName);
+        activeConnections.remove(connectionName);
+    }
+}
+
+void DatabaseManager::cleanUpConnections() {
+    QMutexLocker locker(&mutex);
+
+    QList<QString> toRemove;
+    for (auto it = activeConnections.begin(); it != activeConnections.end(); ++it) {
+        if (!it.value()->isRunning()) { // Controlla se il thread è terminato
+            toRemove.append(it.key());
+        }
+    }
+}
+
 

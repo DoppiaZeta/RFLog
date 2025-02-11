@@ -1,11 +1,41 @@
+#include <cmath>
 #include "coordinate.h"
 
-Coordinate::Coordinate() {
+Coordinate::Coordinate(bool extra) {
     std::memset(locatore, 0, sizeof(locatore));
     colore_stato = 1;
     colore_regione = 0;
     colore_provincia = 0;
     colore_comune = 0;
+    if(!extra) {
+        extraPtr = nullptr;
+    } else {
+        extraPtr = new extraData();
+        extraPtr->confine_stato = false;
+        extraPtr->confine_regione = false;
+        extraPtr->confine_provincia = false;
+        extraPtr->confine_comune = false;
+        extraPtr->giallo_stato = false;
+        extraPtr->giallo_regione = false;
+        extraPtr->giallo_provincia = false;
+        extraPtr->giallo_comune = false;
+    }
+}
+
+Coordinate::~Coordinate() {
+    if(extraPtr != nullptr)
+        delete extraPtr;
+}
+
+Coordinate::extraData::extraData() {
+    confine_stato = false;
+    confine_regione = false;
+    confine_provincia = false;
+    confine_comune = false;
+    giallo_stato = false;
+    giallo_regione = false;
+    giallo_provincia = false;
+    giallo_comune = false;
 }
 
 bool Coordinate::operator==(const Coordinate &other) const {
@@ -25,6 +55,23 @@ bool Coordinate::operator!=(const Coordinate &other) const {
 
 bool Coordinate::operator<(const Coordinate &other) const {
     return std::strncmp(locatore, other.locatore, sizeof(locatore)) < 0;
+}
+
+Coordinate& Coordinate::operator=(const Coordinate &other) {
+    if (this == &other) return *this;
+
+    if(extraPtr != nullptr)
+        delete extraPtr;
+
+    extraPtr = new extraData{*other.extraPtr};
+    std::memcpy(locatore, other.locatore, 6);
+    colore_stato = other.colore_stato;
+    colore_regione = other.colore_regione;
+    colore_provincia = other.colore_provincia;
+    colore_comune = other.colore_comune;
+    altezza = other.altezza;
+
+    return *this;
 }
 
 QString Coordinate::getLocatore() const {
@@ -78,6 +125,114 @@ void Coordinate::setColoreComune(unsigned char c) {
 
 const char* Coordinate::getRawLocatore() const {
     return locatore;
+}
+
+QString Coordinate::getStato() const {
+    return extraPtr == nullptr ? QString() : extraPtr->stato;
+}
+
+void Coordinate::setStato(const QString & str) {
+    if(extraPtr != nullptr)
+        extraPtr->stato = str;
+}
+
+QString Coordinate::getRegione() const {
+    return extraPtr == nullptr ? QString() : extraPtr->regione;
+}
+
+void Coordinate::setRegione(const QString & str) {
+    if(extraPtr != nullptr)
+        extraPtr->regione = str;
+}
+
+QString Coordinate::getProvincia() const {
+    return extraPtr == nullptr ? QString() : extraPtr->provincia;
+}
+
+void Coordinate::setProvincia(const QString & str) {
+    if(extraPtr != nullptr)
+        extraPtr->provincia = str;
+}
+
+QString Coordinate::getComune() const {
+    return extraPtr == nullptr ? QString() : extraPtr->comune;
+}
+
+void Coordinate::setComune(const QString & str) {
+    if(extraPtr != nullptr)
+        extraPtr->comune = str;
+}
+
+bool Coordinate::getConfineStato() const {
+    return extraPtr == nullptr ? false : extraPtr->confine_stato;
+}
+
+void Coordinate::setConfineStato(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->confine_stato = b;
+}
+
+bool Coordinate::getConfineRegione() const {
+    return extraPtr == nullptr ? false : extraPtr->confine_regione;
+}
+
+void Coordinate::setConfineRegione(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->confine_regione = b;
+}
+
+bool Coordinate::getConfineProvincia() const {
+    return extraPtr == nullptr ? false : extraPtr->confine_provincia;
+}
+
+void Coordinate::setConfineProvincia(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->confine_provincia = b;
+}
+
+bool Coordinate::getConfineComune() const {
+    return extraPtr == nullptr ? false : extraPtr->confine_comune;
+}
+
+void Coordinate::setConfineComune(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->confine_comune = b;
+}
+
+bool Coordinate::getGialloStato() const {
+    return extraPtr == nullptr ? false : extraPtr->giallo_stato;
+}
+
+void Coordinate::setGialloStato(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->giallo_stato = b;
+}
+
+bool Coordinate::getGialloRegione() const {
+    return extraPtr == nullptr ? false : extraPtr->giallo_regione;
+}
+
+void Coordinate::setGialloRegione(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->giallo_regione = b;
+}
+
+bool Coordinate::getGialloProvincia() const {
+    return extraPtr == nullptr ? false : extraPtr->giallo_provincia;
+}
+
+void Coordinate::setGialloProvincia(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->giallo_provincia = b;
+}
+
+bool Coordinate::getGialloComune() const {
+    return extraPtr == nullptr ? false : extraPtr->giallo_comune;
+}
+
+void Coordinate::setGialloComune(bool b) {
+    if(extraPtr != nullptr)
+        extraPtr->giallo_comune = b;
 }
 
 bool Coordinate::validaLocatore(const QString & locatore) {
@@ -329,6 +484,37 @@ void Coordinate::calcolaLatLonLocatore(const QString &loc, double &lat, double &
 
     lon = lonTemp;
     lat = latTemp;
+}
+
+double Coordinate::distanzaKm(const QString &loc1, const QString &loc2) {
+    if(!validaLocatore(loc1) || ! validaLocatore(loc2)) {
+        return 0;
+    }
+
+    // 1. Converti i locatori in latitudine e longitudine
+    double lat1, lon1, lat2, lon2;
+    calcolaLatLonLocatore(loc1, lat1, lon1);
+    calcolaLatLonLocatore(loc2, lat2, lon2);
+
+    // 2. Converti gradi in radianti
+    double lat1_rad = qDegreesToRadians(lat1);
+    double lon1_rad = qDegreesToRadians(lon1);
+    double lat2_rad = qDegreesToRadians(lat2);
+    double lon2_rad = qDegreesToRadians(lon2);
+
+    // 3. Formula dell'haversine
+    double dlat = lat2_rad - lat1_rad;
+    double dlon = lon2_rad - lon1_rad;
+
+    double a = std::sin(dlat / 2) * std::sin(dlat / 2) +
+               std::cos(lat1_rad) * std::cos(lat2_rad) * std::sin(dlon / 2) * std::sin(dlon / 2);
+
+    double b = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
+
+    double EARTH_RADIUS_KM = 6371.0;
+
+    // 4. Distanza finale in km
+    return EARTH_RADIUS_KM * b;
 }
 
 Coordinate::CqItu Coordinate::getCqItu(const QString & loc) {

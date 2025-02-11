@@ -8,7 +8,7 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     timer.start();
     progress = 0;
     tipomappa = tipoMappa::geografica;
-    disattivaClick = false;
+    stato = "Italy";
 }
 
 Mappa::~Mappa() {
@@ -24,9 +24,6 @@ Mappa::~Mappa() {
 }
 
 void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
-    disattivaClick = true;
-    mappaConfigWidget->setDisabled(true);
-
     // Libera la matrice precedente se esiste
     if (m_matrice) {
         for (auto& row : *m_matrice) {
@@ -43,13 +40,13 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
 
     auto future = QtConcurrent::run([this, locatore_da, locatore_a]() {
         // Carica la matrice direttamente dal database
-        QMutexLocker locker(&mutex);
         QVector<QVector<Coordinate*>>* nuovaMatrice = caricaMatriceDaDb(locatore_da, locatore_a);
 
         // Trasferisci la matrice al thread principale
         QMetaObject::invokeMethod(this, [this, nuovaMatrice, locatore_a, locatore_da]() {
             // Assegna la nuova matrice
             m_matrice = nuovaMatrice;
+            db->cleanUpConnections();
 
             // Aggiorna il widget
             update();
@@ -57,8 +54,6 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
             // Emetti il segnale che la matrice è stata caricata
             emit matriceCaricata();
             emit matriceDaA(locatore_da, locatore_a);
-            disattivaClick = false;
-            mappaConfigWidget->setDisabled(false);
         }, Qt::QueuedConnection);
     });
 }
@@ -85,7 +80,7 @@ void Mappa::delAllLinee(bool refresh) {
 
 void Mappa::setTipoMappa(tipoMappa t) {
     tipomappa = t;
-    update();
+    reload();
 }
 
 QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QString locatore_a) {
@@ -98,9 +93,6 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     int cLeft = qMin(colDa, colA);
     int cRight = qMax(colDa, colA);
 
-    auto matrix = new QVector<QVector<Coordinate*>>();
-    matrix->reserve(rTop - rBottom + 1);
-
     // Determina il numero totale di colonne e righe
     int totalCols = cRight - cLeft + 1;
     int totalRows = rTop - rBottom + 1;
@@ -110,8 +102,8 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
         if (total <= 500) return 1;   // Precisione massima
         if (total <= 1200) return 2;   // Salta 1 ogni 2
         if (total <= 1800) return 4;   // Salta 3 ogni 4
-        if (total <= 2500) return 7;   // Salta 7 ogni 8
-        return 12;
+        if (total <= 2500) return 6;   // Salta 7 ogni 8
+        return 8;
     };
 
     int colStep = calculateStep(totalCols);
@@ -122,18 +114,56 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     primoLocatore = Coordinate::fromRowCol(rBottom, cRight);
     ultimoLocatore = Coordinate::fromRowCol(rTop, cLeft);
 
+    QList<Coordinate*> lineeCoordinate;
+    if(
+        tipomappa == tipoMappa::stati ||
+        tipomappa == tipoMappa::regioni ||
+        tipomappa == tipoMappa::provincie ||
+        tipomappa == tipoMappa::comuni
+        ) {
+        for(int i = 0; i < linee->count(); i++) {
+            QSqlQuery *q = db->getQueryBind();
+            q->prepare(R"(
+    SELECT locatore, stato, regione, provincia, comune
+    FROM locatori
+    WHERE locatore = :locatore
+)");
+            q->bindValue(":locatore", linee->at(i).locatore_a);
+            DBResult *res = db->executeQuery(q);
+
+            int max = lineeCoordinate.count();
+            lineeCoordinate.push_back(new Coordinate(true));
+            lineeCoordinate[max]->setLocatore(res->getCella("locatore"));
+            lineeCoordinate[max]->setStato(res->getCella("stato"));
+            lineeCoordinate[max]->setRegione(res->getCella("regione"));
+            lineeCoordinate[max]->setProvincia(res->getCella("provincia"));
+            lineeCoordinate[max]->setComune(res->getCella("comune"));
+
+            delete q;
+            delete res;
+        }
+    }
+
+    auto matrix = new QVector<QVector<Coordinate*>>((cRight - cLeft) / colStep + 1);
+    //matrix->reserve(rTop - rBottom + 1);
+
+#pragma omp parallel for
     for (int c = cRight; c >= cLeft; c -= colStep) {
-        //for (int c = cLeft; c <= cRight; c += colStep) {
+        int pos = (cRight - c) / colStep;
         QVector<Coordinate*> rowVector;
         rowVector.reserve(totalRows / rowStep + 1);
 
         QStringList locatoriQuoted;
 
         // Costruisce la lista di locatori per la colonna corrente con salto progressivo
-        //for (int r = rTop; r >= rBottom; r -= rowStep) {
         for (int r = rBottom; r <= rTop; r += rowStep) {
             QString newLoc = Coordinate::fromRowCol(r, c);
-            Coordinate* coord = new Coordinate();
+            Coordinate* coord = new Coordinate(
+                tipomappa == tipoMappa::stati ||
+                tipomappa == tipoMappa::regioni ||
+                tipomappa == tipoMappa::provincie ||
+                tipomappa == tipoMappa::comuni
+                );
             coord->setLocatore(newLoc);
             rowVector.push_back(coord);
             locatoriQuoted.append(QString("('%1')").arg(newLoc));
@@ -143,7 +173,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             QString values = locatoriQuoted.join(", ");
 
             // Genera un nome univoco per la tabella temporanea
-            QString tempTableName = QString("temp_locatori_%1").arg(QString::number(db->uniqueId()));
+            QString tempTableName = QString("temp_locatori");
 
             // 1. Crea la tabella temporanea
             QString createTempTableQuery = QString("CREATE TEMP TABLE if not exists %1 (locatore TEXT);").arg(tempTableName);
@@ -154,12 +184,28 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             db->executeQueryNoRes(insertTempTableQuery);
 
             // 3. Esegui la query per ottenere i dati
-            QString selectQuery = QString(R"(
+            QString selectQuery;
+            if(
+                tipomappa == tipoMappa::stati ||
+                tipomappa == tipoMappa::regioni ||
+                tipomappa == tipoMappa::provincie ||
+                tipomappa == tipoMappa::comuni
+                ) {
+                selectQuery = QString(R"(
+    SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza, l.confine_stato, l.confine_regione, l.confine_provincia, l.confine_comune, l.stato, l.regione, l.provincia, l.comune
+    FROM view_confini l
+    JOIN %1 t
+    ON l.locatore = t.locatore
+    WHERE l.stato = '%2'
+)").arg(tempTableName, DatabaseManager::escape(stato));
+            } else {
+                selectQuery = QString(R"(
     SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza
     FROM locatori l
     JOIN %1 t
     ON l.locatore = t.locatore
 )").arg(tempTableName);
+            }
             DBResult* resQuery = db->executeQuery(selectQuery);
 
             // 4. Elimina la tabella temporanea
@@ -183,6 +229,37 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
                         coord->setColoreProvincia(data[3].toInt());
                         coord->setColoreComune(data[4].toInt());
                         coord->setAltezza(data[5].toFloat());
+                        if(
+                            tipomappa == tipoMappa::stati ||
+                            tipomappa == tipoMappa::regioni ||
+                            tipomappa == tipoMappa::provincie ||
+                            tipomappa == tipoMappa::comuni
+                            ) {
+                            coord->setConfineStato(data[6].toInt());
+                            coord->setConfineRegione(data[7].toInt());
+                            coord->setConfineProvincia(data[8].toInt());
+                            coord->setConfineComune(data[9].toInt());
+                            coord->setStato(data[10]);
+                            coord->setRegione(data[11]);
+                            coord->setProvincia(data[12]);
+                            coord->setComune(data[13]);
+
+                            bool gialloS = false;
+                            bool gialloR = false;
+                            bool gialloP = false;
+                            bool gialloC = false;
+                            for(int i = 0;i < lineeCoordinate.count(); i++) {
+                                gialloS = gialloS || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::stati);
+                                gialloR = gialloR || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::regioni);
+                                gialloP = gialloP || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::provincie);
+                                gialloC = gialloC || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::comuni);
+                            }
+                            coord->setGialloStato(gialloS);
+                            coord->setGialloRegione(gialloR);
+                            coord->setGialloProvincia(gialloP);
+                            coord->setGialloComune(gialloC);
+
+                        }
                     } else {
                         delete coord;
                         coord = nullptr;
@@ -195,7 +272,12 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
 
 
         // Aggiunge la riga aggiornata alla matrice
-        matrix->push_back(rowVector);
+        //matrix->push_back(rowVector);
+        matrix->operator[](pos) = (rowVector);
+    }
+
+    for(int i = 0; i < lineeCoordinate.count(); i++) {
+        delete lineeCoordinate[i];
     }
 
     return matrix;
@@ -399,9 +481,6 @@ QString Mappa::calcolaLocatoreMouse(QMouseEvent *event) {
 }
 
 void Mappa::mousePressEvent(QMouseEvent *event) {
-    if(disattivaClick)
-        return;
-
     // Controlla se è stato premuto il pulsante destro del mouse
     if(event->button() == Qt::RightButton) {
         QString loc = calcolaLocatoreMouse(event);
@@ -416,6 +495,13 @@ void Mappa::mousePressEvent(QMouseEvent *event) {
         if(Coordinate::validaLocatore(loc))
             emit mouseLocatore(loc);
     }
+}
+
+void Mappa::mouseDoubleClickEvent(QMouseEvent *event) {
+    QString loc = calcolaLocatoreMouse(event);
+    if(Coordinate::validaLocatore(loc))
+        emit mouseLocatoreDPPCLK(loc);
+    return; // Ritorna subito per evitare di eseguire altro codice
 }
 
 void Mappa::adattaMappaLinee() {
@@ -608,6 +694,10 @@ void Mappa::paintGL() {
     glClearColor(108 / 255.0f, 210 / 255.0f, 231 / 255.0f, 1.0f); // Blu oceano profondo pastello
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    static const QColor grigio(0x80, 0x80, 0x80);
+    static const QColor beige(0xe0, 0xe0, 0xe0);
+    static const QColor giallo(0xe0, 0xe0, 0x0);
+
     if (m_matrice == nullptr || m_matrice->isEmpty()) {
         clessidra();
         return;
@@ -661,6 +751,38 @@ void Mappa::paintGL() {
                 colore = generateHierarchicalColor(colore, coord->getColoreRegione(), coord->getColoreProvincia(), coord->getColoreComune(), 1.5);
             } else if (tipomappa == tipoMappa::geografica) {
                 colore = calcolaColoreAltitudine(coord->getAltezza());
+            } else if (tipomappa == tipoMappa::stati) {
+                if(coord->getConfineStato()) {
+                    colore = grigio;
+                } else if(coord->getGialloStato()) {
+                    colore = giallo;
+                } else {
+                    colore = beige;
+                }
+            } else if (tipomappa == tipoMappa::regioni) {
+                if(coord->getConfineRegione()) {
+                    colore = grigio;
+                } else if(coord->getGialloRegione()) {
+                    colore = giallo;
+                } else {
+                    colore = beige;
+                }
+            } else if (tipomappa == tipoMappa::provincie) {
+                if(coord->getConfineProvincia()) {
+                    colore = grigio;
+                } else if(coord->getGialloProvincia()) {
+                    colore = giallo;
+                } else {
+                    colore = beige;
+                }
+            } else if (tipomappa == tipoMappa::comuni) {
+                if(coord->getConfineComune()) {
+                    colore = grigio;
+                } else if(coord->getGialloComune()) {
+                    colore = giallo;
+                } else {
+                    colore = beige;
+                }
             }
 
             drawSquare(x, y, cellWidth, cellHeight, colore, cols <= 110);
@@ -704,4 +826,31 @@ void Mappa::paintGL() {
 
 void Mappa::reload() {
     setMatrice(primoLocatore, ultimoLocatore);
+}
+
+bool Mappa::trovaStRePrCo(const Coordinate & dove, const Coordinate & cerca, tipoMappa tipoRicerca) const {
+    bool trovato = true;
+
+    trovato = trovato &&
+                  (
+                  tipoRicerca == tipoMappa::stati ||
+                  tipoRicerca == tipoMappa::regioni ||
+                  tipoRicerca == tipoMappa::provincie ||
+                  tipoRicerca == tipoMappa::comuni
+                  );
+
+    if(tipoRicerca == tipoMappa::stati) {
+        trovato = trovato && dove.getStato() == cerca.getStato();
+    }
+    if(tipoRicerca == tipoMappa::regioni) {
+        trovato = trovato && dove.getRegione() == cerca.getRegione();
+    }
+    if(tipoRicerca == tipoMappa::provincie) {
+        trovato = trovato && dove.getProvincia() == cerca.getProvincia();
+    }
+    if(tipoRicerca == tipoMappa::comuni) {
+        trovato = trovato && dove.getComune() == cerca.getComune();
+    }
+
+    return trovato;
 }

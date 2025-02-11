@@ -17,7 +17,7 @@ class Mappa : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
-    enum class tipoMappa {polica, geografica};
+    enum class tipoMappa {polica, geografica, stati, regioni, provincie, comuni};
 
     explicit Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent = nullptr);
     ~Mappa();
@@ -42,6 +42,7 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
@@ -56,22 +57,21 @@ private:
     void clessidra();
 
     QPair<float, float> bezier(float t, const QVector<QPair<float, float>>& controlPoints);
-
+    bool trovaStRePrCo(const Coordinate & dove, const Coordinate & cerca, tipoMappa tipoRicerca) const;
 
     QVector<QVector<Coordinate*>> *m_matrice;
 
     QList<Linee> *linee;
     QString primoLocatore;
     QString ultimoLocatore;
+    QString stato;
 
     DatabaseManager *db;
-    QMutex mutex;
 
     QElapsedTimer timer;
     float progress;
 
     tipoMappa tipomappa;
-    bool disattivaClick;
 
     QWidget *mappaConfigWidget;
 };

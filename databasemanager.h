@@ -46,18 +46,24 @@ public:
     DBResult* executeQuery(QSqlQuery *query);
     void executeQueryNoRes(const QString &queryStr);
     void executeQueryNoRes(QSqlQuery *query);
-    QString lastError() const;
-
-    unsigned int uniqueId();
+    QString lastError();
 
     static QString escape(const QString &txt);
 
+    void releaseConnection();
+    void cleanUpConnections();
+
 private:
-    QSqlDatabase m_database;
+    QSqlDatabase getConnection(bool scrittura = false);
+    QString getConnectionName();
+
     QString m_databasePath;
 
     QMutex mutex;
-    unsigned int uid;
+    QMap<QString, QThread*> activeConnections;
+
+    static int m_int_static;
+    int m_int;
 };
 
 #endif // DATABASEMANAGER_H

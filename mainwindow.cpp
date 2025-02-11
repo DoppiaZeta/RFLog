@@ -17,11 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
     RFLog = new DatabaseManager("RFLog.db", this);
     nDB = new DatabaseManager("nominativi.db", this);
 
-    //Coordinate mondo[18][18][10][10][24][24];
-    //qDebug() << sizeof(Coordinate) * 6151325 + 18*18*10*10*20*24;
-    //Coordinate::CqItu c = Coordinate::getCqItu("RE66CF");
-    //qDebug() << 60 << c.cq << c.itu;
-
     numeroLog = 0;
 
     ui->setupUi(this);
@@ -86,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
 
-    ui->Tabella->setColumnCount(7);
+    ui->Tabella->setColumnCount(8);
     ui->Tabella->setHorizontalHeaderLabels(
         QStringList() << tr("TX Locatore")
                       << tr("TX")
@@ -95,15 +90,18 @@ MainWindow::MainWindow(QWidget *parent)
                       << tr("TX dettagli")
                       << tr("Data/Ora UTC")
                       << tr("QSL")
+                      << tr("INFO")
         );
 
     ui->Tabella->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
+
 
 
 
@@ -193,6 +191,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //top widget
     connect(tx->preferitiOK, &QPushButton::clicked, this, &MainWindow::usaLocatorePreferito);
+    connect(tx->preferiti, &QTableWidget::doubleClicked, this, &MainWindow::usaLocatorePreferito);
     connect(tx->aggiungi, &QPushButton::clicked, this, &MainWindow::aggiungiNominativo);
     connect(tx->togli, &QPushButton::clicked, this, &MainWindow::eliminaNominativo);
     connect(tx->nominativo, &QComboBox::textActivated, this, &MainWindow::setSelectedNominativoDB);
@@ -1032,6 +1031,7 @@ void MainWindow::menuApriAdif() {
             }
         }
 
+        Qso::sort(qsoList);
         aggiornaTabella();
         updateMappaLocatori();
     }
@@ -1374,10 +1374,11 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row)
 
         // TX DETTAGLI
         txt = QString::number(qso.frequenzaRx) + "MHz";
-        txt += " " + QString::number(qso.segnaleRx) + tr("R/S");
+        txt += freccia;
+        txt += QString::number(qso.getBandaMt()) + "mt";
         txt += "\n";
+        txt += QString::number(qso.segnaleRx) + " ";
         txt += qso.trasmissioneTx;
-        txt += " " + QString::number(qso.potenzaTx) + "W";
 
         item = new QTableWidgetItem(txt);
 
@@ -1423,6 +1424,21 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row)
 
         // Inserisci l'item nella tabella
         ui->Tabella->setItem(row, 6, item);
+
+
+        // INFO
+        item = new QTableWidgetItem(QString::number(Coordinate::distanzaKm(qso.locatoreTx, qso.locatoreRx), 'f', 2) + " Km");
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 7, item);
 
 
         // Facoltativo: adatta l'altezza della riga al contenuto
