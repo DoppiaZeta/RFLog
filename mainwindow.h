@@ -75,6 +75,7 @@ private slots:
     void caricaDaA(QString da, QString a);
     void centraDAA();
     void centraLinee();
+    void centraGruppo();
 
     void modificaCercaLocatore();
     void modificaCercaRegione(const QString & txt);
@@ -84,6 +85,7 @@ private slots:
 
     void setPolitica();
     void setGeografica();
+    void mappaGruppoSRPC();
     void mappaScreenshot();
 
     void setSelectedNominativoDB(const QString & txt);

@@ -333,7 +333,7 @@ QString Coordinate::fromRowCol(int row, int col) {
     return QString("%1%2%3%4%5%6").arg(c0).arg(c1).arg(c2).arg(c3).arg(c4).arg(c5);
 }
 
-QString Coordinate::calcolaLocatoreLatLon(int lat, int lon) {
+QString Coordinate::calcolaLocatoreLatLon(double lat, double lon) {
     QString loc;
 
     // Verifica che lat e lon siano nei limiti validi

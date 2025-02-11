@@ -7,6 +7,8 @@
 #include "locatoripreferiti.h"
 #include "nuovolog.h"
 #include "miaradio.h"
+#include "mappasrpc.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -66,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->mappaGeografica, &QPushButton::clicked, this, &MainWindow::setGeografica);
     connect(ui->mappaPolitica, &QPushButton::clicked, this, &MainWindow::setPolitica);
+    connect(ui->mappaGruppo, &QPushButton::clicked, this, &MainWindow::mappaGruppoSRPC);
     connect(ui->mappaScreenshot, &QPushButton::clicked, this, &MainWindow::mappaScreenshot);
 
     connect(mappa, &Mappa::mouseLocatore, this, &MainWindow::locatoreDaMappa);
@@ -111,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappa, &Mappa::matriceDaA, this, &MainWindow::caricaDaA);
     connect(mappaConfig->locatoreCentraDAA, &QPushButton::clicked, this, &MainWindow::centraDAA);
     connect(mappaConfig->locatoreCentraLinee, &QPushButton::clicked, this, &MainWindow::centraLinee);
+    connect(mappaConfig->centraGruppo, &QPushButton::clicked, this, &MainWindow::centraGruppo);
 
     connect(mappaConfig->locatorePresetITA, &QPushButton::clicked, this, &MainWindow::centraPredefinitoITA);
     connect(mappaConfig->locatorePresetMondo, &QPushButton::clicked, this, &MainWindow::centraPredefinitoMondo);
@@ -811,6 +815,34 @@ void MainWindow::centraLinee() {
     mappa->adattaMappaLinee();
 }
 
+void MainWindow::centraGruppo() {
+    if(
+        mappa->getTipo() == Mappa::tipoMappa::stati ||
+        mappa->getTipo() == Mappa::tipoMappa::regioni ||
+        mappa->getTipo() == Mappa::tipoMappa::provincie ||
+        mappa->getTipo() == Mappa::tipoMappa::comuni
+        ) {
+    QSqlQuery *q = db->getQueryBind();
+    q->prepare(R"(
+SELECT
+  MIN(lat_min) AS lat_min,
+  MAX(lat_max) AS lat_max,
+  MIN(lon_min) AS lon_min,
+  MAX(lon_max) AS lon_max
+FROM locatori
+WHERE stato = :stato
+)");
+    q->bindValue(":stato", mappa->getStato());
+    DBResult *res = db->executeQuery(q);
+    mappaConfig->locatoreDA->setText(Coordinate::calcolaLocatoreLatLon(res->getCella("lat_min").toDouble(), res->getCella("lon_min").toDouble()));
+    mappaConfig->locatoreA->setText(Coordinate::calcolaLocatoreLatLon(res->getCella("lat_max").toDouble(), res->getCella("lon_max").toDouble()));
+    delete res;
+    delete q;
+
+    centraDAA();
+    }
+}
+
 DBResult * MainWindow::caricaColoreStatoDB(const QString & stato) {
     if(stato.isEmpty())
         return new DBResult();
@@ -1184,6 +1216,18 @@ void MainWindow::menuInformazioniSu() {
     d.resize(400, 300);
 
     d.exec();
+}
+
+void MainWindow::mappaGruppoSRPC() {
+    MappaSRPC d(db, mappa->getStato(), this);
+
+    d.exec();
+
+    if(d.getApplica()) {
+        mappa->setStato(d.getStato());
+        mappa->setTipoMappa(d.getTipo(), false);
+        centraGruppo();
+    }
 }
 
 void MainWindow::aggiungiNominativo() {

@@ -44,7 +44,7 @@ public:
     static void toRowCol(const QString &loc, int &row, int &col);
     static QString fromRowCol(int row, int col);
 
-    static QString calcolaLocatoreLatLon(int lat, int lon);
+    static QString calcolaLocatoreLatLon(double lat, double lon);
     static void calcolaLatLonLocatore(const QString &loc, double &lat, double &lon);
 
     const char* getRawLocatore() const;

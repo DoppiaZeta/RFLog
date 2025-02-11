@@ -129,7 +129,12 @@ QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
     QString connectionName = getConnectionName();
 
     if (QSqlDatabase::contains(connectionName)) {
-        return QSqlDatabase::database(connectionName);
+        QSqlDatabase dbret = QSqlDatabase::database(connectionName);
+
+        if(dbret.isOpen())
+            return dbret;
+        else
+            activeConnections.remove(connectionName);
     }
 
     // Crea una nuova connessione per il thread
@@ -181,4 +186,15 @@ void DatabaseManager::cleanUpConnections() {
     }
 }
 
+void DatabaseManager::transactionBegin() {
+    getConnection().transaction();
+}
+
+void DatabaseManager::transactionCommit() {
+    getConnection().commit();
+}
+
+void DatabaseManager::transactionRollback() {
+    getConnection().rollback();
+}
 

@@ -14,12 +14,14 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    coordinate.h \
    linee.h \
    locatoripreferiti.h \
+   mappasrpc.h \
    miaradio.h \
    nuovolog.h \
    qso.h
 FORMS += mainwindow.ui \
    locatoripreferiti.ui \
    mappaconfig.ui \
+   mappasrpc.ui \
    miaradio.ui \
    nuovolog.ui \
    tx.ui
@@ -33,6 +35,7 @@ SOURCES += databasemanager.cpp \
            main.cpp \
            mainwindow.cpp \
            mappa.cpp \
+           mappasrpc.cpp \
            miaradio.cpp \
            nuovolog.cpp \
            qso.cpp \

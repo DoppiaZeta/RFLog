@@ -132,6 +132,13 @@ color: white;</string>
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="mappaGruppo">
+          <property name="text">
+           <string>Mappa gruppo</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="mappaScreenshot">
           <property name="text">
            <string>Screenshot mappa</string>

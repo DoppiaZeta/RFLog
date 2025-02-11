@@ -97,7 +97,7 @@ letter-spacing: 2px;</string>
      <item row="1" column="1">
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>6</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="CENTRALOC">
         <attribute name="title">
@@ -276,8 +276,30 @@ mappa</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item row="1" column="0" colspan="2">
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="centraGruppo">
+               <property name="text">
+                <string>Centra
+da
+gruppo</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QPushButton" name="locatoreCentraLinee">
                <property name="text">
@@ -847,7 +869,6 @@ modifiche</string>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>Locatore</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>locatoreCentra</tabstop>
   <tabstop>locatoreOffset</tabstop>
@@ -863,6 +884,7 @@ modifiche</string>
   <tabstop>locatoreDA</tabstop>
   <tabstop>locatoreA</tabstop>
   <tabstop>locatoreCentraDAA</tabstop>
+  <tabstop>centraGruppo</tabstop>
   <tabstop>locatoreCentraLinee</tabstop>
   <tabstop>statoDB</tabstop>
   <tabstop>regioneDB</tabstop>
@@ -892,6 +914,7 @@ modifiche</string>
   <tabstop>coloriComuneTXT</tabstop>
   <tabstop>coloreComune</tabstop>
   <tabstop>coloreComuneOK</tabstop>
+  <tabstop>Locatore</tabstop>
  </tabstops>
  <resources/>
  <connections/>

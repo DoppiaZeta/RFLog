@@ -28,7 +28,11 @@ public:
     void delAllLinee(bool refresh = true);
     void adattaMappaLinee();
     void reload();
-    void setTipoMappa(tipoMappa t);
+    void setTipoMappa(tipoMappa t, bool ricarica = true);
+
+    QString getStato() const;
+    void setStato(const QString & s);
+    tipoMappa getTipo() const;
 
 signals:
     void mouseLocatore(QString locatore); // Segnale per il quadrato sotto il mouse

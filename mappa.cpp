@@ -46,7 +46,6 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
         QMetaObject::invokeMethod(this, [this, nuovaMatrice, locatore_a, locatore_da]() {
             // Assegna la nuova matrice
             m_matrice = nuovaMatrice;
-            db->cleanUpConnections();
 
             // Aggiorna il widget
             update();
@@ -78,9 +77,10 @@ void Mappa::delAllLinee(bool refresh) {
         update();
 }
 
-void Mappa::setTipoMappa(tipoMappa t) {
+void Mappa::setTipoMappa(tipoMappa t, bool ricarica) {
     tipomappa = t;
-    reload();
+    if(ricarica)
+        reload();
 }
 
 QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QString locatore_a) {
@@ -275,6 +275,8 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
         //matrix->push_back(rowVector);
         matrix->operator[](pos) = (rowVector);
     }
+
+    db->cleanUpConnections();
 
     for(int i = 0; i < lineeCoordinate.count(); i++) {
         delete lineeCoordinate[i];
@@ -831,26 +833,31 @@ void Mappa::reload() {
 bool Mappa::trovaStRePrCo(const Coordinate & dove, const Coordinate & cerca, tipoMappa tipoRicerca) const {
     bool trovato = true;
 
-    trovato = trovato &&
-                  (
-                  tipoRicerca == tipoMappa::stati ||
-                  tipoRicerca == tipoMappa::regioni ||
-                  tipoRicerca == tipoMappa::provincie ||
-                  tipoRicerca == tipoMappa::comuni
-                  );
-
-    if(tipoRicerca == tipoMappa::stati) {
+    if(tipoRicerca == tipoMappa::stati || tipoRicerca == tipoMappa::regioni || tipoRicerca == tipoMappa::provincie || tipoRicerca == tipoMappa::comuni) {
         trovato = trovato && dove.getStato() == cerca.getStato();
-    }
-    if(tipoRicerca == tipoMappa::regioni) {
-        trovato = trovato && dove.getRegione() == cerca.getRegione();
-    }
-    if(tipoRicerca == tipoMappa::provincie) {
-        trovato = trovato && dove.getProvincia() == cerca.getProvincia();
-    }
-    if(tipoRicerca == tipoMappa::comuni) {
-        trovato = trovato && dove.getComune() == cerca.getComune();
-    }
+        if(tipoRicerca == tipoMappa::regioni || tipoRicerca == tipoMappa::provincie || tipoRicerca == tipoMappa::comuni) {
+            trovato = trovato && dove.getRegione() == cerca.getRegione();
+            if(tipoRicerca == tipoMappa::provincie || tipoRicerca == tipoMappa::comuni) {
+                trovato = trovato && dove.getProvincia() == cerca.getProvincia();
+                if(tipoRicerca == tipoMappa::comuni) {
+                    trovato = trovato && dove.getComune() == cerca.getComune();
+                }
+            }
+        }
+    } else
+        return false;
 
     return trovato;
+}
+
+QString Mappa::getStato() const {
+    return stato;
+}
+
+void Mappa::setStato(const QString & s) {
+    stato = s;
+}
+
+Mappa::tipoMappa Mappa::getTipo() const {
+    return tipomappa;
 }

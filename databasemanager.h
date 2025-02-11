@@ -53,6 +53,10 @@ public:
     void releaseConnection();
     void cleanUpConnections();
 
+    void transactionBegin();
+    void transactionCommit();
+    void transactionRollback();
+
 private:
     QSqlDatabase getConnection(bool scrittura = false);
     QString getConnectionName();
