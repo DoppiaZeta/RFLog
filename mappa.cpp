@@ -663,6 +663,40 @@ void Mappa::paintEvent(QPaintEvent *event) {
     const double cellWidth = width() / static_cast<double>(cols);
     const double cellHeight = height() / static_cast<double>(rows);
 
+    const bool useGroupBorders = (
+        tipomappa == tipoMappa::stati ||
+        tipomappa == tipoMappa::regioni ||
+        tipomappa == tipoMappa::provincie ||
+        tipomappa == tipoMappa::comuni
+    );
+
+    QPen borderPen(grigio);
+    borderPen.setWidthF(1.0f);
+
+    auto sameGroup = [&](const Coordinate *left, const Coordinate *right) -> bool {
+        if (!left || !right)
+            return false;
+
+        switch (tipomappa) {
+        case tipoMappa::stati:
+            return left->getStato() == right->getStato();
+        case tipoMappa::regioni:
+            return left->getStato() == right->getStato()
+                && left->getRegione() == right->getRegione();
+        case tipoMappa::provincie:
+            return left->getStato() == right->getStato()
+                && left->getRegione() == right->getRegione()
+                && left->getProvincia() == right->getProvincia();
+        case tipoMappa::comuni:
+            return left->getStato() == right->getStato()
+                && left->getRegione() == right->getRegione()
+                && left->getProvincia() == right->getProvincia()
+                && left->getComune() == right->getComune();
+        default:
+            return false;
+        }
+    };
+
     // Disegna i quadrati
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
@@ -706,33 +740,25 @@ void Mappa::paintEvent(QPaintEvent *event) {
             } else if (tipomappa == tipoMappa::geografica) {
                 colore = calcolaColoreAltitudine(coord->getAltezza());
             } else if (tipomappa == tipoMappa::stati) {
-                if(coord->getConfineStato()) {
-                    colore = grigio;
-                } else if(coord->getGialloStato()) {
+                if(coord->getGialloStato()) {
                     colore = giallo;
                 } else {
                     colore = beige;
                 }
             } else if (tipomappa == tipoMappa::regioni) {
-                if(coord->getConfineRegione()) {
-                    colore = grigio;
-                } else if(coord->getGialloRegione()) {
+                if(coord->getGialloRegione()) {
                     colore = giallo;
                 } else {
                     colore = beige;
                 }
             } else if (tipomappa == tipoMappa::provincie) {
-                if(coord->getConfineProvincia()) {
-                    colore = grigio;
-                } else if(coord->getGialloProvincia()) {
+                if(coord->getGialloProvincia()) {
                     colore = giallo;
                 } else {
                     colore = beige;
                 }
             } else if (tipomappa == tipoMappa::comuni) {
-                if(coord->getConfineComune()) {
-                    colore = grigio;
-                } else if(coord->getGialloComune()) {
+                if(coord->getGialloComune()) {
                     colore = giallo;
                 } else {
                     colore = beige;
@@ -740,6 +766,36 @@ void Mappa::paintEvent(QPaintEvent *event) {
             }
 
             drawSquare(painter, cellRect, colore, cols <= 110);
+
+            if (useGroupBorders) {
+                const Coordinate *rightCoord = (col + 1 < cols) ? m_matrice->at(row).at(col + 1) : nullptr;
+                const Coordinate *bottomCoord = (row + 1 < rows) ? m_matrice->at(row + 1).at(col) : nullptr;
+                const Coordinate *leftCoord = (col > 0) ? m_matrice->at(row).at(col - 1) : nullptr;
+                const Coordinate *topCoord = (row > 0) ? m_matrice->at(row - 1).at(col) : nullptr;
+
+                const bool drawLeft = (col == 0) || !sameGroup(coord, leftCoord);
+                const bool drawTop = (row == 0) || !sameGroup(coord, topCoord);
+                const bool drawRight = (col + 1 == cols) || !sameGroup(coord, rightCoord);
+                const bool drawBottom = (row + 1 == rows) || !sameGroup(coord, bottomCoord);
+
+                painter.save();
+                painter.setPen(borderPen);
+                painter.setBrush(Qt::NoBrush);
+
+                if (drawLeft) {
+                    painter.drawLine(cellRect.topLeft(), cellRect.bottomLeft());
+                }
+                if (drawTop) {
+                    painter.drawLine(cellRect.topLeft(), cellRect.topRight());
+                }
+                if (drawRight) {
+                    painter.drawLine(cellRect.topRight(), cellRect.bottomRight());
+                }
+                if (drawBottom) {
+                    painter.drawLine(cellRect.bottomLeft(), cellRect.bottomRight());
+                }
+                painter.restore();
+            }
         }
     }
 
