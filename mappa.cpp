@@ -416,7 +416,7 @@ QPointF Mappa::mapToWidget(float xNorm, float yNorm) const {
     return QPointF(x, y);
 }
 
-void Mappa::drawSquare(QPainter &painter, const QRectF &rect, const QColor &color, bool border) {
+void Mappa::drawSquare(QPainter &painter, const QRect &rect, const QColor &color, bool border) {
     painter.save();
     painter.setPen(Qt::NoPen);
     painter.setBrush(color);
@@ -642,7 +642,7 @@ void Mappa::drawLine(QPainter &painter, float x1f, float y1f, float x2f, float y
 void Mappa::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::Antialiasing, false);
     painter.fillRect(rect(), QColor(108, 210, 231));
 
     static const QColor grigio(0x80, 0x80, 0x80);
@@ -660,8 +660,8 @@ void Mappa::paintEvent(QPaintEvent *event) {
     if (rows == 0 || cols == 0)
         return;
 
-    float cellWidth = width() / static_cast<float>(cols);
-    float cellHeight = height() / static_cast<float>(rows);
+    const double cellWidth = width() / static_cast<double>(cols);
+    const double cellHeight = height() / static_cast<double>(rows);
 
     // Disegna i quadrati
     for (int row = 0; row < rows; ++row) {
@@ -671,8 +671,11 @@ void Mappa::paintEvent(QPaintEvent *event) {
             if (coord == nullptr)
                 continue;
 
-            float x = col * cellWidth;
-            float y = row * cellHeight;
+            const int left = static_cast<int>(std::floor(col * cellWidth));
+            const int right = static_cast<int>(std::floor((col + 1) * cellWidth));
+            const int top = static_cast<int>(std::floor(row * cellHeight));
+            const int bottom = static_cast<int>(std::floor((row + 1) * cellHeight));
+            const QRect cellRect(left, top, right - left, bottom - top);
 
             QColor colore;
             if(tipomappa == tipoMappa::polica) {
@@ -736,11 +739,12 @@ void Mappa::paintEvent(QPaintEvent *event) {
                 }
             }
 
-            drawSquare(painter, QRectF(x, y, cellWidth, cellHeight), colore, cols <= 110);
+            drawSquare(painter, cellRect, colore, cols <= 110);
         }
     }
 
     if(!primoLocatore.isEmpty()) {
+        painter.setRenderHint(QPainter::Antialiasing, true);
         int primox, primoy,ultimox, ultimoy, collen, rowlen;
         Coordinate::toRowCol(primoLocatore, primox, primoy);
         Coordinate::toRowCol(ultimoLocatore, ultimox, ultimoy);

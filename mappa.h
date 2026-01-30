@@ -49,7 +49,7 @@ protected:
 private:
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
 
-    void drawSquare(QPainter &painter, const QRectF &rect, const QColor &color, bool border = false);
+    void drawSquare(QPainter &painter, const QRect &rect, const QColor &color, bool border = false);
     void drawLine(QPainter &painter, float x1f, float y1f, float x2f, float y2f);
     void drawPin(QPainter &painter, float x, float y);
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
