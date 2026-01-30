@@ -189,8 +189,8 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     FROM view_confini l
     JOIN %1 t
     ON l.locatore = t.locatore
-    WHERE l.stato = '%2'
-)").arg(tempTableName, DatabaseManager::escape(stato));
+    WHERE l.stato = :stato
+)").arg(tempTableName);
             } else {
                 selectQuery = QString(R"(
     SELECT l.locatore, l.colore_stato, l.colore_regione, l.colore_provincia, l.colore_comune, l.altezza
@@ -199,7 +199,16 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     ON l.locatore = t.locatore
 )").arg(tempTableName);
             }
-            DBResult* resQuery = db->executeQuery(selectQuery);
+            DBResult* resQuery = nullptr;
+            if (includeConfini) {
+                QSqlQuery *q = db->getQueryBind();
+                q->prepare(selectQuery);
+                q->bindValue(":stato", stato);
+                resQuery = db->executeQuery(q);
+                delete q;
+            } else {
+                resQuery = db->executeQuery(selectQuery);
+            }
 
             // 4. Elimina la tabella temporanea
             QString dropTempTableQuery = QString("DROP TABLE if exists %1;").arg(tempTableName);
