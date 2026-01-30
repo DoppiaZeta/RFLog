@@ -1,6 +1,7 @@
 #include "mappa.h"
+#include <QPainterPath>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
-    : QOpenGLWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
+    : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
     mappaConfigWidget = mappaConfig;
     primoLocatore = QString();
@@ -352,125 +353,83 @@ QColor Mappa::calcolaColoreAltitudine(const float &altitudine) {
     }
 }
 
-void Mappa::clessidra() {
-    // Cancella lo schermo con un colore di sfondo
-    glClearColor(20 / 255.0f, 50 / 255.0f, 100 / 255.0f, 1.0f); // Blu oceano molto scuro
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Mappa::clessidra(QPainter &painter) {
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.fillRect(rect(), QColor(20, 50, 100));
 
-    glLoadIdentity(); // Resetta la matrice del modello
+    float scale = 0.3f;
+    QPen outlinePen(QColor(204, 204, 204));
+    outlinePen.setWidthF(2.0f);
+    painter.setPen(outlinePen);
+    painter.setBrush(Qt::NoBrush);
 
-    // Ridimensionamento della clessidra
-    float scale = 0.3f; // Fattore di scala per rendere la clessidra più piccola
+    auto p1 = mapToWidget(-0.2f * scale, 0.5f * scale);
+    auto p2 = mapToWidget(0.2f * scale, 0.5f * scale);
+    auto p3 = mapToWidget(0.0f * scale, 0.0f * scale);
+    auto p4 = mapToWidget(-0.2f * scale, -0.5f * scale);
+    auto p5 = mapToWidget(0.2f * scale, -0.5f * scale);
 
-    // Colore della clessidra
-    glColor3f(0.8f, 0.8f, 0.8f); // Bianco
-    glLineWidth(2.0f); // Imposta lo spessore della linea
+    painter.drawLine(p1, p2);
+    painter.drawLine(p1, p3);
+    painter.drawLine(p2, p3);
+    painter.drawLine(p4, p5);
+    painter.drawLine(p4, p3);
+    painter.drawLine(p5, p3);
 
-    // Disegna il contorno della clessidra
-    glBegin(GL_LINES);
-    glVertex2f(-0.2f * scale, 0.5f * scale);  // Angolo superiore sinistro
-    glVertex2f(0.2f * scale, 0.5f * scale);   // Angolo superiore destro
-
-    glVertex2f(-0.2f * scale, 0.5f * scale);  // Angolo superiore sinistro
-    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
-
-    glVertex2f(0.2f * scale, 0.5f * scale);   // Angolo superiore destro
-    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
-
-    glVertex2f(-0.2f * scale, -0.5f * scale); // Angolo inferiore sinistro
-    glVertex2f(0.2f * scale, -0.5f * scale);  // Angolo inferiore destro
-
-    glVertex2f(-0.2f * scale, -0.5f * scale); // Angolo inferiore sinistro
-    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
-
-    glVertex2f(0.2f * scale, -0.5f * scale);  // Angolo inferiore destro
-    glVertex2f(0.0f * scale, 0.0f * scale);   // Centro
-    glEnd();
-
-    // Aggiorna il riempimento in base al tempo
     int elapsed = timer.elapsed();
-    float totalTime = 3000.0f;  // Tempo totale per il ciclo (3 secondi)
-    float progress = (elapsed % int(totalTime)) / totalTime / 2; // Progress parte inferiore
+    float totalTime = 3000.0f;
+    float progress = (elapsed % int(totalTime)) / totalTime / 2;
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    QColor sandTransparent(255, 204, 51, 77);
+    QColor sandOpaque(255, 204, 51, 204);
 
-    // Colore del riempimento (sabbia)
-    auto yellowSandTransparent = []() {
-        glColor4f(1.0f, 0.8f, 0.2f, 0.3f); // Giallo sabbia più trasparente
-    };
+    QPolygonF topLeft;
+    topLeft << mapToWidget(-0.2f * scale, 0.5f * scale)
+            << mapToWidget(0.0f * scale, (0.5f - progress) * scale)
+            << mapToWidget(0.0f * scale, 0.0f * scale);
 
-    auto yellowSandOpaque = []() {
-        glColor4f(1.0f, 0.8f, 0.2f, 0.8f); // Giallo sabbia meno opaco
-    };
+    QPolygonF topRight;
+    topRight << mapToWidget(0.0f * scale, (0.5f - progress) * scale)
+             << mapToWidget(0.2f * scale, 0.5f * scale)
+             << mapToWidget(0.0f * scale, 0.0f * scale);
 
-    // Disegna il riempimento superiore (sabbia che scende)
-    glBegin(GL_TRIANGLES);
-    yellowSandOpaque();
-    glVertex2f(-0.2f * scale, 0.5f * scale);          // Angolo superiore sinistro
-    yellowSandTransparent();
-    glVertex2f(0.0f * scale, (0.5f - progress) * scale); // Punto variabile (altezza sabbia)
-    yellowSandOpaque();
-    glVertex2f(0.0f * scale, 0.0f * scale);          // Centro
-    glEnd();
+    QPolygonF bottom;
+    bottom << mapToWidget(-0.2f * scale, -0.5f * scale)
+           << mapToWidget(0.2f * scale, -0.5f * scale)
+           << mapToWidget(0.0f * scale, (-0.5f + progress) * scale);
 
-    glBegin(GL_TRIANGLES);
-    yellowSandTransparent();
-    glVertex2f(0.0f * scale, (0.5f - progress) * scale); // Punto variabile (altezza sabbia)
-    yellowSandOpaque();
-    glVertex2f(0.2f * scale, 0.5f * scale);           // Angolo superiore destro
-    glVertex2f(0.0f * scale, 0.0f * scale);          // Centro
-    glEnd();
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(sandOpaque);
+    painter.drawPolygon(topLeft);
+    painter.drawPolygon(topRight);
+    painter.setBrush(sandTransparent);
+    painter.drawPolygon(bottom);
 
-    // Disegna il riempimento inferiore (sabbia accumulata)
-    glBegin(GL_TRIANGLES);
-    glVertex2f(-0.2f * scale, -0.5f * scale);           // Angolo inferiore sinistro
-    glVertex2f(0.2f * scale, -0.5f * scale);            // Angolo inferiore destro
-    yellowSandTransparent();
-    glVertex2f(0.0f * scale, (-0.5f + progress) * scale); // Punto variabile (altezza sabbia)
-    glEnd();
-
-    glDisable(GL_BLEND);
-
-    // Richiedi il ridisegno per l'animazione continua
+    painter.restore();
     update();
 }
 
-
-
-void Mappa::initializeGL() {
-    initializeOpenGLFunctions();
+QPointF Mappa::mapToWidget(float xNorm, float yNorm) const {
+    float x = (xNorm + 1.0f) * 0.5f * width();
+    float y = (1.0f - (yNorm + 1.0f) * 0.5f) * height();
+    return QPointF(x, y);
 }
 
-void Mappa::resizeGL(int w, int h) {
-    glViewport(0, 0, w, h);
-}
+void Mappa::drawSquare(QPainter &painter, const QRectF &rect, const QColor &color, bool border) {
+    painter.save();
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(color);
+    painter.drawRect(rect);
 
-void Mappa::drawSquare(float x, float y, float width, float height, const QColor &color, bool border) {
-    // Disegna il riempimento del quadrato
-    glColor4f(color.redF(), color.greenF(), color.blueF(), 1.0f);
-    glBegin(GL_QUADS);
-    glVertex2f(x, y);
-    glVertex2f(x + width, y);
-    glVertex2f(x + width, y + height);
-    glVertex2f(x, y + height);
-    glEnd();
-
-    // Disegna il bordo se richiesto
     if (border) {
-        glEnable(GL_BLEND); // Abilita il blending
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Configura il blending per trasparenza
-
-        glColor4f(0.0f, 0.0f, 0.0f, 0.05f); // Nero per il bordo
-        glBegin(GL_LINE_LOOP);
-        glVertex2f(x, y);
-        glVertex2f(x + width, y);
-        glVertex2f(x + width, y + height);
-        glVertex2f(x, y + height);
-        glEnd();
-
-        glDisable(GL_BLEND); // Disabilita il blending dopo aver disegnato
+        QPen pen(QColor(0, 0, 0, 13));
+        pen.setWidthF(1.0f);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(rect);
     }
+    painter.restore();
 }
 
 QString Mappa::calcolaLocatoreMouse(QMouseEvent *event) {
@@ -619,106 +578,79 @@ QPair<float, float> Mappa::bezier(float t, const QVector<QPair<float, float>>& c
     return qMakePair(x, y);
 }
 
-void Mappa::drawPin(float &x, float &y) {
-    // Abilita il blending per la trasparenza
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+void Mappa::drawPin(QPainter &painter, float x, float y) {
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    QPointF base = mapToWidget(x, y);
 
-    float triangleSize = 0.05f; // Dimensione del triangolo
-    float borderWidth = 0.02f; // Larghezza del bordo
+    float triangleSize = 0.05f;
+    float borderWidth = 2.0f;
 
-    // Disegna il bordo esterno del primo triangolo
-    glColor4f(0.0f, 0.0f, 0.0f, 0.8f); // Colore del bordo (nero opaco)
-    glLineWidth(borderWidth * 100);    // Spessore del bordo
+    QPointF left = mapToWidget(x - triangleSize / 4, y + triangleSize);
+    QPointF right = mapToWidget(x + triangleSize / 4, y + triangleSize);
+    QPointF mid = mapToWidget(x, y + triangleSize / 2);
 
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(x, y);                           // Punta inferiore
-    glVertex2f(x - triangleSize / 4, y + triangleSize); // Vertice sinistro
-    glVertex2f(x, y + triangleSize / 2);        // Vertice destro
-    glVertex2f(x + triangleSize / 4, y + triangleSize); // Vertice destro
-    glEnd();
+    QPen borderPen(QColor(0, 0, 0, 204));
+    borderPen.setWidthF(borderWidth);
+    painter.setPen(borderPen);
+    painter.setBrush(Qt::NoBrush);
+    QPolygonF border;
+    border << base << left << mid << right;
+    painter.drawPolygon(border);
 
-    // Disegna il primo triangolo (interno)
-    glBegin(GL_TRIANGLES);
-    glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Rosso opaco
-    glVertex2f(x, y);              // Punta inferiore
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(255, 0, 0, 204));
+    QPolygonF tri1;
+    tri1 << base << mid << right;
+    painter.drawPolygon(tri1);
 
-    glColor4f(1.0f, 0.0f, 0.0f, 0.5f); // Rosso trasparente
-    glVertex2f(x, y + triangleSize / 2); // Vertice sinistro
+    painter.setBrush(QColor(255, 0, 0, 128));
+    QPolygonF tri2;
+    tri2 << base << left << mid;
+    painter.drawPolygon(tri2);
 
-    glVertex2f(x + triangleSize / 4, y + triangleSize); // Vertice destro
-    glEnd();
-
-    // Disegna il secondo triangolo (interno)
-    glBegin(GL_TRIANGLES);
-    glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Rosso opaco
-    glVertex2f(x, y);              // Punta inferiore
-
-    glColor4f(1.0f, 0.0f, 0.0f, 0.5f); // Rosso trasparente
-    glVertex2f(x - triangleSize / 4, y + triangleSize); // Vertice sinistro
-
-    glVertex2f(x, y + triangleSize / 2); // Vertice destro
-    glEnd();
-
-    // Disabilita il blending
-    glDisable(GL_BLEND);
+    painter.restore();
 }
 
-void Mappa::drawLine(float &x1f, float &y1f, float &x2f, float &y2f) {
-    // Abilita il blending per la trasparenza
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+void Mappa::drawLine(QPainter &painter, float x1f, float y1f, float x2f, float y2f) {
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    QPen pen(QColor(200, 0, 0, 64));
+    pen.setWidthF(2.0f);
+    painter.setPen(pen);
 
-    // Imposta il colore (rosso trasparente al 50%)
-    glColor4f(200 / 255.0f, 0 / 255.0f, 0 / 255.0f, 0.25f);
-
-    // Imposta lo spessore della linea
-    glLineWidth(2.0f);
-
-    // Calcola il punto di controllo centrale
-    float controlX, controlY;
+    float controlX;
+    float controlY;
     if (x2f > x1f) {
-        // Pancia in alto a sinistra
-        controlX = (x1f + x2f) / 2 - std::abs(x2f - x1f) / 4; // Sposta verso sinistra
-        controlY = (y1f + y2f) / 2 + std::abs(y2f - y1f) / 2; // Sposta verso l'alto
+        controlX = (x1f + x2f) / 2 - std::abs(x2f - x1f) / 4;
+        controlY = (y1f + y2f) / 2 + std::abs(y2f - y1f) / 2;
     } else {
-        // Pancia in alto a destra
-        controlX = (x1f + x2f) / 2 + std::abs(x2f - x1f) / 4; // Sposta verso destra
-        controlY = (y1f + y2f) / 2 + std::abs(y2f - y1f) / 2; // Sposta verso l'alto
+        controlX = (x1f + x2f) / 2 + std::abs(x2f - x1f) / 4;
+        controlY = (y1f + y2f) / 2 + std::abs(y2f - y1f) / 2;
     }
 
+    QPointF p1 = mapToWidget(x1f, y1f);
+    QPointF p2 = mapToWidget(controlX, controlY);
+    QPointF p3 = mapToWidget(x2f, y2f);
 
-    // Definisci i punti di controllo per la curva di Bézier
-    QVector<QPair<float, float>> controlPoints = {
-        {x1f, y1f},               // Punto iniziale
-        {controlX, controlY},     // Punto di controllo centrale
-        {x2f, y2f}                // Punto finale
-    };
-
-    // Disegna la curva come una serie di linee
-    glBegin(GL_LINE_STRIP);
-    for (float t = 0.0f; t <= 1.0f; t += 0.01f) {
-        // Calcola il punto sulla curva di Bézier
-        QPair<float, float> point = bezier(t, controlPoints);
-        glVertex2f(point.first, point.second);
-    }
-    glEnd();
-
-    // Disabilita il blending
-    glDisable(GL_BLEND);
-
+    QPainterPath path(p1);
+    path.quadTo(p2, p3);
+    painter.drawPath(path);
+    painter.restore();
 }
 
-void Mappa::paintGL() {
-    glClearColor(108 / 255.0f, 210 / 255.0f, 231 / 255.0f, 1.0f); // Blu oceano profondo pastello
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Mappa::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.fillRect(rect(), QColor(108, 210, 231));
 
     static const QColor grigio(0x80, 0x80, 0x80);
     static const QColor beige(0xe0, 0xe0, 0xe0);
     static const QColor giallo(0xe0, 0xe0, 0x0);
 
     if (m_matrice == nullptr || m_matrice->isEmpty()) {
-        clessidra();
+        clessidra(painter);
         return;
     }
 
@@ -728,8 +660,8 @@ void Mappa::paintGL() {
     if (rows == 0 || cols == 0)
         return;
 
-    float cellWidth = 2.0f / cols;
-    float cellHeight = 2.0f / rows;
+    float cellWidth = width() / static_cast<float>(cols);
+    float cellHeight = height() / static_cast<float>(rows);
 
     // Disegna i quadrati
     for (int row = 0; row < rows; ++row) {
@@ -739,8 +671,8 @@ void Mappa::paintGL() {
             if (coord == nullptr)
                 continue;
 
-            float x = -1.0f + col * cellWidth;
-            float y = 1.0f - row * cellHeight - cellHeight;
+            float x = col * cellWidth;
+            float y = row * cellHeight;
 
             QColor colore;
             if(tipomappa == tipoMappa::polica) {
@@ -804,7 +736,7 @@ void Mappa::paintGL() {
                 }
             }
 
-            drawSquare(x, y, cellWidth, cellHeight, colore, cols <= 110);
+            drawSquare(painter, QRectF(x, y, cellWidth, cellHeight), colore, cols <= 110);
         }
     }
 
@@ -835,9 +767,9 @@ void Mappa::paintGL() {
             x2f = x2f * 2 - 1;
             y2f = y2f * 2 - 1;
 
-            drawLine(x1f, y1f, x2f, y2f);
+            drawLine(painter, x1f, y1f, x2f, y2f);
 
-            drawPin(x2f, y2f);
+            drawPin(painter, x2f, y2f);
 
         }
     }

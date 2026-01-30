@@ -93,6 +93,18 @@ DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
     if (!query->exec()) {
         qWarning() << "Failed to execute query:" << query->lastError().text();
         qWarning() << "Query:" << query->lastQuery();
+        QString connectionName = getConnectionName();
+        if (QSqlDatabase::contains(connectionName)) {
+            QSqlDatabase db = QSqlDatabase::database(connectionName, false);
+            if (!db.isValid()) {
+                qWarning() << "Database connection is invalid.";
+            } else if (!db.isOpen()) {
+                qWarning() << "Database connection is not open:" << db.lastError().text();
+            }
+        }
+        if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
+            qWarning() << "QSQLITE driver not available. Install the Qt SQLite plugin (e.g. libqt5sql5-sqlite).";
+        }
         ret->successo = false;
         return ret;
     }

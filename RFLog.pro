@@ -2,6 +2,9 @@ TEMPLATE = app
 TARGET = RFLog
 INCLUDEPATH += .
 
+# per compilare sta roba:
+# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libgl1-mesa-dev libomp-dev
+
 # Aggiungi i moduli necessari
 QT += core gui widgets sql opengl openglwidgets
 

@@ -253,8 +253,8 @@ void MainWindow::setGeografica() {
 }
 
 void MainWindow::mappaScreenshot() {
-    // Cattura il contenuto dell'OpenGLWidget come QImage
-    QImage screenshot = mappa->grabFramebuffer();
+    // Cattura il contenuto del widget come QImage
+    QImage screenshot = mappa->grab().toImage();
 
     // Ottieni l'istanza degli appunti di sistema
     QClipboard *clipboard = QGuiApplication::clipboard();

@@ -1,8 +1,8 @@
 #ifndef MAPPA_H
 #define MAPPA_H
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+#include <QPainter>
+#include <QWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <QElapsedTimer>
 #include <QVector>
@@ -13,7 +13,7 @@
 #include "coordinate.h"
 #include "linee.h"
 
-class Mappa : public QOpenGLWidget, protected QOpenGLFunctions {
+class Mappa : public QWidget {
     Q_OBJECT
 
 public:
@@ -42,23 +42,22 @@ signals:
 
 
 protected:
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
+    void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
     QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
 
-    void drawSquare(float x, float y, float width, float height, const QColor &color, bool border = false);
-    void drawLine(float &x1f, float &y1f, float &x2f, float &y2f);
-    void drawPin(float &x, float &y);
+    void drawSquare(QPainter &painter, const QRectF &rect, const QColor &color, bool border = false);
+    void drawLine(QPainter &painter, float x1f, float y1f, float x2f, float y2f);
+    void drawPin(QPainter &painter, float x, float y);
     QColor generateHierarchicalColor(const QColor &nationalColor, int regionCode, int provinceCode, int municipalityCode, float intensity);
     QColor calcolaColoreAltitudine(const float &altitudine);
 
     QString calcolaLocatoreMouse(QMouseEvent *event);
-    void clessidra();
+    void clessidra(QPainter &painter);
+    QPointF mapToWidget(float xNorm, float yNorm) const;
 
     QPair<float, float> bezier(float t, const QVector<QPair<float, float>>& controlPoints);
     bool trovaStRePrCo(const Coordinate & dove, const Coordinate & cerca, tipoMappa tipoRicerca) const;
