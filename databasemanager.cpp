@@ -183,6 +183,13 @@ void DatabaseManager::cleanUpConnections() {
             toRemove.append(it.key());
         }
     }
+
+    for (const auto &connectionName : toRemove) {
+        if (QSqlDatabase::contains(connectionName)) {
+            QSqlDatabase::removeDatabase(connectionName);
+        }
+        activeConnections.remove(connectionName);
+    }
 }
 
 void DatabaseManager::transactionBegin() {
@@ -196,4 +203,3 @@ void DatabaseManager::transactionCommit() {
 void DatabaseManager::transactionRollback() {
     getConnection().rollback();
 }
-
