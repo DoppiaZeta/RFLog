@@ -1,6 +1,15 @@
 .qmake.stash
 .qtc*
-MakeFile
-RFLog*
+Makefile
+RFLog
+RFLog.db
+nominativi.db
+locatori_fine.db
+nominativi.db
 *.o
 build/
+moc_*
+*.rej
+*.user
+ui_*.h
+qrc_*.cpp
