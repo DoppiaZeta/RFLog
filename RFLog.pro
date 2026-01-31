@@ -37,6 +37,7 @@ SOURCES += databasemanager.cpp \
            locatoripreferiti.cpp \
            main.cpp \
            mainwindow.cpp \
+           mainwindow_createdb.cpp \
            mappa.cpp \
            mappasrpc.cpp \
            miaradio.cpp \

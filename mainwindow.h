@@ -113,6 +113,8 @@ private:
 
     DBResult * caricaInfoLocatore(const QString & loc);
 
+    void creaDBRFLog();
+
     void caricaModificaRegione();
     void caricaModificaProvincia();
     void caricaModificaComune();

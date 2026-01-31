@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     RFLog = new DatabaseManager("RFLog.db", this);
     nDB = new DatabaseManager("nominativi.db", this);
 
+    creaDBRFLog();
+
     numeroLog = 0;
 
     ui->setupUi(this);
