@@ -3,12 +3,12 @@ TARGET = RFLog
 INCLUDEPATH += .
 
 # per compilare sta roba:
-# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libgl1-mesa-dev libomp-dev
+# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libomp-dev
 
 # Aggiungi i moduli necessari
-QT += core gui widgets sql opengl openglwidgets
+QT += core gui widgets sql #opengl openglwidgets
 
-win32: LIBS += -lopengl32
+#win32: LIBS += -lopengl32
 win32:LIBS += -lodbc32
 
 # Input
@@ -45,7 +45,7 @@ SOURCES += databasemanager.cpp \
            suggestivelineedit.cpp
 
 # Aggiungi definizioni per OpenGL se necessario
-DEFINES += QT_OPENGL_LIB
+#DEFINES += QT_OPENGL_LIB
 
 RESOURCES += \
    icone.qrc

@@ -11,7 +11,6 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QDebug>
-#include <QOpenGLFramebufferObject>
 
 #include "suggestivelineedit.h"
 #include "databasemanager.h"

@@ -8,7 +8,6 @@
 #include <QVector>
 #include <QPair>
 #include <QMouseEvent>
-#include <cmath>
 #include "databasemanager.h"
 #include "coordinate.h"
 #include "linee.h"

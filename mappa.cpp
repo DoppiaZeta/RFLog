@@ -1,5 +1,6 @@
 #include "mappa.h"
 #include <QPainterPath>
+#include <QSet>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
@@ -122,7 +123,21 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
         tipomappa == tipoMappa::comuni
         );
 
-    QList<Coordinate*> lineeCoordinate;
+    QSet<QString> gialloStati;
+    QSet<QString> gialloRegioni;
+    QSet<QString> gialloProvince;
+    QSet<QString> gialloComuni;
+
+    auto keyRegione = [](const QString &statoVal, const QString &regioneVal) {
+        return statoVal + QLatin1Char('|') + regioneVal;
+    };
+    auto keyProvincia = [](const QString &statoVal, const QString &regioneVal, const QString &provinciaVal) {
+        return statoVal + QLatin1Char('|') + regioneVal + QLatin1Char('|') + provinciaVal;
+    };
+    auto keyComune = [](const QString &statoVal, const QString &regioneVal, const QString &provinciaVal, const QString &comuneVal) {
+        return statoVal + QLatin1Char('|') + regioneVal + QLatin1Char('|') + provinciaVal + QLatin1Char('|') + comuneVal;
+    };
+
     if (includeConfini) {
         for(int i = 0; i < linee->count(); i++) {
             QSqlQuery *q = db->getQueryBind();
@@ -134,13 +149,23 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             q->bindValue(":locatore", linee->at(i).locatore_a);
             DBResult *res = db->executeQuery(q);
 
-            int max = lineeCoordinate.count();
-            lineeCoordinate.push_back(new Coordinate(true));
-            lineeCoordinate[max]->setLocatore(res->getCella("locatore"));
-            lineeCoordinate[max]->setStato(res->getCella("stato"));
-            lineeCoordinate[max]->setRegione(res->getCella("regione"));
-            lineeCoordinate[max]->setProvincia(res->getCella("provincia"));
-            lineeCoordinate[max]->setComune(res->getCella("comune"));
+            const QString statoVal = res->getCella("stato");
+            const QString regioneVal = res->getCella("regione");
+            const QString provinciaVal = res->getCella("provincia");
+            const QString comuneVal = res->getCella("comune");
+
+            if (!statoVal.isEmpty()) {
+                gialloStati.insert(statoVal);
+            }
+            if (!regioneVal.isEmpty()) {
+                gialloRegioni.insert(keyRegione(statoVal, regioneVal));
+            }
+            if (!provinciaVal.isEmpty()) {
+                gialloProvince.insert(keyProvincia(statoVal, regioneVal, provinciaVal));
+            }
+            if (!comuneVal.isEmpty()) {
+                gialloComuni.insert(keyComune(statoVal, regioneVal, provinciaVal, comuneVal));
+            }
 
             delete q;
             delete res;
@@ -267,20 +292,15 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
                     coord->setProvincia(data[Provincia]);
                     coord->setComune(data[Comune]);
 
-                    bool gialloS = false;
-                    bool gialloR = false;
-                    bool gialloP = false;
-                    bool gialloC = false;
-                    for(int i = 0;i < lineeCoordinate.count(); i++) {
-                        gialloS = gialloS || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::stati);
-                        gialloR = gialloR || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::regioni);
-                        gialloP = gialloP || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::provincie);
-                        gialloC = gialloC || trovaStRePrCo(*coord, *lineeCoordinate[i], tipoMappa::comuni);
-                    }
-                    coord->setGialloStato(gialloS);
-                    coord->setGialloRegione(gialloR);
-                    coord->setGialloProvincia(gialloP);
-                    coord->setGialloComune(gialloC);
+                    const QString statoVal = coord->getStato();
+                    const QString regioneVal = coord->getRegione();
+                    const QString provinciaVal = coord->getProvincia();
+                    const QString comuneVal = coord->getComune();
+
+                    coord->setGialloStato(gialloStati.contains(statoVal));
+                    coord->setGialloRegione(gialloRegioni.contains(keyRegione(statoVal, regioneVal)));
+                    coord->setGialloProvincia(gialloProvince.contains(keyProvincia(statoVal, regioneVal, provinciaVal)));
+                    coord->setGialloComune(gialloComuni.contains(keyComune(statoVal, regioneVal, provinciaVal, comuneVal)));
 
                 }
             }
@@ -295,10 +315,6 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     }
 
     db->cleanUpConnections();
-
-    for(int i = 0; i < lineeCoordinate.count(); i++) {
-        delete lineeCoordinate[i];
-    }
 
     return matrix;
 }
