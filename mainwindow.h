@@ -98,6 +98,7 @@ private slots:
     void usaLocatorePreferito();
     void aggiungiNominativo();
     void eliminaNominativo();
+    void modificaTxDaTabella(const QModelIndex &index);
 
 private:
     DBResult * caricaStatiDB();
@@ -127,6 +128,11 @@ private:
 
     void aggiornaTabella();
     void aggiungiATabella(const Qso & qso, int row);
+    void popolaTxDialog(Ui::Tx *txUi, const Qso &qso);
+    void aggiornaQsoDaTxDialog(Qso &qso, Ui::Tx *txUi);
+    void aggiungiNominativoTx(Ui::Tx *txUi);
+    void eliminaNominativoTx(Ui::Tx *txUi);
+    void setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi);
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;

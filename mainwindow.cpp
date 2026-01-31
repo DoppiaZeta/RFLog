@@ -3,6 +3,10 @@
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
 #include <QModelIndex>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -202,6 +206,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tx->aggiungi, &QPushButton::clicked, this, &MainWindow::aggiungiNominativo);
     connect(tx->togli, &QPushButton::clicked, this, &MainWindow::eliminaNominativo);
     connect(tx->nominativo, &QComboBox::textActivated, this, &MainWindow::setSelectedNominativoDB);
+    connect(ui->Tabella, &QTableWidget::doubleClicked, this, &MainWindow::modificaTxDaTabella);
 
 
     QTimer *t = new QTimer(this);
@@ -1301,6 +1306,173 @@ void MainWindow::setSelectedNominativoDB(const QString & txt) {
     q->bindValue(":nominativo", txt);
     DBResult *res = RFLog->executeQuery(q);
     tx->operatore->setText(res->getCella(0));
+    delete q;
+    delete res;
+}
+
+void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
+    if (!index.isValid() || index.column() != 4) {
+        return;
+    }
+
+    int row = index.row();
+    if (row < 0 || row >= qsoList.count()) {
+        return;
+    }
+
+    Qso *qso = qsoList[row];
+    if (!qso) {
+        return;
+    }
+
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Modifica TX dettagli"));
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+
+    QWidget *txWidget = new QWidget(&dialog);
+    Ui::Tx *txUi = new Ui::Tx;
+    txUi->setupUi(txWidget);
+    txUi->checkBox->setVisible(false);
+    layout->addWidget(txWidget);
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
+    buttons->button(QDialogButtonBox::Save)->setText(tr("Salva"));
+    buttons->button(QDialogButtonBox::Cancel)->setText(tr("Annulla"));
+    layout->addWidget(buttons);
+
+    for (int i = 0; i < tx->radio->count(); ++i) {
+        txUi->radio->addItem(tx->radio->itemText(i));
+    }
+    for (int i = 0; i < tx->nominativo->count(); ++i) {
+        txUi->nominativo->addItem(tx->nominativo->itemText(i));
+    }
+
+    popolaTxDialog(txUi, *qso);
+
+    connect(txUi->aggiungi, &QPushButton::clicked, this, [this, txUi]() {
+        aggiungiNominativoTx(txUi);
+    });
+    connect(txUi->togli, &QPushButton::clicked, this, [this, txUi]() {
+        eliminaNominativoTx(txUi);
+    });
+    connect(txUi->nominativo, &QComboBox::textActivated, this, [this, txUi](const QString &txt) {
+        setSelectedNominativoDBTx(txt, txUi);
+    });
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        aggiornaQsoDaTxDialog(*qso, txUi);
+        qso->insertAggiornaDB();
+        aggiornaTabella();
+        updateMappaLocatori();
+    }
+
+    delete txUi;
+}
+
+void MainWindow::popolaTxDialog(Ui::Tx *txUi, const Qso &qso) {
+    if (!txUi) {
+        return;
+    }
+
+    txUi->checkBox->setChecked(true);
+    txUi->txwidget->setVisible(true);
+
+    txUi->locatore->setText(qso.locatoreTx);
+    txUi->radio->setCurrentText(qso.radioTx);
+    txUi->potenza->setValue(qso.potenzaTx);
+    txUi->trasmissione->setCurrentText(qso.trasmissioneTx);
+    txUi->qsl->setCheckState(qso.qsl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+
+    txUi->nominativiList->setRowCount(0);
+    for (int i = 0; i < qso.nominativoTx.count(); i++) {
+        int rowCount = txUi->nominativiList->rowCount();
+        txUi->nominativiList->insertRow(rowCount);
+        QTableWidgetItem *nomItem = new QTableWidgetItem(qso.nominativoTx[i].nominativo);
+        QTableWidgetItem *opItem = new QTableWidgetItem(qso.nominativoTx[i].operatore);
+        txUi->nominativiList->setItem(rowCount, 0, nomItem);
+        txUi->nominativiList->setItem(rowCount, 1, opItem);
+    }
+}
+
+void MainWindow::aggiornaQsoDaTxDialog(Qso &qso, Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
+    qso.locatoreTx = txUi->locatore->text().trimmed().toUpper();
+    qso.radioTx = txUi->radio->currentText().trimmed();
+    qso.potenzaTx = txUi->potenza->value();
+    qso.trasmissioneTx = txUi->trasmissione->currentText().trimmed();
+    qso.qsl = txUi->qsl->checkState() == Qt::CheckState::Checked;
+
+    qso.nominativoTx.clear();
+    for (int row = 0; row < txUi->nominativiList->rowCount(); ++row) {
+        QTableWidgetItem *nomItem = txUi->nominativiList->item(row, 0);
+        QTableWidgetItem *opItem = txUi->nominativiList->item(row, 1);
+        if (!nomItem) {
+            continue;
+        }
+        Qso::NominativoNome nominativo;
+        nominativo.nominativo = nomItem->text().trimmed().toUpper();
+        nominativo.operatore = opItem ? opItem->text().trimmed().toUpper() : QString();
+        if (!nominativo.nominativo.isEmpty()) {
+            qso.nominativoTx.append(nominativo);
+        }
+    }
+}
+
+void MainWindow::aggiungiNominativoTx(Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
+    QString nominativo = txUi->nominativo->currentText().trimmed().toUpper();
+    QString operatore = txUi->operatore->text().trimmed().toUpper();
+
+    if (!nominativo.isEmpty()) {
+        bool duplicato = false;
+        for (int row = 0; row < txUi->nominativiList->rowCount(); ++row) {
+            QTableWidgetItem *item = txUi->nominativiList->item(row, 0);
+            if (item && item->text() == nominativo) {
+                duplicato = true;
+                break;
+            }
+        }
+
+        if (!duplicato) {
+            int rowCount = txUi->nominativiList->rowCount();
+            txUi->nominativiList->insertRow(rowCount);
+            QTableWidgetItem *nomItem = new QTableWidgetItem(nominativo);
+            QTableWidgetItem *opItem = new QTableWidgetItem(operatore);
+            txUi->nominativiList->setItem(rowCount, 0, nomItem);
+            txUi->nominativiList->setItem(rowCount, 1, opItem);
+        }
+    }
+}
+
+void MainWindow::eliminaNominativoTx(Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
+    int selectedRow = txUi->nominativiList->currentRow();
+    if (selectedRow != -1) {
+        txUi->nominativiList->removeRow(selectedRow);
+    }
+}
+
+void MainWindow::setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
+    QSqlQuery *q = RFLog->getQueryBind();
+    q->prepare("select operatore from qsoNominativi where nominativo = :nominativo and operatore is not null and operatore <> '' order by operatore limit 1");
+    q->bindValue(":nominativo", txt);
+    DBResult *res = RFLog->executeQuery(q);
+    txUi->operatore->setText(res->getCella(0));
     delete q;
     delete res;
 }
