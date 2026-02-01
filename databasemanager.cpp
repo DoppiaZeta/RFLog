@@ -151,6 +151,9 @@ QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
     // Crea una nuova connessione per il thread
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
     db.setDatabaseName(m_databasePath);
+    if (!scrittura) {
+        db.setConnectOptions("QSQLITE_OPEN_READONLY");
+    }
     if (!db.open()) {
         qDebug() << "Errore nell'apertura del database:" << db.lastError().text();
     }
@@ -165,7 +168,6 @@ QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
         q.exec("PRAGMA locking_mode=NORMAL;");
         q.exec("PRAGMA busy_timeout=5000;");
     } else {
-        db.setConnectOptions("QSQLITE_OPEN_READONLY");
         q.exec("PRAGMA journal_mode=OFF;");
         q.exec("PRAGMA synchronous=OFF;");
     }

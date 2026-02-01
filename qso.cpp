@@ -45,7 +45,7 @@ where id = :id
             operatoreRx = res->getCella("operatoreRx");
             segnaleRx = res->getCella("segnaleRx").toDouble();
             frequenzaRx = res->getCella("frequenzaRx").toDouble();
-            qsl = res->getCella("frequenzaRx") == 'S';
+            qsl = res->getCella("qsl") == 'S';
             orarioRx = QDateTime::fromString(res->getCella("orarioRx"), Qt::ISODate);
         }
         delete res;
@@ -343,4 +343,3 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
 Linee Qso::getLinea() const {
     return Linee(locatoreTx, locatoreRx);
 }
-

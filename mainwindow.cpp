@@ -300,16 +300,15 @@ void MainWindow::aggiornaSuggerimentiNominativo(const QString &txt) {
     lastNominativoPrefix = prefix;
     nominativoPrefixSet = true;
 
-    QString query;
+    QSqlQuery *q = nDB->getQueryBind();
     if (prefix.isEmpty()) {
-        query = "select nominativo from nominativi order by nominativo limit 50";
+        q->prepare("select nominativo from nominativi order by nominativo limit 50");
     } else {
-        const QString escaped = DatabaseManager::escape(prefix);
-        query = QString("select nominativo from nominativi where nominativo like '%1' order by nominativo limit 50")
-                    .arg(escaped + "%");
+        q->prepare("select nominativo from nominativi where nominativo like :prefix order by nominativo limit 50");
+        q->bindValue(":prefix", prefix + "%");
     }
 
-    DBResult *res = nDB->executeQuery(query);
+    DBResult *res = nDB->executeQuery(q);
     QStringList suggestions;
     if (res->hasRows()) {
         suggestions.reserve(res->tabella.size());
@@ -318,6 +317,7 @@ void MainWindow::aggiornaSuggerimentiNominativo(const QString &txt) {
         }
     }
     delete res;
+    delete q;
 
     Nominativo->setSuggestions(suggestions);
 }
@@ -329,9 +329,10 @@ void MainWindow::caricaLocatoriDaNominativo(const QString &nominativo) {
         return;
     }
 
-    const QString escaped = DatabaseManager::escape(nome);
-    DBResult *res = nDB->executeQuery(
-        QString("select locatore from nominativi where nominativo = '%1' order by locatore").arg(escaped));
+    QSqlQuery *q = nDB->getQueryBind();
+    q->prepare("select locatore from nominativi where nominativo = :nominativo order by locatore");
+    q->bindValue(":nominativo", nome);
+    DBResult *res = nDB->executeQuery(q);
     QStringList locatori;
     if (res->hasRows()) {
         locatori.reserve(res->tabella.size());
@@ -340,6 +341,7 @@ void MainWindow::caricaLocatoriDaNominativo(const QString &nominativo) {
         }
     }
     delete res;
+    delete q;
 
     Locatore->setSuggestions(locatori);
     if (!locatori.isEmpty()) {
