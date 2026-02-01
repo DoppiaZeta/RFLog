@@ -14,8 +14,10 @@
 #include <QModelIndex>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QApplication>
@@ -26,6 +28,7 @@
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QTimeZone>
+#include <QXmlStreamReader>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -52,6 +55,78 @@ QString safeAdifFilename(const QString &value) {
     }
     return safe;
 }
+
+class TsTranslator final : public QTranslator {
+public:
+    bool loadFromTs(const QString &filePath) {
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            return false;
+        }
+
+        QXmlStreamReader xml(&file);
+        QString contextName;
+        while (!xml.atEnd()) {
+            xml.readNext();
+            if (!xml.isStartElement()) {
+                continue;
+            }
+
+            if (xml.name() == QLatin1String("context")) {
+                contextName.clear();
+                continue;
+            }
+
+            if (xml.name() == QLatin1String("name")) {
+                contextName = xml.readElementText();
+                continue;
+            }
+
+            if (xml.name() == QLatin1String("message")) {
+                QString sourceText;
+                QString translationText;
+                bool unfinished = false;
+                while (!(xml.isEndElement() && xml.name() == QLatin1String("message")) && !xml.atEnd()) {
+                    xml.readNext();
+                    if (!xml.isStartElement()) {
+                        continue;
+                    }
+
+                    if (xml.name() == QLatin1String("source")) {
+                        sourceText = xml.readElementText();
+                        continue;
+                    }
+
+                    if (xml.name() == QLatin1String("translation")) {
+                        const auto typeAttr = xml.attributes().value(QLatin1String("type"));
+                        unfinished = (typeAttr == QLatin1String("unfinished"));
+                        translationText = xml.readElementText();
+                        continue;
+                    }
+                }
+
+                if (!contextName.isEmpty() && !sourceText.isEmpty() && !translationText.isEmpty() && !unfinished) {
+                    const QString key = contextName + kSeparator + sourceText;
+                    translations.insert(key, translationText);
+                }
+            }
+        }
+
+        return !xml.hasError() && !translations.isEmpty();
+    }
+
+    QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const override {
+        Q_UNUSED(disambiguation);
+        Q_UNUSED(n);
+
+        const QString key = QString::fromUtf8(context) + kSeparator + QString::fromUtf8(sourceText);
+        return translations.value(key);
+    }
+
+private:
+    static constexpr QChar kSeparator = QChar(0x1f);
+    QHash<QString, QString> translations;
+};
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -304,21 +379,63 @@ void MainWindow::setupLanguageMenu() {
     bindAction(ui->actionLinguaTedesco, QStringLiteral("de_DE"));
 }
 
+std::unique_ptr<QTranslator> MainWindow::createAppTranslator(const QString &localeName) {
+    const QString baseName = QStringLiteral("RFLog_") + localeName;
+    auto translator = std::make_unique<QTranslator>();
+    if (translator->load(QStringLiteral(":/i18n/") + baseName)) {
+        return translator;
+    }
+
+    const QString translationsDir = QCoreApplication::applicationDirPath()
+        + QDir::separator()
+        + QStringLiteral("i18n");
+    if (translator->load(baseName, translationsDir)) {
+        return translator;
+    }
+
+    auto tsTranslator = std::make_unique<TsTranslator>();
+    const QString resourceTs = QStringLiteral(":/i18n/") + baseName + QStringLiteral(".ts");
+    if (tsTranslator->loadFromTs(resourceTs)) {
+        return tsTranslator;
+    }
+
+    const QString fileTs = translationsDir + QDir::separator() + baseName + QStringLiteral(".ts");
+    if (tsTranslator->loadFromTs(fileTs)) {
+        return tsTranslator;
+    }
+
+    return nullptr;
+}
+
 void MainWindow::applyLanguage(const QString &localeName) {
     QString targetLocale = localeName;
-    qApp->removeTranslator(&appTranslator);
+    if (appTranslator) {
+        qApp->removeTranslator(appTranslator.get());
+        appTranslator.reset();
+    }
 
-    bool loaded = appTranslator.load(":/i18n/RFLog_" + targetLocale);
-    if (!loaded && targetLocale != QLatin1String("en_US")) {
+    if (targetLocale == QLatin1String("it_IT")) {
+        currentLocale = targetLocale;
+        if (languageActionGroup) {
+            for (QAction *action : languageActionGroup->actions()) {
+                action->setChecked(action->data().toString() == currentLocale);
+            }
+        }
+        retranslateUi();
+        return;
+    }
+
+    appTranslator = createAppTranslator(targetLocale);
+    if (!appTranslator && targetLocale != QLatin1String("en_US")) {
         targetLocale = QStringLiteral("en_US");
-        loaded = appTranslator.load(":/i18n/RFLog_" + targetLocale);
+        appTranslator = createAppTranslator(targetLocale);
     }
 
-    if (loaded) {
-        qApp->installTranslator(&appTranslator);
+    if (appTranslator) {
+        qApp->installTranslator(appTranslator.get());
     }
 
-    currentLocale = targetLocale;
+    currentLocale = appTranslator ? targetLocale : QStringLiteral("it_IT");
     if (languageActionGroup) {
         for (QAction *action : languageActionGroup->actions()) {
             action->setChecked(action->data().toString() == currentLocale);
@@ -332,18 +449,27 @@ void MainWindow::applySystemLanguage() {
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
         const QString localeName = QLocale(locale).name();
-        qApp->removeTranslator(&appTranslator);
-        if (appTranslator.load(":/i18n/RFLog_" + localeName)) {
-            qApp->installTranslator(&appTranslator);
-            currentLocale = localeName;
-            if (languageActionGroup) {
-                for (QAction *action : languageActionGroup->actions()) {
-                    action->setChecked(action->data().toString() == currentLocale);
-                }
-            }
-            retranslateUi();
+        if (QLocale(locale).language() == QLocale::Italian) {
+            applyLanguage(QStringLiteral("it_IT"));
             return;
         }
+        auto translator = createAppTranslator(localeName);
+        if (!translator) {
+            continue;
+        }
+        if (appTranslator) {
+            qApp->removeTranslator(appTranslator.get());
+        }
+        appTranslator = std::move(translator);
+        qApp->installTranslator(appTranslator.get());
+        currentLocale = localeName;
+        if (languageActionGroup) {
+            for (QAction *action : languageActionGroup->actions()) {
+                action->setChecked(action->data().toString() == currentLocale);
+            }
+        }
+        retranslateUi();
+        return;
     }
 
     applyLanguage(QStringLiteral("en_US"));

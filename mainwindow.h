@@ -15,6 +15,7 @@
 #include <QComboBox>
 #include <QActionGroup>
 #include <QTranslator>
+#include <memory>
 
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -158,13 +159,14 @@ private:
     void retranslateUi();
     void updateTableHeaders();
     void updateColoreStatoItems();
+    std::unique_ptr<QTranslator> createAppTranslator(const QString &localeName);
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
     Ui::Tx *tx;
     QTimer *resizeTimer;
     QActionGroup *languageActionGroup = nullptr;
-    QTranslator appTranslator;
+    std::unique_ptr<QTranslator> appTranslator;
     QString currentLocale;
 
     SuggestiveLineEdit *Nominativo;

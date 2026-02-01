@@ -51,7 +51,8 @@ SOURCES += databasemanager.cpp \
 #DEFINES += QT_OPENGL_LIB
 
 RESOURCES += \
-   icone.qrc
+   icone.qrc \
+   i18n.qrc
 
 # Localizzazioni (usa lupdate/lrelease per generare .ts/.qm)
 TRANSLATIONS += \

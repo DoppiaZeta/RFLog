@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/i18n">
+        <file alias="RFLog_it_IT.ts">i18n/RFLog_it_IT.ts</file>
+        <file alias="RFLog_en_US.ts">i18n/RFLog_en_US.ts</file>
+        <file alias="RFLog_es_ES.ts">i18n/RFLog_es_ES.ts</file>
+        <file alias="RFLog_fr_FR.ts">i18n/RFLog_fr_FR.ts</file>
+        <file alias="RFLog_de_DE.ts">i18n/RFLog_de_DE.ts</file>
+    </qresource>
+</RCC>

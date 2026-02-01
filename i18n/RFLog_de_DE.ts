@@ -35,12 +35,12 @@
     <message>
         <location filename="../locatoripreferiti.ui" line="88" />
         <source>Nome:</source>
-        <translation>Nome:</translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="95" />
         <source>Locatore:</source>
-        <translation>Locatore:</translation>
+        <translation>Locator:</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="110" />
@@ -77,52 +77,52 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.ui" line="49" />
         <source>Locatore</source>
-        <translation>Locatore</translation>
+        <translation>Locator</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="59" />
         <source>Orario (UTC)</source>
-        <translation>Orario (UTC)</translation>
+        <translation>Uhrzeit (UTC)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="69" />
         <source>Nominativo</source>
-        <translation>Nominativo</translation>
+        <translation>Rufzeichen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="79" />
         <source>Segnale</source>
-        <translation>Segnale</translation>
+        <translation>Signal</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="89" />
         <source>Frequenza</source>
-        <translation>Frequenza</translation>
+        <translation>Frequenz</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="118" />
         <source>Devi impostare un file di log prima di iniziare</source>
-        <translation>Devi impostare un file di log prima di iniziare</translation>
+        <translation>Du musst vor dem Start eine Logdatei festlegen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="138" />
         <source>Mappa geografica</source>
-        <translation>Mappa geografica</translation>
+        <translation>Geografische Karte</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="145" />
         <source>Mappa politica</source>
-        <translation>Mappa politica</translation>
+        <translation>Politische Karte</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="152" />
         <source>Mappa gruppo</source>
-        <translation>Mappa gruppo</translation>
+        <translation>Gruppenkarte</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="159" />
         <source>Screenshot mappa</source>
-        <translation>Screenshot mappa</translation>
+        <translation>Kartenscreenshot</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="180" />
@@ -132,7 +132,7 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.ui" line="191" />
         <source>Mio DB</source>
-        <translation>Mio DB</translation>
+        <translation>Meine DB</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="198" />
@@ -142,43 +142,43 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.ui" line="209" />
         <source>Apri Adif...</source>
-        <translation>Apri Adif...</translation>
+        <translation>ADIF öffnen...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="214" />
         <source>Locatori preferiti...</source>
-        <translation>Locatori preferiti...</translation>
+        <translation>Favoriten-Locator...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="219" />
         <source>Inizia con il log...</source>
-        <translation>Inizia con il log...</translation>
+        <translation>Logging starten...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="224" />
         <source>Le mie radio...</source>
-        <translation>Le mie radio...</translation>
+        <translation>Meine Radios...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="229" />
         <location filename="../mainwindow.cpp" line="1567" />
         <source>Informazioni su RFLog</source>
-        <translation>Informazioni su RFLog</translation>
+        <translation>Über RFLog</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="234" />
         <source>Esporta Adif per TX...</source>
-        <translation>Esporta Adif per TX...</translation>
+        <translation>ADIF für TX exportieren...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="239" />
         <source>Apri EDI...</source>
-        <translation>Apri EDI...</translation>
+        <translation>EDI öffnen...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="152" />
         <source>TX Locatore</source>
-        <translation>TX Locatore</translation>
+        <translation>TX Locator</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="153" />
@@ -188,7 +188,7 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="154" />
         <source>RX Locatore</source>
-        <translation>RX Locatore</translation>
+        <translation>RX Locator</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="155" />
@@ -199,12 +199,12 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="156" />
         <source>TX dettagli</source>
-        <translation>TX dettagli</translation>
+        <translation>TX-Details</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="157" />
         <source>Data/Ora UTC</source>
-        <translation>Data/Ora UTC</translation>
+        <translation>Datum/Uhrzeit UTC</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="158" />
@@ -291,7 +291,7 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="1272" />
         <source>File non valido</source>
-        <translation>File non valido</translation>
+        <translation>Ungültige Datei</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1272" />
@@ -349,27 +349,27 @@ Anno: 2025 e successivi</translation>
     <message>
         <location filename="../mainwindow.cpp" line="1720" />
         <source>Nominativo RX</source>
-        <translation>Nominativo RX</translation>
+        <translation>RX-Rufzeichen</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1721" />
         <source>Locatore RX</source>
-        <translation>Locatore RX</translation>
+        <translation>RX Locator</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1722" />
         <source>Segnale RX</source>
-        <translation>Segnale RX</translation>
+        <translation>RX-Signal</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1723" />
         <source>Frequenza RX</source>
-        <translation>Frequenza RX</translation>
+        <translation>RX-Frequenz</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1724" />
         <source>Orario RX (UTC)</source>
-        <translation>Orario RX (UTC)</translation>
+        <translation>RX-Uhrzeit (UTC)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1728" />
@@ -441,7 +441,7 @@ Anno: 2025 e successivi</translation>
         <location filename="../mappaconfig.ui" line="390" />
         <location filename="../mappaconfig.ui" line="502" />
         <source>Locatore:</source>
-        <translation>Locatore:</translation>
+        <translation>Locator:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="157" />
