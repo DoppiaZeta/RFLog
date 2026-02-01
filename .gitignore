@@ -2,7 +2,7 @@
 .qtc*
 Makefile
 RFLog
-RFLog.db
+RFLog.db*
 nominativi.db*
 locatori_fine.db*
 nominativi.db*

@@ -47,7 +47,14 @@ MainWindow::MainWindow(QWidget *parent)
     Frequenza = new SuggestiveLineEdit(this);
     Orario = new SuggestiveLineEdit(this);
 
-    QStringList suggestions = {"in3kgw", "in3ivc", "in3ktt", "in3hkz"};
+    QStringList suggestions;
+    DBResult *nominativiRes = nDB->executeQuery("select nominativo from nominativi");
+    if (nominativiRes->hasRows()) {
+        for (int i = 0; i < nominativiRes->tabella.size(); i++) {
+            suggestions << nominativiRes->tabella[i][0];
+        }
+    }
+    delete nominativiRes;
     Nominativo->setCompleter(suggestions);
 
     //Nominativo->setStyleSheet(formato);
@@ -86,7 +93,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappa, &Mappa::mouseLocatoreDPPCLK, this, &MainWindow::locatoreDaMappaDPPCLK);
 
     connect(Nominativo, &QLineEdit::textChanged, this, &MainWindow::compilaNominativo);
-    connect(Nominativo, &SuggestiveLineEdit::pressTab, this, &MainWindow::catturaTab);
+    //connect(Nominativo, &SuggestiveLineEdit::pressTab, this, &MainWindow::catturaTab);
     connect(Nominativo, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
     connect(Locatore, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
@@ -272,9 +279,11 @@ void MainWindow::mappaScreenshot() {
     clipboard->setImage(screenshot);
 }
 
+/*
 void MainWindow::catturaTab() {
     qDebug() << Nominativo->text();
 }
+*/
 
 void MainWindow::svuotaLineEdit() {
     QString q;

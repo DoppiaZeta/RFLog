@@ -42,7 +42,7 @@ private slots:
     void locatoreDaMappa(QString loc);
     void locatoreDaMappaDPPCLK(QString loc);
 
-    void catturaTab();
+    //void catturaTab();
     void centraDaLocatore();
 
     void centraPredefinitoITA();

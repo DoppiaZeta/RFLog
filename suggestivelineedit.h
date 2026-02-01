@@ -19,7 +19,8 @@ signals:
     void pressTab();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    bool event(QEvent *e) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     QCompleter *completer;
