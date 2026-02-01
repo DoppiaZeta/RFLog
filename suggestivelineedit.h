@@ -5,6 +5,7 @@
 #include <QCompleter>
 #include <QStringListModel>
 #include <QKeyEvent>
+#include <QMouseEvent>
 
 class SuggestiveLineEdit : public QLineEdit
 {
@@ -13,17 +14,22 @@ class SuggestiveLineEdit : public QLineEdit
 public:
     SuggestiveLineEdit(QWidget *parent);
 
-    void setCompleter(QStringList &list);
+    void setSuggestions(const QStringList &list);
 
 signals:
     void pressTab();
+    void completionAccepted(const QString &text);
+    void suggestionsRequested(const QString &text);
 
 protected:
     bool event(QEvent *e) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
 
 private:
     QCompleter *completer;
+    QStringListModel *model;
 };
 
 

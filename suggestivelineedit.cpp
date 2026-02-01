@@ -32,8 +32,10 @@ SuggestiveLineEdit::SuggestiveLineEdit(QWidget *parent)
     : QLineEdit(parent)
 {
     completer = new QCompleter(this);
+    model = new QStringListModel(completer);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setWidget(this);
+    completer->setModel(model);
 
     connect(this, &QLineEdit::textEdited, this,
             [this](const QString &text)
@@ -47,20 +49,48 @@ SuggestiveLineEdit::SuggestiveLineEdit(QWidget *parent)
                     completer->popup()->setCurrentIndex(first);
                 }
             });
+
+    connect(completer, QOverload<const QString &>::of(&QCompleter::activated),
+            this, &SuggestiveLineEdit::completionAccepted);
+
+    if (completer->popup()) {
+        connect(completer->popup(), &QAbstractItemView::clicked, this,
+                [this](const QModelIndex &index) {
+                    const QString chosen = index.data(Qt::DisplayRole).toString();
+                    if (chosen.isEmpty())
+                        return;
+
+                    setText(chosen);
+                    setCursorPosition(chosen.length());
+                    emit completionAccepted(chosen);
+                    completer->popup()->hide();
+                });
+    }
 }
 
-void SuggestiveLineEdit::setCompleter(QStringList &list)
+void SuggestiveLineEdit::setSuggestions(const QStringList &list)
 {
-    for (QString &s : list)
-        s = s.toUpper();
+    QStringList normalized;
+    normalized.reserve(list.size());
+    for (const QString &s : list)
+        normalized.append(s.toUpper());
 
-    std::sort(list.begin(), list.end(),
+    std::sort(normalized.begin(), normalized.end(),
               [](const QString &a, const QString &b) {
                   return a.compare(b, Qt::CaseInsensitive) < 0;
               });
 
-    auto *model = new QStringListModel(list, completer);
-    completer->setModel(model);
+    model->setStringList(normalized);
+
+    if (hasFocus()) {
+        completer->setCompletionPrefix(text());
+        completer->complete();
+
+        if (completer->popup() && completer->completionCount() > 0) {
+            QModelIndex first = completer->completionModel()->index(0, 0);
+            completer->popup()->setCurrentIndex(first);
+        }
+    }
 }
 
 // QUI intercettiamo TAB PRIMA che QWidget lo trasformi in cambio focus
@@ -79,6 +109,7 @@ bool SuggestiveLineEdit::event(QEvent *e)
                 if (!chosen.isEmpty()) {
                     setText(chosen);
                     setCursorPosition(chosen.length());
+                    emit completionAccepted(chosen);
                 }
 
                 completer->popup()->hide();
@@ -106,6 +137,9 @@ void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event)
     if (popupVisible) {
         // Navigazione popup (così si muove davvero la selezione)
         switch (event->key()) {
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+            break;
         case Qt::Key_Up:
         case Qt::Key_Down:
         case Qt::Key_PageUp:
@@ -124,6 +158,7 @@ void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event)
             if (!chosen.isEmpty()) {
                 setText(chosen);
                 setCursorPosition(chosen.length());
+                emit completionAccepted(chosen);
             }
 
             completer->popup()->hide();
@@ -135,5 +170,64 @@ void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event)
         }
     }
 
+    if (!popupVisible && event->key() == Qt::Key_Down) {
+        emit suggestionsRequested(text());
+        completer->setCompletionPrefix(text());
+        completer->complete();
+
+        if (completer->popup() && completer->completionCount() > 0) {
+            QModelIndex first = completer->completionModel()->index(0, 0);
+            completer->popup()->setCurrentIndex(first);
+        }
+
+        event->accept();
+        return;
+    }
+
+    if (!popupVisible && event->key() == Qt::Key_Left) {
+        if (cursorPosition() == 0) {
+            QWidget *previous = previousInFocusChain();
+            if (qobject_cast<SuggestiveLineEdit *>(previous)) {
+                previous->setFocus();
+                event->accept();
+                return;
+            }
+        }
+    }
+
+    if (!popupVisible && event->key() == Qt::Key_Right) {
+        if (cursorPosition() == text().length()) {
+            QWidget *next = nextInFocusChain();
+            if (qobject_cast<SuggestiveLineEdit *>(next)) {
+                next->setFocus();
+                event->accept();
+                return;
+            }
+        }
+    }
+
     QLineEdit::keyPressEvent(event);
+}
+
+void SuggestiveLineEdit::mousePressEvent(QMouseEvent *event)
+{
+    QLineEdit::mousePressEvent(event);
+
+    emit suggestionsRequested(text());
+
+    if (completer) {
+        completer->setCompletionPrefix(text());
+        completer->complete();
+
+        if (completer->popup() && completer->completionCount() > 0) {
+            QModelIndex first = completer->completionModel()->index(0, 0);
+            completer->popup()->setCurrentIndex(first);
+        }
+    }
+}
+
+void SuggestiveLineEdit::focusInEvent(QFocusEvent *event)
+{
+    QLineEdit::focusInEvent(event);
+    setCursorPosition(text().length());
 }

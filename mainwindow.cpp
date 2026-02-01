@@ -7,6 +7,7 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QSignalBlocker>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -29,45 +30,42 @@ MainWindow::MainWindow(QWidget *parent)
     creaDBRFLog();
 
     numeroLog = 0;
+    nominativoPrefixSet = false;
+    nominativoPaletteSet = false;
 
     ui->setupUi(this);
     tx->setupUi(ui->tx);
 
     DBResult *res;
 
-    /*
-    QString formato = "border: none;\n"
-                      "color: blue;\n"
-                      "font-weight: bold;\n";
-    */
+
+    QString formato =
+                    "font-weight: bold;\n"
+                    "background-color: aliceblue;\n"
+        ;
+
 
     Nominativo = new SuggestiveLineEdit(this);
     Locatore = new SuggestiveLineEdit(this);
     Segnale = new SuggestiveLineEdit(this);
     Frequenza = new SuggestiveLineEdit(this);
     Orario = new SuggestiveLineEdit(this);
+    nominativoDefaultPalette = Nominativo->palette();
+    nominativoPaletteSet = true;
 
-    QStringList suggestions;
-    DBResult *nominativiRes = nDB->executeQuery("select nominativo from nominativi");
-    if (nominativiRes->hasRows()) {
-        for (int i = 0; i < nominativiRes->tabella.size(); i++) {
-            suggestions << nominativiRes->tabella[i][0];
-        }
-    }
-    delete nominativiRes;
-    Nominativo->setCompleter(suggestions);
+    Nominativo->setSuggestions(QStringList());
 
-    //Nominativo->setStyleSheet(formato);
-    //Locatore->setStyleSheet(formato);
-    //Segnale->setStyleSheet(formato);
-    //Frequenza->setStyleSheet(formato);
-    //Orario->setStyleSheet(formato);
+    Nominativo->setStyleSheet(formato);
+    Locatore->setStyleSheet(formato);
+    Segnale->setStyleSheet(formato);
+    Frequenza->setStyleSheet(formato);
+    Orario->setStyleSheet(formato);
 
-    ui->grigliaInput->addWidget(Nominativo, 1, 1);
-    ui->grigliaInput->addWidget(Locatore, 1, 2);
-    ui->grigliaInput->addWidget(Segnale, 1, 3);
-    ui->grigliaInput->addWidget(Frequenza, 1, 4);
-    ui->grigliaInput->addWidget(Orario, 1, 5);
+    ui->grigliaInput->addWidget(Nominativo, 2, 1);
+    ui->grigliaInput->addWidget(Locatore, 2, 2);
+    ui->grigliaInput->addWidget(Segnale, 2, 3);
+    ui->grigliaInput->addWidget(Frequenza, 2, 4);
+    ui->grigliaInput->addWidget(Orario, 2, 5);
 
     QWidget::setTabOrder(Nominativo, Locatore);
     QWidget::setTabOrder(Locatore, Segnale);
@@ -92,9 +90,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappa, &Mappa::mouseLocatore, this, &MainWindow::locatoreDaMappa);
     connect(mappa, &Mappa::mouseLocatoreDPPCLK, this, &MainWindow::locatoreDaMappaDPPCLK);
 
-    connect(Nominativo, &QLineEdit::textChanged, this, &MainWindow::compilaNominativo);
+    connect(Nominativo, &QLineEdit::textEdited, this, &MainWindow::compilaNominativo);
+    connect(Nominativo, &QLineEdit::textEdited, this, &MainWindow::aggiornaColoreNominativoDuplicato);
+    connect(Nominativo, &QLineEdit::textEdited, this, &MainWindow::aggiornaSuggerimentiNominativo);
+    connect(Nominativo, &SuggestiveLineEdit::suggestionsRequested, this, &MainWindow::aggiornaSuggerimentiNominativo);
+    connect(Nominativo, &SuggestiveLineEdit::completionAccepted, this, &MainWindow::caricaLocatoriDaNominativo);
     //connect(Nominativo, &SuggestiveLineEdit::pressTab, this, &MainWindow::catturaTab);
     connect(Nominativo, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
+    connect(Nominativo, &QLineEdit::returnPressed, this, [this]() {
+        caricaLocatoriDaNominativo(Nominativo->text());
+    });
 
     connect(Locatore, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Segnale, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
@@ -248,7 +253,99 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::compilaNominativo(const QString &txt) {
-    Nominativo->setText(txt.toUpper());
+    const QString upper = txt.toUpper();
+    if (upper != txt) {
+        QSignalBlocker blocker(Nominativo);
+        Nominativo->setText(upper);
+        Nominativo->setCursorPosition(upper.length());
+    }
+    aggiornaColoreNominativoDuplicato(upper);
+}
+
+bool MainWindow::nominativoPresenteInLista(const QString &txt) const
+{
+    const QString target = txt.trimmed().toUpper();
+    if (target.isEmpty())
+        return false;
+
+    for (Qso *qso : qsoList) {
+        //for (const Qso::NominativoNome &entry : qso->nominativoTx) {
+            if (qso->nominativoRx.trimmed().toUpper() == target)
+                return true;
+        //}
+    }
+
+    return false;
+}
+
+void MainWindow::aggiornaColoreNominativoDuplicato(const QString &txt)
+{
+    if (!nominativoPaletteSet)
+        return;
+
+    if (nominativoPresenteInLista(txt)) {
+        QPalette palette = Nominativo->palette();
+        palette.setColor(QPalette::Text, Qt::red);
+        Nominativo->setPalette(palette);
+    } else {
+        Nominativo->setPalette(nominativoDefaultPalette);
+    }
+}
+
+void MainWindow::aggiornaSuggerimentiNominativo(const QString &txt) {
+    const QString prefix = txt.trimmed().toUpper();
+    if (nominativoPrefixSet && prefix == lastNominativoPrefix)
+        return;
+
+    lastNominativoPrefix = prefix;
+    nominativoPrefixSet = true;
+
+    QString query;
+    if (prefix.isEmpty()) {
+        query = "select nominativo from nominativi order by nominativo limit 50";
+    } else {
+        const QString escaped = DatabaseManager::escape(prefix);
+        query = QString("select nominativo from nominativi where nominativo like '%1' order by nominativo limit 50")
+                    .arg(escaped + "%");
+    }
+
+    DBResult *res = nDB->executeQuery(query);
+    QStringList suggestions;
+    if (res->hasRows()) {
+        suggestions.reserve(res->tabella.size());
+        for (int i = 0; i < res->tabella.size(); i++) {
+            suggestions << res->tabella[i][0];
+        }
+    }
+    delete res;
+
+    Nominativo->setSuggestions(suggestions);
+}
+
+void MainWindow::caricaLocatoriDaNominativo(const QString &nominativo) {
+    const QString nome = nominativo.trimmed().toUpper();
+    if (nome.isEmpty()) {
+        Locatore->setSuggestions(QStringList());
+        return;
+    }
+
+    const QString escaped = DatabaseManager::escape(nome);
+    DBResult *res = nDB->executeQuery(
+        QString("select locatore from nominativi where nominativo = '%1' order by locatore").arg(escaped));
+    QStringList locatori;
+    if (res->hasRows()) {
+        locatori.reserve(res->tabella.size());
+        for (int i = 0; i < res->tabella.size(); i++) {
+            locatori << res->tabella[i][0];
+        }
+    }
+    delete res;
+
+    Locatore->setSuggestions(locatori);
+    if (!locatori.isEmpty()) {
+        Locatore->setText(locatori.first());
+        Locatore->setCursorPosition(Locatore->text().length());
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -288,6 +385,7 @@ void MainWindow::catturaTab() {
 void MainWindow::svuotaLineEdit() {
     QString q;
     Nominativo->setText(q);
+    aggiornaColoreNominativoDuplicato(q);
     Locatore->setText(q);
     Segnale->setText(q);
     Frequenza->setText(q);

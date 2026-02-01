@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QDebug>
+#include <QPalette>
 
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -39,6 +40,9 @@ public slots:
 
 private slots:
     void compilaNominativo(const QString &txt);
+    void aggiornaColoreNominativoDuplicato(const QString &txt);
+    void aggiornaSuggerimentiNominativo(const QString &txt);
+    void caricaLocatoriDaNominativo(const QString &nominativo);
     void locatoreDaMappa(QString loc);
     void locatoreDaMappaDPPCLK(QString loc);
 
@@ -101,6 +105,7 @@ private slots:
     void modificaTxDaTabella(const QModelIndex &index);
 
 private:
+    bool nominativoPresenteInLista(const QString &txt) const;
     DBResult * caricaStatiDB();
     DBResult * caricaRegioniDB(const QString & stato);
     DBResult * caricaProvinceDB(const QString & stato, const QString & regione);
@@ -151,6 +156,10 @@ private:
 
     QList<Qso*> qsoList;
     int numeroLog;
+    QString lastNominativoPrefix;
+    bool nominativoPrefixSet;
+    QPalette nominativoDefaultPalette;
+    bool nominativoPaletteSet;
 
 };
 
