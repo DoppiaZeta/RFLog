@@ -9,6 +9,7 @@
 #include <QDebug>
 
 #include "databasemanager.h"
+#include "edi.h"
 #include "linee.h"
 
 class Qso : public QObject
@@ -34,6 +35,7 @@ public:
     void insertAggiornaDB();
     void eliminaDB();
     void insertDaAdif(const QMap<QString, QString> &contatto);
+    void insertDaEdi(const QMap<QString, QString> &header, const EdiRecord &record);
     Linee getLinea() const;
 
     double getBandaMt() const;

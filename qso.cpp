@@ -1,5 +1,8 @@
 #include "qso.h"
 
+#include <QRegularExpression>
+#include <QTimeZone>
+
 const std::map<double, double> Qso::bandaToFreq = {
     {160, 1.9}, {80, 3.5}, {60, 5.3}, {40, 7.1}, {30, 10.1}, {20, 14.1},
     {17, 18.1}, {15, 21.1}, {12, 24.9}, {10, 28.5}, {6, 50.1}, {2, 144.1},
@@ -338,6 +341,74 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
 
         // Inserisce o aggiorna il QSO nel database
         insertAggiornaDB();
+}
+
+void Qso::insertDaEdi(const QMap<QString, QString> &header, const EdiRecord &record) {
+    locatoreTx = header.value("PWWLo").toUpper();
+    potenzaTx = header.value("SPowe").toInt();
+
+    QString band = header.value("PBand");
+    if (!band.isEmpty()) {
+        QRegularExpression bandRegex(R"((\d+(\.\d+)?))");
+        QRegularExpressionMatch match = bandRegex.match(band);
+        if (match.hasMatch()) {
+            frequenzaRx = match.captured(1).toDouble();
+        }
+    }
+
+    nominativoRx = record.call.toUpper();
+    locatoreRx = record.locator.toUpper();
+    segnaleRx = record.rstSent.toDouble();
+
+    QString qsoDate = record.date;
+    QString qsoTime = record.time;
+    if (qsoDate.size() == 6 && qsoTime.size() >= 4) {
+        int year = 2000 + qsoDate.left(2).toInt();
+        int month = qsoDate.mid(2, 2).toInt();
+        int day = qsoDate.mid(4, 2).toInt();
+        int hour = qsoTime.left(2).toInt();
+        int minute = qsoTime.mid(2, 2).toInt();
+        QDate date(year, month, day);
+        QTime time(hour, minute);
+        orarioRx = QDateTime(date, time, QTimeZone::UTC);
+    }
+
+    QString stationCallsign = header.value("PCall").trimmed();
+    if (!stationCallsign.isEmpty()) {
+        NominativoNome nominativo;
+        nominativo.nominativo = stationCallsign.toUpper();
+        nominativoTx.append(nominativo);
+    }
+
+    if (!record.serialSent.isEmpty()) {
+        AltriParametri parametro;
+        parametro.nome = "edi_serial_sent";
+        parametro.valore = record.serialSent;
+        altro.append(parametro);
+    }
+
+    if (!record.serialReceived.isEmpty()) {
+        AltriParametri parametro;
+        parametro.nome = "edi_serial_received";
+        parametro.valore = record.serialReceived;
+        altro.append(parametro);
+    }
+
+    if (!record.rstReceived.isEmpty()) {
+        AltriParametri parametro;
+        parametro.nome = "edi_rst_received";
+        parametro.valore = record.rstReceived;
+        altro.append(parametro);
+    }
+
+    if (!record.distance.isEmpty()) {
+        AltriParametri parametro;
+        parametro.nome = "edi_distance";
+        parametro.valore = record.distance;
+        altro.append(parametro);
+    }
+
+    insertAggiornaDB();
 }
 
 Linee Qso::getLinea() const {

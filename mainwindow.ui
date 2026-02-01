@@ -181,6 +181,7 @@ color: white;</string>
     </property>
     <addaction name="menuIniziaLog"/>
     <addaction name="menuApriAdif"/>
+    <addaction name="menuApriEdi"/>
     <addaction name="menuEsportaAdifTx"/>
    </widget>
    <widget class="QMenu" name="menuMioDB">
@@ -229,6 +230,11 @@ color: white;</string>
   <action name="menuEsportaAdifTx">
    <property name="text">
     <string>Esporta Adif per TX...</string>
+   </property>
+  </action>
+  <action name="menuApriEdi">
+   <property name="text">
+    <string>Apri EDI...</string>
    </property>
   </action>
  </widget>

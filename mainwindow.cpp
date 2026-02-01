@@ -25,6 +25,7 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
 #include "adif.h"
+#include "edi.h"
 #include "locatoripreferiti.h"
 #include "nuovolog.h"
 #include "miaradio.h"
@@ -245,6 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //menu
     connect(ui->menuApriAdif, &QAction::triggered, this, &MainWindow::menuApriAdif);
+    connect(ui->menuApriEdi, &QAction::triggered, this, &MainWindow::menuApriEdi);
     connect(ui->menuEsportaAdifTx, &QAction::triggered, this, &MainWindow::menuEsportaAdifTx);
     connect(ui->menuLocatoriPreferiti, &QAction::triggered, this, &MainWindow::menuLocatoriPreferiti);
     connect(ui->menuIniziaLog, &QAction::triggered, this, &MainWindow::menuIniziaLog);
@@ -1240,6 +1242,50 @@ void MainWindow::menuApriAdif() {
         aggiornaTabella();
         updateMappaLocatori();
     }
+}
+
+void MainWindow::menuApriEdi() {
+    if (numeroLog <= 0) {
+        QMessageBox::warning(this, tr("Log non attivo"), tr("Prima di importare un EDI devi iniziare o aprire un log."));
+        return;
+    }
+
+    QString filter = "EDI files (*.edi)";
+    QString filePath = QFileDialog::getOpenFileName(this, "Seleziona File EDI", QDir::homePath(), filter);
+    if (filePath.isEmpty()) {
+        return;
+    }
+
+    Edi edi;
+    if (!Edi::parseEdi(filePath, edi)) {
+        QMessageBox::warning(this, tr("File non valido"), tr("Impossibile leggere il file EDI selezionato."));
+        return;
+    }
+
+    const auto& contatti = edi.getContatti();
+    const auto& header = edi.getIntestazione();
+    for (int i = 0; i < contatti.count(); i++) {
+        Qso *qso = new Qso(RFLog, numeroLog);
+        qso->insertDaEdi(header, contatti[i]);
+        qsoList.push_back(qso);
+
+        if (qso->locatoreRx.isEmpty()) {
+            QSqlQuery *q = nDB->getQueryBind();
+            q->prepare("select locatore from nominativi where nominativo = :nominativo");
+            q->bindValue(":nominativo", qso->nominativoRx);
+            DBResult *res = nDB->executeQuery(q);
+            if (res->hasRows()) {
+                qso->locatoreRx = res->getCella(0).toUpper();
+                qso->insertAggiornaDB();
+            }
+            delete res;
+            delete q;
+        }
+    }
+
+    Qso::sort(qsoList);
+    aggiornaTabella();
+    updateMappaLocatori();
 }
 
 void MainWindow::menuEsportaAdifTx() {

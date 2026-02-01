@@ -15,6 +15,7 @@ win32:LIBS += -lodbc32
 HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    adif.h \
    coordinate.h \
+   edi.h \
    linee.h \
    locatoripreferiti.h \
    mappasrpc.h \
@@ -33,6 +34,7 @@ SOURCES += databasemanager.cpp \
            coordinate.cpp \
            coordinate_cq.cpp \
            coordinate_itu.cpp \
+           edi.cpp \
            linee.cpp \
            locatoripreferiti.cpp \
            main.cpp \
@@ -82,4 +84,3 @@ QMAKE_LFLAGS += -fopenmp
 win32:QMAKE_LFLAGS += -fopenmp -static-libgcc -static-libstdc++ -static
 msvc:QMAKE_CXXFLAGS += /openmp
 msvc:QMAKE_LFLAGS += /openmp
-
