@@ -199,8 +199,19 @@ color: white;</string>
     </property>
     <addaction name="menuInformazioniSu"/>
    </widget>
+   <widget class="QMenu" name="menuLAN">
+    <property name="title">
+     <string>LAN</string>
+    </property>
+    <addaction name="actionITA"/>
+    <addaction name="actionENG"/>
+    <addaction name="actionFR"/>
+    <addaction name="actionDE"/>
+    <addaction name="actionES"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMioDB"/>
+   <addaction name="menuLAN"/>
    <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -237,6 +248,31 @@ color: white;</string>
   <action name="menuApriEdi">
    <property name="text">
     <string>Apri EDI...</string>
+   </property>
+  </action>
+  <action name="actionITA">
+   <property name="text">
+    <string>ITA</string>
+   </property>
+  </action>
+  <action name="actionENG">
+   <property name="text">
+    <string>ENG</string>
+   </property>
+  </action>
+  <action name="actionFR">
+   <property name="text">
+    <string>FR</string>
+   </property>
+  </action>
+  <action name="actionDE">
+   <property name="text">
+    <string>DE</string>
+   </property>
+  </action>
+  <action name="actionES">
+   <property name="text">
+    <string>ES</string>
    </property>
   </action>
  </widget>

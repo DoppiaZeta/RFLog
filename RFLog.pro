@@ -53,6 +53,14 @@ SOURCES += databasemanager.cpp \
 RESOURCES += \
    icone.qrc
 
+# Localizzazioni (usa lupdate/lrelease per generare .ts/.qm)
+TRANSLATIONS += \
+   i18n/RFLog_it_IT.ts \
+   i18n/RFLog_en_US.ts \
+   i18n/RFLog_es_ES.ts \
+   i18n/RFLog_fr_FR.ts \
+   i18n/RFLog_de_DE.ts
+
 RC_FILE = appicon.rc
 
 DISTFILES += \
