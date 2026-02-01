@@ -57,7 +57,7 @@ RC_FILE = appicon.rc
 
 DISTFILES += \
    .gitignore \
-   LICENSE \
+   LICENSE.txt \
    LICENSE_locatoriDB.txt \
    appicon.rc
 
