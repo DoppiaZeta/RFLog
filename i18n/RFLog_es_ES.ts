@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='utf-8'?>
 <TS version="2.1" language="es_ES">
 <context>
     <name>LocatoriPreferiti</name>
@@ -15,22 +14,22 @@
     <message>
         <location filename="../locatoripreferiti.ui" line="30" />
         <source>Lon:</source>
-        <translation>Lon:</translation>
+        <translation>Longitud:</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="47" />
         <source>Lat:</source>
-        <translation>Lat:</translation>
+        <translation>Latitud:</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="66" />
         <source>Cerca</source>
-        <translation>Cerca</translation>
+        <translation>Buscar</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="78" />
         <source>Locatori preferiti salvati</source>
-        <translation>Locatori preferiti salvati</translation>
+        <translation>Localizadores favoritos guardados</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="88" />
@@ -46,25 +45,25 @@
         <location filename="../locatoripreferiti.ui" line="110" />
         <source>Aggiungi o
 modifica</source>
-        <translation>Aggiungi o
-modifica</translation>
+        <translation>Añadir o
+editar</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.ui" line="118" />
         <source>Elimina
 selezionato</source>
-        <translation>Elimina
-selezionato</translation>
+        <translation>Eliminar
+seleccionado</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.cpp" line="18" />
         <source>Locatore</source>
-        <translation>Locatore</translation>
+        <translation>Localizador</translation>
     </message>
     <message>
         <location filename="../locatoripreferiti.cpp" line="18" />
         <source>Nome</source>
-        <translation>Nome</translation>
+        <translation>Nombre</translation>
     </message>
 </context>
 <context>
@@ -127,7 +126,7 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.ui" line="180" />
         <source>File</source>
-        <translation>File</translation>
+        <translation>Archivo</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="191" />
@@ -137,7 +136,7 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.ui" line="198" />
         <source>?</source>
-        <translation>?</translation>
+        <translation>¿?</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="209" />
@@ -219,17 +218,17 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="215" />
         <source>Grigio</source>
-        <translation>Grigio</translation>
+        <translation>Gris</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="216" />
         <source>Viola</source>
-        <translation>Viola</translation>
+        <translation>Violeta</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="217" />
         <source>Blu</source>
-        <translation>Blu</translation>
+        <translation>Azul</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="218" />
@@ -239,54 +238,54 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="219" />
         <source>Giallo</source>
-        <translation>Giallo</translation>
+        <translation>Amarillo</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="220" />
         <source>Marrone</source>
-        <translation>Marrone</translation>
+        <translation>Marrón</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="221" />
         <source>Arancione</source>
-        <translation>Arancione</translation>
+        <translation>Naranja</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="537" />
         <source>Stato: </source>
-        <translation>Stato: </translation>
+        <translation>País:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="538" />
         <source>Regione: </source>
-        <translation>Regione: </translation>
+        <translation>Región:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="539" />
         <source>Provincia: </source>
-        <translation>Provincia: </translation>
+        <translation>Provincia:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="540" />
         <source>Comune: </source>
-        <translation>Comune: </translation>
+        <translation>Municipio:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1214" />
         <location filename="../mainwindow.cpp" line="1260" />
         <location filename="../mainwindow.cpp" line="1305" />
         <source>Log non attivo</source>
-        <translation>Log non attivo</translation>
+        <translation>Log inactivo</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1214" />
         <source>Prima di importare un ADIF devi iniziare o aprire un log.</source>
-        <translation>Prima di importare un ADIF devi iniziare o aprire un log.</translation>
+        <translation>Antes de importar un ADIF debes iniciar o abrir un log.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1260" />
         <source>Prima di importare un EDI devi iniziare o aprire un log.</source>
-        <translation>Prima di importare un EDI devi iniziare o aprire un log.</translation>
+        <translation>Antes de importar un EDI debes iniciar o abrir un log.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1272" />
@@ -296,22 +295,22 @@ selezionato</translation>
     <message>
         <location filename="../mainwindow.cpp" line="1272" />
         <source>Impossibile leggere il file EDI selezionato.</source>
-        <translation>Impossibile leggere il file EDI selezionato.</translation>
+        <translation>No se puede leer el archivo EDI seleccionado.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1305" />
         <source>Prima di esportare devi iniziare o aprire un log.</source>
-        <translation>Prima di esportare devi iniziare o aprire un log.</translation>
+        <translation>Antes de exportar debes iniciar o abrir un log.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1323" />
         <source>Seleziona cartella per export ADIF</source>
-        <translation>Seleziona cartella per export ADIF</translation>
+        <translation>Selecciona carpeta para exportar ADIF</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1499" />
         <source>Stai lavorando con il log:</source>
-        <translation>Stai lavorando con il log:</translation>
+        <translation>Estás trabajando con el log:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1576" />
@@ -320,26 +319,26 @@ Creato da Tommaso Moro
 IN3KGW DoppiaZeta KaksiTzeta
 Anno: 2025 e successivi</source>
         <translation>RFLog
-Creato da Tommaso Moro
+Creado por Tommaso Moro
 IN3KGW DoppiaZeta KaksiTzeta
-Anno: 2025 e successivi</translation>
+Año: 2025 y posteriores</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1599" />
         <location filename="../mainwindow.cpp" line="1605" />
         <source>Licenza RFLog</source>
-        <translation>Licenza RFLog</translation>
+        <translation>Licencia RFLog</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1603" />
         <location filename="../mainwindow.cpp" line="1606" />
         <source>Licenza Locatori DB</source>
-        <translation>Licenza Locatori DB</translation>
+        <translation>Licencia de la BD de localizadores</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1701" />
         <source>Modifica TX dettagli</source>
-        <translation>Modifica TX dettagli</translation>
+        <translation>Editar detalles TX</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1719" />
@@ -375,43 +374,43 @@ Anno: 2025 e successivi</translation>
         <location filename="../mainwindow.cpp" line="1728" />
         <location filename="../mainwindow.cpp" line="1956" />
         <source>Salva</source>
-        <translation>Salva</translation>
+        <translation>Guardar</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1729" />
         <location filename="../mainwindow.cpp" line="1957" />
         <source>Annulla</source>
-        <translation>Annulla</translation>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1911" />
         <source>Altri parametri</source>
-        <translation>Altri parametri</translation>
+        <translation>Otros parámetros</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1918" />
         <source>Nome</source>
-        <translation>Nome</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1918" />
         <source>Valore</source>
-        <translation>Valore</translation>
+        <translation>Valor</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1933" />
         <source>Aggiungi</source>
-        <translation>Aggiungi</translation>
+        <translation>Añadir</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1934" />
         <source>Elimina</source>
-        <translation>Elimina</translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2155" />
         <source>Si</source>
-        <translation>Si</translation>
+        <translation>Sí</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2155" />
@@ -424,17 +423,17 @@ Anno: 2025 e successivi</translation>
     <message>
         <location filename="../mappaconfig.ui" line="17" />
         <source>Form</source>
-        <translation>Form</translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="104" />
         <source>Centra da locatore</source>
-        <translation>Centra da locatore</translation>
+        <translation>Centrar desde el localizador</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="138" />
         <source>TextLabel</source>
-        <translation>TextLabel</translation>
+        <translation>Etiqueta de texto</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="150" />
@@ -454,14 +453,14 @@ Anno: 2025 e successivi</translation>
         <source>Centra
 nella
 mappa</source>
-        <translation>Centra
-nella
-mappa</translation>
+        <translation>Centrar
+en el
+mapa</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="178" />
         <source>Centra preset</source>
-        <translation>Centra preset</translation>
+        <translation>Centrado predefinido</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="184" />
@@ -471,7 +470,7 @@ mappa</translation>
     <message>
         <location filename="../mappaconfig.ui" line="191" />
         <source>Mondo</source>
-        <translation>Mondo</translation>
+        <translation>Mundo</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="198" />
@@ -481,12 +480,12 @@ mappa</translation>
     <message>
         <location filename="../mappaconfig.ui" line="205" />
         <source>Africa</source>
-        <translation>Africa</translation>
+        <translation>África</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="212" />
         <source>Nord America</source>
-        <translation>Nord America</translation>
+        <translation>Norteamérica</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="219" />
@@ -496,22 +495,22 @@ mappa</translation>
     <message>
         <location filename="../mappaconfig.ui" line="226" />
         <source>Sud America</source>
-        <translation>Sud America</translation>
+        <translation>Sudamérica</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="233" />
         <source>Oceania</source>
-        <translation>Oceania</translation>
+        <translation>Oceanía</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="241" />
         <source>Centra da a</source>
-        <translation>Centra da a</translation>
+        <translation>Centrar de/a</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="251" />
         <source>DA:</source>
-        <translation>DA:</translation>
+        <translation>DE:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="258" />
@@ -523,23 +522,23 @@ mappa</translation>
         <source>Centra
 da
 gruppo</source>
-        <translation>Centra
-da
-gruppo</translation>
+        <translation>Centrar
+desde
+grupo</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="306" />
         <source>Centra
 da
 linee</source>
-        <translation>Centra
-da
-linee</translation>
+        <translation>Centrar
+desde
+líneas</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="320" />
         <source>Centra da DB</source>
-        <translation>Centra da DB</translation>
+        <translation>Centrar desde la BD</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="337" />
@@ -552,119 +551,119 @@ linee</translation>
         <location filename="../mappaconfig.ui" line="358" />
         <location filename="../mappaconfig.ui" line="679" />
         <source>Comune:</source>
-        <translation>Comune:</translation>
+        <translation>Municipio:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="365" />
         <location filename="../mappaconfig.ui" line="449" />
         <location filename="../mappaconfig.ui" line="477" />
         <source>Regione:</source>
-        <translation>Regione:</translation>
+        <translation>Región:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="379" />
         <location filename="../mappaconfig.ui" line="456" />
         <location filename="../mappaconfig.ui" line="658" />
         <source>Stato:</source>
-        <translation>Stato:</translation>
+        <translation>País:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="408" />
         <source>Centra nella mappa</source>
-        <translation>Centra nella mappa</translation>
+        <translation>Centrar en el mapa</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="418" />
         <source>Pulisci</source>
-        <translation>Pulisci</translation>
+        <translation>Limpiar</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="430" />
         <source>Modifica mappa</source>
-        <translation>Modifica mappa</translation>
+        <translation>Editar mapa</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="519" />
         <source>Cerca</source>
-        <translation>Cerca</translation>
+        <translation>Buscar</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="528" />
         <source>Auto-completa</source>
-        <translation>Auto-completa</translation>
+        <translation>Autocompletar</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="539" />
         <location filename="../mappaconfig.ui" line="794" />
         <source>Altezza:</source>
-        <translation>Altezza:</translation>
+        <translation>Altura:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="562" />
         <source>Salva
 modifiche</source>
-        <translation>Salva
-modifiche</translation>
+        <translation>Guardar
+cambios</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="573" />
         <source>Modifica colori</source>
-        <translation>Modifica colori</translation>
+        <translation>Editar colores</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="604" />
         <source>Salva colore regione</source>
-        <translation>Salva colore regione</translation>
+        <translation>Guardar color de región</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="634" />
         <source>Salva colore provincia</source>
-        <translation>Salva colore provincia</translation>
+        <translation>Guardar color de provincia</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="641" />
         <source>Salva colore stato</source>
-        <translation>Salva colore stato</translation>
+        <translation>Guardar color del país</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="651" />
         <source>Salva colore comune</source>
-        <translation>Salva colore comune</translation>
+        <translation>Guardar color del municipio</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="665" />
         <source>Regone:</source>
-        <translation>Regone:</translation>
+        <translation>Región:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="689" />
         <source>Coordinate</source>
-        <translation>Coordinate</translation>
+        <translation>Coordenadas</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="695" />
         <source>Coordinate:</source>
-        <translation>Coordinate:</translation>
+        <translation>Coordenadas:</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="703" />
         <source>Lat max</source>
-        <translation>Lat max</translation>
+        <translation>Latitud máx.</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="738" />
         <source>Lon min</source>
-        <translation>Lon min</translation>
+        <translation>Longitud mín.</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="745" />
         <source>Lat min</source>
-        <translation>Lat min</translation>
+        <translation>Latitud mín.</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="777" />
         <source>Lon max</source>
-        <translation>Lon max</translation>
+        <translation>Longitud máx.</translation>
     </message>
     <message>
         <location filename="../mappaconfig.ui" line="812" />
@@ -682,22 +681,22 @@ modifiche</translation>
     <message>
         <location filename="../mappasrpc.ui" line="14" />
         <source>Raggruppa</source>
-        <translation>Raggruppa</translation>
+        <translation>Agrupar</translation>
     </message>
     <message>
         <location filename="../mappasrpc.ui" line="20" />
         <source>Stato:</source>
-        <translation>Stato:</translation>
+        <translation>País:</translation>
     </message>
     <message>
         <location filename="../mappasrpc.ui" line="37" />
         <source>Regione</source>
-        <translation>Regione</translation>
+        <translation>Región</translation>
     </message>
     <message>
         <location filename="../mappasrpc.ui" line="44" />
         <source>Stato</source>
-        <translation>Stato</translation>
+        <translation>País</translation>
     </message>
     <message>
         <location filename="../mappasrpc.ui" line="51" />
@@ -707,12 +706,12 @@ modifiche</translation>
     <message>
         <location filename="../mappasrpc.ui" line="61" />
         <source>Comune</source>
-        <translation>Comune</translation>
+        <translation>Municipio</translation>
     </message>
     <message>
         <location filename="../mappasrpc.ui" line="68" />
         <source>Applica</source>
-        <translation>Applica</translation>
+        <translation>Aplicar</translation>
     </message>
 </context>
 <context>
@@ -720,24 +719,24 @@ modifiche</translation>
     <message>
         <location filename="../miaradio.ui" line="14" />
         <source>Le mie radio</source>
-        <translation>Le mie radio</translation>
+        <translation>Mis radios</translation>
     </message>
     <message>
         <location filename="../miaradio.ui" line="20" />
         <source>Aggiungi</source>
-        <translation>Aggiungi</translation>
+        <translation>Añadir</translation>
     </message>
     <message>
         <location filename="../miaradio.ui" line="30" />
         <source>Nome radio:</source>
-        <translation>Nome radio:</translation>
+        <translation>Nombre de la radio:</translation>
     </message>
     <message>
         <location filename="../miaradio.ui" line="37" />
         <source>Elimina
 selezionato</source>
-        <translation>Elimina
-selezionato</translation>
+        <translation>Eliminar
+seleccionado</translation>
     </message>
 </context>
 <context>
@@ -746,36 +745,36 @@ selezionato</translation>
         <location filename="../nuovolog.ui" line="14" />
         <location filename="../nuovolog.ui" line="32" />
         <source>Inizia log</source>
-        <translation>Inizia log</translation>
+        <translation>Iniciar log</translation>
     </message>
     <message>
         <location filename="../nuovolog.ui" line="22" />
         <source>Nuovo log:</source>
-        <translation>Nuovo log:</translation>
+        <translation>Nuevo log:</translation>
     </message>
     <message>
         <location filename="../nuovolog.ui" line="41" />
         <source>Usa un log del passato:</source>
-        <translation>Usa un log del passato:</translation>
+        <translation>Usar un log anterior:</translation>
     </message>
     <message>
         <location filename="../nuovolog.ui" line="62" />
         <source>Carica
 il log
 selezionato</source>
-        <translation>Carica
-il log
-selezionato</translation>
+        <translation>Cargar
+el log
+seleccionado</translation>
     </message>
     <message>
         <location filename="../nuovolog.cpp" line="14" />
         <source>Nome</source>
-        <translation>Nome</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="../nuovolog.cpp" line="14" />
         <source>Data di creazione</source>
-        <translation>Data di creazione</translation>
+        <translation>Fecha de creación</translation>
     </message>
 </context>
 <context>
@@ -787,7 +786,7 @@ selezionato</translation>
 Impossibile leggere il file: %2</source>
         <translation>%1
 
-Impossibile leggere il file: %2</translation>
+No se puede leer el archivo: %2</translation>
     </message>
 </context>
 <context>
@@ -795,34 +794,34 @@ Impossibile leggere il file: %2</translation>
     <message>
         <location filename="../tx.ui" line="20" />
         <source>Form</source>
-        <translation>Form</translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="57" />
         <source>Mostra / nascondi TX dettagli</source>
-        <translation>Mostra / nascondi TX dettagli</translation>
+        <translation>Mostrar / ocultar detalles TX</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="114" />
         <location filename="../tx.ui" line="174" />
         <source>Operatore</source>
-        <translation>Operatore</translation>
+        <translation>Operador</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="121" />
         <location filename="../tx.ui" line="169" />
         <source>Nominativo</source>
-        <translation>Nominativo</translation>
+        <translation>Indicativo</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="135" />
         <source>Aggiungi</source>
-        <translation>Aggiungi</translation>
+        <translation>Añadir</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="145" />
         <source>Togli</source>
-        <translation>Togli</translation>
+        <translation>Quitar</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="192" />
@@ -832,12 +831,12 @@ Impossibile leggere il file: %2</translation>
     <message>
         <location filename="../tx.ui" line="206" />
         <source>Potenza (Watt):</source>
-        <translation>Potenza (Watt):</translation>
+        <translation>Potencia (Watt):</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="223" />
         <source>Trasmissione:</source>
-        <translation>Trasmissione:</translation>
+        <translation>Transmisión:</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="234" />
@@ -902,42 +901,42 @@ Impossibile leggere il file: %2</translation>
     <message>
         <location filename="../tx.ui" line="294" />
         <source>Satellitare</source>
-        <translation>Satellitare</translation>
+        <translation>Satélite</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="299" />
         <source>Altri modi digitali</source>
-        <translation>Altri modi digitali</translation>
+        <translation>Otros modos digitales</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="304" />
         <source>Sperimentale</source>
-        <translation>Sperimentale</translation>
+        <translation>Experimental</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="312" />
         <source>Qsl</source>
-        <translation>Qsl</translation>
+        <translation>QSL</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="319" />
         <source>Altri</source>
-        <translation>Altri</translation>
+        <translation>Otros</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="330" />
         <source>Il mio locatore attuale:</source>
-        <translation>Il mio locatore attuale:</translation>
+        <translation>Mi localizador actual:</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="356" />
         <source>Cerca da preferiti:</source>
-        <translation>Cerca da preferiti:</translation>
+        <translation>Buscar en favoritos:</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="363" />
         <source>Usa questo</source>
-        <translation>Usa questo</translation>
+        <translation>Usar esto</translation>
     </message>
 </context>
 </TS>
