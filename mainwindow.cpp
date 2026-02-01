@@ -228,15 +228,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(t, &QTimer::timeout, this, &MainWindow::aggiornaOrario);
     t->start(1000);
 
-    tx->preferiti->setColumnCount(2); // Imposta il numero di colonne
-    // Riduci l'altezza delle righe
-    tx->preferiti->verticalHeader()->setDefaultSectionSize(10);
-    // Riduci il font
-    QFont font = tx->preferiti->font();
-    font.setPointSize(8); // Dimensione più piccola
-    tx->preferiti->setFont(font);
-    // streccia
-    tx->preferiti->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    configuraPreferitiTable(tx->preferiti);
 
     tx->nominativiList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
@@ -1305,6 +1297,8 @@ void MainWindow::caricaLocatoriPreferitiTx(Ui::Tx *txUi) {
         return;
     }
 
+    configuraPreferitiTable(txUi->preferiti);
+
     DBResult *res = RFLog->executeQuery("select locatore, nome from locatoripreferiti order by nome");
     txUi->preferiti->setRowCount(res->getRigheCount());
     for (int i = 0; i < res->getRigheCount(); i++) {
@@ -1409,6 +1403,8 @@ void MainWindow::aggiungiNominativo() {
             // Imposta gli elementi nella nuova riga
             tx->nominativiList->setItem(rowCount, 0, nomItem);
             tx->nominativiList->setItem(rowCount, 1, opItem);
+
+            aggiungiNominativoCombo(tx->nominativo, nominativo);
         }
     }
 }
@@ -1436,7 +1432,7 @@ void MainWindow::setSelectedNominativoDB(const QString & txt) {
 }
 
 void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
-    if (!index.isValid() || index.column() != 4) {
+    if (!index.isValid() || (index.column() < 4 || index.column() > 7)) {
         return;
     }
 
@@ -1472,6 +1468,7 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
         txUi->nominativo->addItem(tx->nominativo->itemText(i));
     }
 
+    configuraPreferitiTable(txUi->preferiti);
     caricaLocatoriPreferitiTx(txUi);
 
     popolaTxDialog(txUi, *qso);
@@ -1581,6 +1578,9 @@ void MainWindow::aggiungiNominativoTx(Ui::Tx *txUi) {
             QTableWidgetItem *opItem = new QTableWidgetItem(operatore);
             txUi->nominativiList->setItem(rowCount, 0, nomItem);
             txUi->nominativiList->setItem(rowCount, 1, opItem);
+
+            aggiungiNominativoCombo(txUi->nominativo, nominativo);
+            aggiungiNominativoCombo(tx->nominativo, nominativo);
         }
     }
 }
@@ -1624,8 +1624,7 @@ void MainWindow::aggiornaTabella()
     }
 }
 
-void MainWindow::aggiungiATabella(const Qso & qso, int row)
-{
+void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         QString txt;
         QTableWidgetItem* item;
         QColor rosso(0xff, 0xdf, 0xdf);
@@ -1816,8 +1815,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row)
 }
 
 
-void MainWindow::setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA)
-{
+void MainWindow::setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA) {
     if (!Coordinate::validaLocatore(locatoreDa) || !Coordinate::validaLocatore(locatoreA)) {
         mappa->setMatrice(locatoreDa, locatoreA);
         return;
@@ -1874,4 +1872,36 @@ void MainWindow::setMatriceConAspect(const QString &locatoreDa, const QString &l
 
     mappa->setMatrice(Coordinate::fromRowCol(rTop, cLeft),
                       Coordinate::fromRowCol(rBottom, cRight));
+}
+
+void MainWindow::aggiungiNominativoCombo(QComboBox *combo, const QString &nominativo) {
+    if (!combo) {
+        return;
+    }
+
+    const QString upper = nominativo.trimmed().toUpper();
+    if (upper.isEmpty()) {
+        return;
+    }
+
+    for (int i = 0; i < combo->count(); ++i) {
+        if (combo->itemText(i).trimmed().toUpper() == upper) {
+            return;
+        }
+    }
+
+    combo->addItem(upper);
+}
+
+void MainWindow::configuraPreferitiTable(QTableWidget *table) {
+    if (!table) {
+        return;
+    }
+
+    table->setColumnCount(2);
+    table->verticalHeader()->setDefaultSectionSize(10);
+    QFont font = table->font();
+    font.setPointSize(8);
+    table->setFont(font);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }

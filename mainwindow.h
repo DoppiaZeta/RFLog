@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QPalette>
+#include <QComboBox>
 
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -130,6 +131,9 @@ private:
     void caricaLocatoriPreferitiTx(Ui::Tx *txUi);
     void usaLocatorePreferitoTx(Ui::Tx *txUi);
     void usaLocatorePreferito();
+    void configuraPreferitiTable(QTableWidget *table);
+    void aggiungiNominativoCombo(QComboBox *combo, const QString &nominativo);
+
 
     void updateMappaLocatori();
 
