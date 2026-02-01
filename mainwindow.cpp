@@ -18,6 +18,7 @@
 #include <QFile>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QApplication>
 #include <QPushButton>
 #include <QSet>
 #include <QTextStream>
@@ -148,16 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     ui->Tabella->setColumnCount(8);
-    ui->Tabella->setHorizontalHeaderLabels(
-        QStringList() << tr("TX Locatore")
-                      << tr("TX")
-                      << tr("RX Locatore")
-                      << tr("RX")
-                      << tr("TX dettagli")
-                      << tr("Data/Ora UTC")
-                      << tr("QSL")
-                      << tr("INFO")
-        );
+    updateTableHeaders();
 
     ui->Tabella->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -212,13 +204,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mappaConfig->coloreProvinciaOK, &QPushButton::clicked, this, &MainWindow::salvaColoreProvincia);
     connect(mappaConfig->coloreComuneOK, &QPushButton::clicked, this, &MainWindow::salvaColoreComune);
 
-    mappaConfig->coloreStato->addItem(tr("Grigio"));
-    mappaConfig->coloreStato->addItem(tr("Viola"));
-    mappaConfig->coloreStato->addItem(tr("Blu"));
-    mappaConfig->coloreStato->addItem(tr("Verde"));
-    mappaConfig->coloreStato->addItem(tr("Giallo"));
-    mappaConfig->coloreStato->addItem(tr("Marrone"));
-    mappaConfig->coloreStato->addItem(tr("Arancione"));
+    updateColoreStatoItems();
 
     for(int i = 0; i < 10; i++) {
         mappaConfig->coloreRegione->addItem(QString::number(i));
@@ -281,12 +267,122 @@ MainWindow::MainWindow(QWidget *parent)
     caricaLocatoriPreferiti();
     caricaMieRadio();
     caricaNominativiDaDb();
+    setupLanguageMenu();
+    applySystemLanguage();
     centraPredefinitoITA();
 }
 
 MainWindow::~MainWindow() {
     delete ui;
     delete mappaConfig;
+}
+
+void MainWindow::setupLanguageMenu() {
+    if (!ui->menuLingua) {
+        return;
+    }
+
+    languageActionGroup = new QActionGroup(this);
+    languageActionGroup->setExclusive(true);
+
+    auto bindAction = [this](QAction *action, const QString &locale) {
+        if (!action) {
+            return;
+        }
+        action->setCheckable(true);
+        action->setData(locale);
+        languageActionGroup->addAction(action);
+        connect(action, &QAction::triggered, this, [this, locale]() {
+            applyLanguage(locale);
+        });
+    };
+
+    bindAction(ui->actionLinguaItaliano, QStringLiteral("it_IT"));
+    bindAction(ui->actionLinguaInglese, QStringLiteral("en_US"));
+    bindAction(ui->actionLinguaSpagnolo, QStringLiteral("es_ES"));
+    bindAction(ui->actionLinguaFrancese, QStringLiteral("fr_FR"));
+    bindAction(ui->actionLinguaTedesco, QStringLiteral("de_DE"));
+}
+
+void MainWindow::applyLanguage(const QString &localeName) {
+    QString targetLocale = localeName;
+    qApp->removeTranslator(&appTranslator);
+
+    bool loaded = appTranslator.load(":/i18n/RFLog_" + targetLocale);
+    if (!loaded && targetLocale != QLatin1String("en_US")) {
+        targetLocale = QStringLiteral("en_US");
+        loaded = appTranslator.load(":/i18n/RFLog_" + targetLocale);
+    }
+
+    if (loaded) {
+        qApp->installTranslator(&appTranslator);
+    }
+
+    currentLocale = targetLocale;
+    if (languageActionGroup) {
+        for (QAction *action : languageActionGroup->actions()) {
+            action->setChecked(action->data().toString() == currentLocale);
+        }
+    }
+
+    retranslateUi();
+}
+
+void MainWindow::applySystemLanguage() {
+    const QStringList uiLanguages = QLocale::system().uiLanguages();
+    for (const QString &locale : uiLanguages) {
+        const QString localeName = QLocale(locale).name();
+        qApp->removeTranslator(&appTranslator);
+        if (appTranslator.load(":/i18n/RFLog_" + localeName)) {
+            qApp->installTranslator(&appTranslator);
+            currentLocale = localeName;
+            if (languageActionGroup) {
+                for (QAction *action : languageActionGroup->actions()) {
+                    action->setChecked(action->data().toString() == currentLocale);
+                }
+            }
+            retranslateUi();
+            return;
+        }
+    }
+
+    applyLanguage(QStringLiteral("en_US"));
+}
+
+void MainWindow::retranslateUi() {
+    ui->retranslateUi(this);
+    updateTableHeaders();
+    updateColoreStatoItems();
+}
+
+void MainWindow::updateTableHeaders() {
+    ui->Tabella->setHorizontalHeaderLabels(
+        QStringList() << tr("TX Locatore")
+                      << tr("TX")
+                      << tr("RX Locatore")
+                      << tr("RX")
+                      << tr("TX dettagli")
+                      << tr("Data/Ora UTC")
+                      << tr("QSL")
+                      << tr("INFO")
+        );
+}
+
+void MainWindow::updateColoreStatoItems() {
+    const int currentIndex = mappaConfig->coloreStato->currentIndex();
+    QSignalBlocker blocker(mappaConfig->coloreStato);
+    mappaConfig->coloreStato->clear();
+    mappaConfig->coloreStato->addItem(tr("Grigio"));
+    mappaConfig->coloreStato->addItem(tr("Viola"));
+    mappaConfig->coloreStato->addItem(tr("Blu"));
+    mappaConfig->coloreStato->addItem(tr("Verde"));
+    mappaConfig->coloreStato->addItem(tr("Giallo"));
+    mappaConfig->coloreStato->addItem(tr("Marrone"));
+    mappaConfig->coloreStato->addItem(tr("Arancione"));
+    if (mappaConfig->coloreStato->count() > 0) {
+        const int boundedIndex = qMin(currentIndex, mappaConfig->coloreStato->count() - 1);
+        mappaConfig->coloreStato->setCurrentIndex(qMax(0, boundedIndex));
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {

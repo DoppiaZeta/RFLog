@@ -199,19 +199,19 @@ color: white;</string>
     </property>
     <addaction name="menuInformazioniSu"/>
    </widget>
-   <widget class="QMenu" name="menuLAN">
+   <widget class="QMenu" name="menuLingua">
     <property name="title">
      <string>LAN</string>
     </property>
-    <addaction name="actionITA"/>
-    <addaction name="actionENG"/>
-    <addaction name="actionFR"/>
-    <addaction name="actionDE"/>
-    <addaction name="actionES"/>
+    <addaction name="actionLinguaItaliano"/>
+    <addaction name="actionLinguaInglese"/>
+    <addaction name="actionLinguaFrancese"/>
+    <addaction name="actionLinguaTedesco"/>
+    <addaction name="actionLinguaSpagnolo"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMioDB"/>
-   <addaction name="menuLAN"/>
+   <addaction name="menuLingua"/>
    <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -250,27 +250,27 @@ color: white;</string>
     <string>Apri EDI...</string>
    </property>
   </action>
-  <action name="actionITA">
+  <action name="actionLinguaItaliano">
    <property name="text">
     <string>ITA</string>
    </property>
   </action>
-  <action name="actionENG">
+  <action name="actionLinguaInglese">
    <property name="text">
     <string>ENG</string>
    </property>
   </action>
-  <action name="actionFR">
+  <action name="actionLinguaFrancese">
    <property name="text">
     <string>FR</string>
    </property>
   </action>
-  <action name="actionDE">
+  <action name="actionLinguaTedesco">
    <property name="text">
     <string>DE</string>
    </property>
   </action>
-  <action name="actionES">
+  <action name="actionLinguaSpagnolo">
    <property name="text">
     <string>ES</string>
    </property>

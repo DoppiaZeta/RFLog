@@ -13,6 +13,8 @@
 #include <QDebug>
 #include <QPalette>
 #include <QComboBox>
+#include <QActionGroup>
+#include <QTranslator>
 
 #include "suggestivelineedit.h"
 #include "databasemanager.h"
@@ -150,11 +152,20 @@ private:
     void setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi);
     void setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA);
     void modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *parent = nullptr);
+    void setupLanguageMenu();
+    void applyLanguage(const QString &localeName);
+    void applySystemLanguage();
+    void retranslateUi();
+    void updateTableHeaders();
+    void updateColoreStatoItems();
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
     Ui::Tx *tx;
     QTimer *resizeTimer;
+    QActionGroup *languageActionGroup = nullptr;
+    QTranslator appTranslator;
+    QString currentLocale;
 
     SuggestiveLineEdit *Nominativo;
     SuggestiveLineEdit *Locatore;
