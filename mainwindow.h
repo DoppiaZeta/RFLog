@@ -99,7 +99,6 @@ private slots:
     void menuMiaRadio();
     void menuInformazioniSu();
 
-    void usaLocatorePreferito();
     void aggiungiNominativo();
     void eliminaNominativo();
     void modificaTxDaTabella(const QModelIndex &index);
@@ -128,6 +127,9 @@ private:
     void caricaLocatoriPreferiti();
     void caricaMieRadio();
     void caricaNominativiDaDb();
+    void caricaLocatoriPreferitiTx(Ui::Tx *txUi);
+    void usaLocatorePreferitoTx(Ui::Tx *txUi);
+    void usaLocatorePreferito();
 
     void updateMappaLocatori();
 
@@ -138,6 +140,7 @@ private:
     void aggiungiNominativoTx(Ui::Tx *txUi);
     void eliminaNominativoTx(Ui::Tx *txUi);
     void setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi);
+    void setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA);
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;

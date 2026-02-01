@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QSignalBlocker>
+#include <QTimeZone>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -292,6 +293,10 @@ void MainWindow::aggiornaColoreNominativoDuplicato(const QString &txt)
     }
 }
 
+void MainWindow::usaLocatorePreferito() {
+    usaLocatorePreferitoTx(tx);
+}
+
 void MainWindow::aggiornaSuggerimentiNominativo(const QString &txt) {
     const QString prefix = txt.trimmed().toUpper();
     if (nominativoPrefixSet && prefix == lastNominativoPrefix)
@@ -395,55 +400,52 @@ void MainWindow::svuotaLineEdit() {
 }
 
 void MainWindow::confermaLinea() {
-    /*
-    QString nominativoText = Nominativo->text().trimmed(); // Elimina spazi inutili
+    const QString nominativoText = Nominativo->text().trimmed().toUpper();
     if (nominativoText.isEmpty()) {
-        return; // Interrompe l'inserimento
+        return;
     }
 
-    // Controlla se il nominativo è già presente
-    bool nominativoDuplicato = false;
-    for (int row = 0; row < ui->Tabella->rowCount(); ++row) {
-        QTableWidgetItem *item = ui->Tabella->item(row, 0); // Colonna del nominativo
-        if (item && item->text() == nominativoText) {
-            qDebug() << "Nominativo duplicato: " << nominativoText;
-            nominativoDuplicato = true;
-            break;
+    Qso *qso = new Qso(RFLog, numeroLog);
+    qso->nominativoRx = nominativoText;
+    qso->operatoreRx = QString();
+    qso->locatoreRx = Locatore->text().trimmed().toUpper();
+    qso->segnaleRx = Segnale->text().trimmed().toDouble();
+    qso->frequenzaRx = Frequenza->text().trimmed().toDouble();
+    qso->duplicato = nominativoPresenteInLista(nominativoText);
+
+    aggiornaQsoDaTxDialog(*qso, tx);
+
+    if (qso->nominativoTx.isEmpty()) {
+        const QString nominativoTx = tx->nominativo->currentText().trimmed().toUpper();
+        const QString operatoreTx = tx->operatore->text().trimmed().toUpper();
+        if (!nominativoTx.isEmpty()) {
+            Qso::NominativoNome nominativo;
+            nominativo.nominativo = nominativoTx;
+            nominativo.operatore = operatoreTx;
+            qso->nominativoTx.append(nominativo);
         }
     }
 
-    // Ottieni l'orario GMT attuale
-    QString currentDateTimeGMT = QDateTime::currentDateTimeUtc().toString("yyyy-MM-dd HH:mm:ss");
-    if(!Orario->text().trimmed().isEmpty())
-        currentDateTimeGMT = Orario->text().trimmed();
-
-    // Aggiungi una nuova riga in cima
-    qDebug() << "Inserisci riga in cima";
-    ui->Tabella->insertRow(0); // Inserisce la nuova riga nella posizione 0
-
-    // Inserisci dati nella nuova riga
-    QTableWidgetItem *nominativoItem = new QTableWidgetItem(nominativoText);
-    ui->Tabella->setItem(0, 0, nominativoItem);
-    ui->Tabella->setItem(0, 1, new QTableWidgetItem(Locatore->text().trimmed()));
-    ui->Tabella->setItem(0, 2, new QTableWidgetItem(Segnale->text().trimmed()));
-    ui->Tabella->setItem(0, 3, new QTableWidgetItem(Frequenza->text().trimmed()));
-    ui->Tabella->setItem(0, 4, new QTableWidgetItem(currentDateTimeGMT));
-
-    // Se duplicato, colora la nuova riga di rosso
-    if (nominativoDuplicato) {
-        for (int col = 0; col < ui->Tabella->columnCount(); ++col) {
-            QTableWidgetItem *rowItem = ui->Tabella->item(0, col);
-            if (rowItem) {
-                rowItem->setBackground(QColor(190, 190, 255));
-            }
+    const QString orarioText = Orario->text().trimmed();
+    if (orarioText.isEmpty()) {
+        qso->orarioRx = QDateTime::currentDateTimeUtc();
+    } else {
+        QDateTime parsed = QDateTime::fromString(orarioText, "yyyy-MM-dd HH:mm:ss");
+        if (!parsed.isValid()) {
+            parsed = QDateTime::fromString(orarioText, Qt::ISODate);
+        }
+        if (parsed.isValid()) {
+            parsed.setTimeZone(QTimeZone::utc());
+            qso->orarioRx = parsed;
+        } else {
+            qso->orarioRx = QDateTime::currentDateTimeUtc();
         }
     }
 
-    if(!nominativoDuplicato && Coordinate::validaLocatore(Locatore->text().trimmed())) {
-        mappa->addLinea(Linee("JN56PK", Locatore->text().trimmed().left(6)));
-    }
-*/
+    qso->insertAggiornaDB();
+    qsoList.prepend(qso);
     aggiornaTabella();
+    updateMappaLocatori();
 }
 
 void MainWindow::aggiornaOrario() {
@@ -724,33 +726,33 @@ void MainWindow::centraDaLocatore() {
         int offset = mappaConfig->locatoreOffset->value() / 2;
         lato1 = Coordinate::calcolaCoordinate(loc, -offset, -offset);
         lato2 = Coordinate::calcolaCoordinate(loc, offset, offset);
-        mappa->setMatrice(lato1, lato2);
+        setMatriceConAspect(lato1, lato2);
     }
 }
 
 void MainWindow::centraPredefinitoITA() {
-    mappa->setMatrice("JM06UL", "KN17QH");
+    setMatriceConAspect("JM06UL", "KN17QH");
 }
 void MainWindow::centraPredefinitoMondo() {
-    mappa->setMatrice("AC00AA", "RR89PX");
+    setMatriceConAspect("AC00AA", "RR89PX");
 }
 void MainWindow::centraPredefinitoEU() {
-    mappa->setMatrice("IM32GM", "LQ22IV");
+    setMatriceConAspect("IM32GM", "LQ22IV");
 }
 void MainWindow::centraPredefinitoAsia() {
-    mappa->setMatrice("KJ55JB", "RQ89PX");
+    setMatriceConAspect("KJ55JB", "RQ89PX");
 }
 void MainWindow::centraPredefinitoAfrica() {
-    mappa->setMatrice("HM69IF", "LF92KI");
+    setMatriceConAspect("HM69IF", "LF92KI");
 }
 void MainWindow::centraPredefinitoNordAmerica() {
-    mappa->setMatrice("AQ51EK", "GJ84PJ");
+    setMatriceConAspect("AQ51EK", "GJ84PJ");
 }
 void MainWindow::centraPredefinitoSudAmerica() {
-    mappa->setMatrice("DK86GR", "HD51UL");
+    setMatriceConAspect("DK86GR", "HD51UL");
 };
 void MainWindow::centraPredefinitoOceania() {
-    mappa->setMatrice("NK34HS", "RD95AX");
+    setMatriceConAspect("NK34HS", "RD95AX");
 }
 
 DBResult * MainWindow::caricaStatiDB() {
@@ -1295,13 +1297,21 @@ color: darkblue;
 }
 
 void MainWindow::caricaLocatoriPreferiti() {
+    caricaLocatoriPreferitiTx(tx);
+}
+
+void MainWindow::caricaLocatoriPreferitiTx(Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
     DBResult *res = RFLog->executeQuery("select locatore, nome from locatoripreferiti order by nome");
-    tx->preferiti->setRowCount(res->getRigheCount());
+    txUi->preferiti->setRowCount(res->getRigheCount());
     for (int i = 0; i < res->getRigheCount(); i++) {
         QTableWidgetItem *locItem = new QTableWidgetItem(res->getCella(i, 0));
         QTableWidgetItem *nomeItem = new QTableWidgetItem(res->getCella(i, 1));
-        tx->preferiti->setItem(i, 0, locItem);
-        tx->preferiti->setItem(i, 1, nomeItem);
+        txUi->preferiti->setItem(i, 0, locItem);
+        txUi->preferiti->setItem(i, 1, nomeItem);
     }
     delete res;
 }
@@ -1327,10 +1337,14 @@ void MainWindow::caricaNominativiDaDb() {
         setSelectedNominativoDB(tx->nominativo->currentText());
 }
 
-void MainWindow::usaLocatorePreferito() {
-    int selectedRow = tx->preferiti->currentRow();
+void MainWindow::usaLocatorePreferitoTx(Ui::Tx *txUi) {
+    if (!txUi) {
+        return;
+    }
+
+    int selectedRow = txUi->preferiti->currentRow();
     if (selectedRow != -1) {
-        tx->locatore->setText(tx->preferiti->item(selectedRow, 0)->text());
+        txUi->locatore->setText(txUi->preferiti->item(selectedRow, 0)->text());
     }
 }
 
@@ -1458,8 +1472,16 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
         txUi->nominativo->addItem(tx->nominativo->itemText(i));
     }
 
+    caricaLocatoriPreferitiTx(txUi);
+
     popolaTxDialog(txUi, *qso);
 
+    connect(txUi->preferitiOK, &QPushButton::clicked, this, [this, txUi]() {
+        usaLocatorePreferitoTx(txUi);
+    });
+    connect(txUi->preferiti, &QTableWidget::doubleClicked, this, [this, txUi]() {
+        usaLocatorePreferitoTx(txUi);
+    });
     connect(txUi->aggiungi, &QPushButton::clicked, this, [this, txUi]() {
         aggiungiNominativoTx(txUi);
     });
@@ -1791,4 +1813,65 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row)
 
         // Facoltativo: adatta l'altezza della riga al contenuto
         ui->Tabella->resizeRowToContents(row);
+}
+
+
+void MainWindow::setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA)
+{
+    if (!Coordinate::validaLocatore(locatoreDa) || !Coordinate::validaLocatore(locatoreA)) {
+        mappa->setMatrice(locatoreDa, locatoreA);
+        return;
+    }
+
+    const int widgetWidth = mappa->width();
+    const int widgetHeight = mappa->height();
+    if (widgetWidth <= 0 || widgetHeight <= 0) {
+        mappa->setMatrice(locatoreDa, locatoreA);
+        return;
+    }
+
+    int rowDa;
+    int colDa;
+    int rowA;
+    int colA;
+    Coordinate::toRowCol(locatoreDa, rowDa, colDa);
+    Coordinate::toRowCol(locatoreA, rowA, colA);
+
+    int rTop = qMax(rowDa, rowA);
+    int rBottom = qMin(rowDa, rowA);
+    int cLeft = qMin(colDa, colA);
+    int cRight = qMax(colDa, colA);
+
+    int rows = rTop - rBottom + 1;
+    int cols = cRight - cLeft + 1;
+
+    if (rows <= 0 || cols <= 0) {
+        mappa->setMatrice(locatoreDa, locatoreA);
+        return;
+    }
+
+    const double targetRatio = static_cast<double>(widgetWidth) / static_cast<double>(widgetHeight);
+    const double currentRatio = static_cast<double>(cols) / static_cast<double>(rows);
+
+    if (!qFuzzyCompare(currentRatio, targetRatio)) {
+        if (currentRatio < targetRatio) {
+            int desiredCols = static_cast<int>(std::ceil(targetRatio * rows));
+            int extra = desiredCols - cols;
+            cLeft -= extra / 2;
+            cRight += extra - (extra / 2);
+        } else {
+            int desiredRows = static_cast<int>(std::ceil(static_cast<double>(cols) / targetRatio));
+            int extra = desiredRows - rows;
+            rBottom -= extra / 2;
+            rTop += extra - (extra / 2);
+        }
+    }
+
+    cLeft = qBound(0, cLeft, colonnePerRiga - 1);
+    cRight = qBound(0, cRight, colonnePerRiga - 1);
+    rBottom = qBound(0, rBottom, righePerColonna - 1);
+    rTop = qBound(0, rTop, righePerColonna - 1);
+
+    mappa->setMatrice(Coordinate::fromRowCol(rTop, cLeft),
+                      Coordinate::fromRowCol(rBottom, cRight));
 }

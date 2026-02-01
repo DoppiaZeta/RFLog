@@ -140,6 +140,21 @@ void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event)
         case Qt::Key_Left:
         case Qt::Key_Right:
             break;
+        case Qt::Key_Return:
+        case Qt::Key_Enter: {
+            const QString chosen = completionFromPopup(completer);
+            if (!chosen.isEmpty()) {
+                setText(chosen);
+                setCursorPosition(chosen.length());
+                emit completionAccepted(chosen);
+            }
+
+            completer->popup()->hide();
+            emit returnPressed();
+
+            event->accept();
+            return;
+        }
         case Qt::Key_Up:
         case Qt::Key_Down:
         case Qt::Key_PageUp:
