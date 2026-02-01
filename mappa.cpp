@@ -1,6 +1,7 @@
 #include "mappa.h"
 #include <QPainterPath>
 #include <QSet>
+#include <QtMath>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
@@ -99,13 +100,18 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     int totalCols = cRight - cLeft + 1;
     int totalRows = rTop - rBottom + 1;
 
-    // Calcola il passo di riduzione progressivo
-    auto calculateStep = [](int total) -> int {
-        if (total <= 500) return 1;   // Precisione massima
-        if (total <= 1200) return 2;   // Salta 1 ogni 2
-        if (total <= 1800) return 4;   // Salta 3 ogni 4
-        if (total <= 2500) return 6;   // Salta 7 ogni 8
-        return 8;
+    // Calcola il passo di riduzione per mantenere il numero di celle entro un limite.
+    const int maxCells = 250000;
+    const int maxAxis = 2000;
+    const double totalCells = static_cast<double>(totalCols) * static_cast<double>(totalRows);
+    const double scale = (totalCells > maxCells) ? qSqrt(totalCells / maxCells) : 1.0;
+
+    auto calculateStep = [scale](int total) -> int {
+        int step = qMax(1, static_cast<int>(qCeil(scale)));
+        if (total / step > maxAxis) {
+            step = qMax(step, static_cast<int>(qCeil(static_cast<double>(total) / maxAxis)));
+        }
+        return step;
     };
 
     int colStep = calculateStep(totalCols);
