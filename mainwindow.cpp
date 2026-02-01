@@ -467,7 +467,9 @@ void MainWindow::confermaLinea() {
 
     const QString orarioText = Orario->text().trimmed();
     if (orarioText.isEmpty()) {
-        qso->orarioRx = QDateTime::currentDateTimeUtc();
+        const QDateTime currentUtc = QDateTime::currentDateTimeUtc();
+        qso->orarioRx = currentUtc;
+        Orario->setPlaceholderText(currentUtc.toString("yyyy-MM-dd HH:mm:ss"));
     } else {
         QDateTime parsed = QDateTime::fromString(orarioText, "yyyy-MM-dd HH:mm:ss");
         if (!parsed.isValid()) {
@@ -1644,7 +1646,7 @@ void MainWindow::setSelectedNominativoDB(const QString & txt) {
 }
 
 void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
-    if (!index.isValid() || (index.column() < 2 || index.column() > 7)) {
+    if (!index.isValid() /*|| (index.column() < 2 || index.column() > 7)*/) {
         return;
     }
 

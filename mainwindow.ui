@@ -56,7 +56,7 @@
            <string notr="true">color: blue;</string>
           </property>
           <property name="text">
-           <string>Orario</string>
+           <string>Orario (UTC)</string>
           </property>
          </widget>
         </item>
@@ -180,8 +180,10 @@ color: white;</string>
      <string>File</string>
     </property>
     <addaction name="menuIniziaLog"/>
+    <addaction name="separator"/>
     <addaction name="menuApriAdif"/>
     <addaction name="menuApriEdi"/>
+    <addaction name="separator"/>
     <addaction name="menuEsportaAdifTx"/>
    </widget>
    <widget class="QMenu" name="menuMioDB">
