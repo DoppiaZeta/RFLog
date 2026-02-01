@@ -477,6 +477,7 @@ void MainWindow::applySystemLanguage() {
 
 void MainWindow::retranslateUi() {
     ui->retranslateUi(this);
+    tx->retranslateUi(ui->tx);
     updateTableHeaders();
     updateColoreStatoItems();
 }

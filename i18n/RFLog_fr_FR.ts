@@ -826,7 +826,7 @@ Impossible de lire le fichier : %2</translation>
     <message>
         <location filename="../tx.ui" line="192" />
         <source>Radio:</source>
-        <translation>Radio :</translation>
+        <translation>Station :</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="206" />

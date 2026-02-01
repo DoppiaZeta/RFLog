@@ -794,7 +794,7 @@ Unable to read file: %2</translation>
     <message>
         <location filename="../tx.ui" line="20" />
         <source>Form</source>
-        <translation>Form</translation>
+        <translation>TX</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="57" />
@@ -826,7 +826,7 @@ Unable to read file: %2</translation>
     <message>
         <location filename="../tx.ui" line="192" />
         <source>Radio:</source>
-        <translation>Radio:</translation>
+        <translation>Rig:</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="206" />

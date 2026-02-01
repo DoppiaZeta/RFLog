@@ -68,6 +68,8 @@ DISTFILES += \
    .gitignore \
    LICENSE.txt \
    LICENSE_locatoriDB.txt \
+   README.md \
+   README_ITA.md \
    appicon.rc
 
 

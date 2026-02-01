@@ -826,7 +826,7 @@ Datei kann nicht gelesen werden: %2</translation>
     <message>
         <location filename="../tx.ui" line="192" />
         <source>Radio:</source>
-        <translation>Radio:</translation>
+        <translation>Funkgerät:</translation>
     </message>
     <message>
         <location filename="../tx.ui" line="206" />
