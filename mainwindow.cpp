@@ -35,9 +35,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     DBResult *res;
 
+    /*
     QString formato = "border: none;\n"
                       "color: blue;\n"
                       "font-weight: bold;\n";
+    */
 
     Nominativo = new SuggestiveLineEdit(this);
     Locatore = new SuggestiveLineEdit(this);
@@ -48,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent)
     QStringList suggestions = {"in3kgw", "in3ivc", "in3ktt", "in3hkz"};
     Nominativo->setCompleter(suggestions);
 
-    Nominativo->setStyleSheet(formato);
-    Locatore->setStyleSheet(formato);
-    Segnale->setStyleSheet(formato);
-    Frequenza->setStyleSheet(formato);
-    Orario->setStyleSheet(formato);
+    //Nominativo->setStyleSheet(formato);
+    //Locatore->setStyleSheet(formato);
+    //Segnale->setStyleSheet(formato);
+    //Frequenza->setStyleSheet(formato);
+    //Orario->setStyleSheet(formato);
 
     ui->grigliaInput->addWidget(Nominativo, 1, 1);
     ui->grigliaInput->addWidget(Locatore, 1, 2);

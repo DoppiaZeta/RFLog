@@ -7,46 +7,11 @@ SuggestiveLineEdit::SuggestiveLineEdit(QWidget *parent)
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setWidget(this); // Associa il completer al LineEdit
 
-
     connect(this, &QLineEdit::textEdited, this, [this](const QString &text) {
         completer->setCompletionPrefix(text); // Filtra in base al testo
         completer->complete(); // Mostra il popup aggiornato
-
-        // Aggiorna il placeholder con la prima voce
-        if (completer->completionCount() > 0) {
-            QString firstCompletion = completer->completionModel()->index(0, 0).data(Qt::DisplayRole).toString();
-            setPlaceholderText(firstCompletion);
-        } else {
-            setPlaceholderText(""); // Rimuove il placeholder se non ci sono completamenti
-        }
     });
 
-}
-
-void SuggestiveLineEdit::paintEvent(QPaintEvent *event) {
-    QLineEdit::paintEvent(event);
-
-    if (completer && completer->completionCount() > 0) {
-        // Ottieni il primo suggerimento
-        QString firstCompletion = completer->completionModel()->index(0, 0).data(Qt::DisplayRole).toString();
-
-        if (!firstCompletion.isEmpty() && firstCompletion.startsWith(text(), Qt::CaseInsensitive)) {
-            QPainter painter(this);
-            painter.setPen(Qt::gray);
-
-            // Mostra il suggerimento dinamico (solo la parte mancante)
-            QString remainingSuggestion = firstCompletion.mid(text().length());
-            int textWidth = fontMetrics().horizontalAdvance(text());
-            QRect rect = this->rect().adjusted(textWidth + 2, 0, -5, 0);
-
-            painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, remainingSuggestion);
-        }
-    }
-}
-
-void SuggestiveLineEdit::setSuggestion(const QString &suggestionText) {
-    suggestion = suggestionText;
-    update(); // Forza il ridisegno
 }
 
 void SuggestiveLineEdit::setCompleter(QStringList &list) {
@@ -66,8 +31,8 @@ void SuggestiveLineEdit::setCompleter(QStringList &list) {
 }
 
 
-bool SuggestiveLineEdit::focusNextPrevChild(bool next) {
-    if (completer && completer->popup()->isVisible()) {
+void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event) {
+    if ((event->key() == Qt::Key_Tab || event->key() == Qt::Key_Right) && completer && completer->popup()->isVisible()) {
         QString currentCompletion = completer->currentCompletion();
 
         if (!currentCompletion.isEmpty()) {
@@ -78,10 +43,11 @@ bool SuggestiveLineEdit::focusNextPrevChild(bool next) {
 
         completer->popup()->hide(); // Nascondi il popup
         emit pressTab();
-        return true; // Blocca il cambio di focus
+        focusNextChild();
+        event->accept();
+        return;
     }
 
-    // Comportamento normale per altri tasti
-    return QLineEdit::focusNextPrevChild(next);
+    QLineEdit::keyPressEvent(event);
 }
 

@@ -2,7 +2,6 @@
 #define SUGGESTIVELINEEDIT_H
 
 #include <QLineEdit>
-#include <QPainter>
 #include <QCompleter>
 #include <QStringListModel>
 #include <QKeyEvent>
@@ -14,19 +13,15 @@ class SuggestiveLineEdit : public QLineEdit
 public:
     SuggestiveLineEdit(QWidget *parent);
 
-    void setSuggestion(const QString &suggestionText);
-
     void setCompleter(QStringList &list);
 
 signals:
     void pressTab();
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    bool focusNextPrevChild(bool next);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
-    QString suggestion;
     QCompleter *completer;
 };
 
