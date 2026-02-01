@@ -95,6 +95,7 @@ private slots:
     void setSelectedNominativoDB(const QString & txt);
 
     void menuApriAdif();
+    void menuEsportaAdifTx();
     void menuLocatoriPreferiti();
     void menuIniziaLog();
     void menuMiaRadio();

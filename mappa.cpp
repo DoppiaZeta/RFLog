@@ -12,6 +12,8 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     progress = 0;
     tipomappa = tipoMappa::geografica;
     stato = "Italy";
+
+    setMinimumSize(640, 480);
 }
 
 Mappa::~Mappa() {

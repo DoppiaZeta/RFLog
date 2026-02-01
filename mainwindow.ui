@@ -42,6 +42,9 @@
         </property>
         <item row="1" column="2">
          <widget class="QLabel" name="label_2">
+          <property name="styleSheet">
+           <string notr="true">color: blue;</string>
+          </property>
           <property name="text">
            <string>Locatore</string>
           </property>
@@ -49,6 +52,9 @@
         </item>
         <item row="1" column="5">
          <widget class="QLabel" name="label_4">
+          <property name="styleSheet">
+           <string notr="true">color: blue;</string>
+          </property>
           <property name="text">
            <string>Orario</string>
           </property>
@@ -56,6 +62,9 @@
         </item>
         <item row="1" column="1">
          <widget class="QLabel" name="label">
+          <property name="styleSheet">
+           <string notr="true">color: blue;</string>
+          </property>
           <property name="text">
            <string>Nominativo</string>
           </property>
@@ -63,6 +72,9 @@
         </item>
         <item row="1" column="3">
          <widget class="QLabel" name="label_3">
+          <property name="styleSheet">
+           <string notr="true">color: blue;</string>
+          </property>
           <property name="text">
            <string>Segnale</string>
           </property>
@@ -70,6 +82,9 @@
         </item>
         <item row="1" column="4">
          <widget class="QLabel" name="label_5">
+          <property name="styleSheet">
+           <string notr="true">color: blue;</string>
+          </property>
           <property name="text">
            <string>Frequenza</string>
           </property>
@@ -166,6 +181,7 @@ color: white;</string>
     </property>
     <addaction name="menuIniziaLog"/>
     <addaction name="menuApriAdif"/>
+    <addaction name="menuEsportaAdifTx"/>
    </widget>
    <widget class="QMenu" name="menuMioDB">
     <property name="title">
@@ -208,6 +224,11 @@ color: white;</string>
   <action name="menuInformazioniSu">
    <property name="text">
     <string>Informazioni su RFLog</string>
+   </property>
+  </action>
+  <action name="menuEsportaAdifTx">
+   <property name="text">
+    <string>Esporta Adif per TX...</string>
    </property>
   </action>
  </widget>
