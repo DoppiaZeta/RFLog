@@ -1,4 +1,9 @@
+#include <QDoubleValidator>
+#include <QFormLayout>
 #include <QGridLayout>
+#include <QGroupBox>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QLocale>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
@@ -8,6 +13,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QSignalBlocker>
+#include <QTimer>
 #include <QTimeZone>
 
 #include "ui_mainwindow.h"
@@ -36,6 +42,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     tx->setupUi(ui->tx);
+
+    resizeTimer = new QTimer(this);
+    resizeTimer->setSingleShot(true);
+    connect(resizeTimer, &QTimer::timeout, this, &MainWindow::updateMappaLocatori);
 
     DBResult *res;
 
@@ -128,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
+    ui->Tabella->installEventFilter(this);
 
 
     mappaConfig->tabWidget->setCurrentIndex(0);
@@ -238,11 +249,14 @@ MainWindow::MainWindow(QWidget *parent)
     centraPredefinitoITA();
 }
 
-
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
     delete mappaConfig;
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    QMainWindow::resizeEvent(event);
+    resizeTimer->start(200);
 }
 
 void MainWindow::compilaNominativo(const QString &txt) {
@@ -1432,7 +1446,7 @@ void MainWindow::setSelectedNominativoDB(const QString & txt) {
 }
 
 void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
-    if (!index.isValid() || (index.column() < 4 || index.column() > 7)) {
+    if (!index.isValid() || (index.column() < 2 || index.column() > 7)) {
         return;
     }
 
@@ -1456,6 +1470,23 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     txUi->checkBox->setVisible(false);
     layout->addWidget(txWidget);
 
+    QGroupBox *rxGroup = new QGroupBox(tr("RX"), &dialog);
+    QFormLayout *rxLayout = new QFormLayout(rxGroup);
+    QLineEdit *locatoreEdit = new QLineEdit(rxGroup);
+    QLineEdit *nominativoEdit = new QLineEdit(rxGroup);
+    QLineEdit *segnaleEdit = new QLineEdit(rxGroup);
+    QLineEdit *frequenzaEdit = new QLineEdit(rxGroup);
+    QLineEdit *orarioEdit = new QLineEdit(rxGroup);
+    segnaleEdit->setValidator(new QDoubleValidator(0, 9999, 2, segnaleEdit));
+    frequenzaEdit->setValidator(new QDoubleValidator(0, 1000000, 6, frequenzaEdit));
+    orarioEdit->setPlaceholderText(tr("yyyy-MM-dd HH:mm:ss"));
+    rxLayout->addRow(tr("Nominativo RX"), nominativoEdit);
+    rxLayout->addRow(tr("Locatore RX"), locatoreEdit);
+    rxLayout->addRow(tr("Segnale RX"), segnaleEdit);
+    rxLayout->addRow(tr("Frequenza RX"), frequenzaEdit);
+    rxLayout->addRow(tr("Orario RX (UTC)"), orarioEdit);
+    layout->addWidget(rxGroup);
+
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Save)->setText(tr("Salva"));
     buttons->button(QDialogButtonBox::Cancel)->setText(tr("Annulla"));
@@ -1472,6 +1503,11 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     caricaLocatoriPreferitiTx(txUi);
 
     popolaTxDialog(txUi, *qso);
+    locatoreEdit->setText(qso->locatoreRx);
+    nominativoEdit->setText(qso->nominativoRx);
+    segnaleEdit->setText(QString::number(qso->segnaleRx));
+    frequenzaEdit->setText(QString::number(qso->frequenzaRx));
+    orarioEdit->setText(qso->orarioRx.toUTC().toString("yyyy-MM-dd HH:mm:ss"));
 
     connect(txUi->preferitiOK, &QPushButton::clicked, this, [this, txUi]() {
         usaLocatorePreferitoTx(txUi);
@@ -1493,6 +1529,23 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
 
     if (dialog.exec() == QDialog::Accepted) {
         aggiornaQsoDaTxDialog(*qso, txUi);
+        qso->locatoreRx = locatoreEdit->text().trimmed().toUpper();
+        qso->nominativoRx = nominativoEdit->text().trimmed().toUpper();
+        qso->segnaleRx = segnaleEdit->text().trimmed().toDouble();
+        qso->frequenzaRx = frequenzaEdit->text().trimmed().toDouble();
+
+        const QString orarioText = orarioEdit->text().trimmed();
+        if (!orarioText.isEmpty()) {
+            QDateTime parsed = QDateTime::fromString(orarioText, "yyyy-MM-dd HH:mm:ss");
+            if (!parsed.isValid()) {
+                parsed = QDateTime::fromString(orarioText, Qt::ISODate);
+            }
+            if (parsed.isValid()) {
+                parsed.setTimeZone(QTimeZone::utc());
+                qso->orarioRx = parsed;
+            }
+        }
+
         qso->insertAggiornaDB();
         aggiornaTabella();
         updateMappaLocatori();
@@ -1904,4 +1957,18 @@ void MainWindow::configuraPreferitiTable(QTableWidget *table) {
     font.setPointSize(8);
     table->setFont(font);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == ui->Tabella && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+            const QModelIndex current = ui->Tabella->currentIndex();
+            if (current.isValid()) {
+                modificaTxDaTabella(current);
+                return true;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
 }

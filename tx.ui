@@ -179,7 +179,7 @@ color: black;</string>
           </layout>
          </item>
          <item row="6" column="0" colspan="2">
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1,0,1,0">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,1,0,1,0,0">
            <property name="spacing">
             <number>3</number>
            </property>
@@ -310,6 +310,13 @@ color: black;</string>
             <widget class="QCheckBox" name="qsl">
              <property name="text">
               <string>Qsl</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="altri">
+             <property name="text">
+              <string>Altri</string>
              </property>
             </widget>
            </item>

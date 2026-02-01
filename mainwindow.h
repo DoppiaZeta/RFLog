@@ -32,7 +32,7 @@ public:
     ~MainWindow();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
     void svuotaLineEdit();
@@ -139,6 +139,8 @@ private:
 
     void aggiornaTabella();
     void aggiungiATabella(const Qso & qso, int row);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     void popolaTxDialog(Ui::Tx *txUi, const Qso &qso);
     void aggiornaQsoDaTxDialog(Qso &qso, Ui::Tx *txUi);
     void aggiungiNominativoTx(Ui::Tx *txUi);
@@ -149,6 +151,7 @@ private:
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
     Ui::Tx *tx;
+    QTimer *resizeTimer;
 
     SuggestiveLineEdit *Nominativo;
     SuggestiveLineEdit *Locatore;
