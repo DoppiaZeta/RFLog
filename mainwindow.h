@@ -149,6 +149,7 @@ private:
     void eliminaNominativoTx(Ui::Tx *txUi);
     void setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi);
     void setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA);
+    void modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *parent = nullptr);
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;
@@ -172,6 +173,7 @@ private:
     bool nominativoPrefixSet;
     QPalette nominativoDefaultPalette;
     bool nominativoPaletteSet;
+    QVector<Qso::AltriParametri> altriTx;
 
 };
 

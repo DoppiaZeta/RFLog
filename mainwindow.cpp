@@ -13,6 +13,7 @@
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSet>
@@ -186,6 +187,10 @@ MainWindow::MainWindow(QWidget *parent)
     mappaConfig->locatoreOffsetValue->setText(QString::number(mappaConfig->locatoreOffset->value()));
     connect(mappaConfig->locatoreOffset, &QSlider::valueChanged, [this](int value) {
         mappaConfig->locatoreOffsetValue->setText(QString::number(value));
+    });
+
+    connect(tx->altri, &QPushButton::clicked, this, [this]() {
+        modificaAltri(altriTx, this);
     });
 
 
@@ -447,6 +452,7 @@ void MainWindow::confermaLinea() {
     qso->duplicato = nominativoPresenteInLista(nominativoText);
 
     aggiornaQsoDaTxDialog(*qso, tx);
+    qso->altro = altriTx;
 
     if (qso->nominativoTx.isEmpty()) {
         const QString nominativoTx = tx->nominativo->currentText().trimmed().toUpper();
@@ -1467,6 +1473,9 @@ void MainWindow::menuIniziaLog() {
                 tx->nominativiList->setItem(rowCount, 0, nomItem);
                 tx->nominativiList->setItem(rowCount, 1, opItem);
             }
+            altriTx = qsoAttingi->altro;
+        } else {
+            altriTx.clear();
         }
 
         updateMappaLocatori();
@@ -1698,6 +1707,8 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     frequenzaEdit->setText(QString::number(qso->frequenzaRx));
     orarioEdit->setText(qso->orarioRx.toUTC().toString("yyyy-MM-dd HH:mm:ss"));
 
+    QVector<Qso::AltriParametri> altroTemp = qso->altro;
+
     connect(txUi->preferitiOK, &QPushButton::clicked, this, [this, txUi]() {
         usaLocatorePreferitoTx(txUi);
     });
@@ -1713,11 +1724,15 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     connect(txUi->nominativo, &QComboBox::textActivated, this, [this, txUi](const QString &txt) {
         setSelectedNominativoDBTx(txt, txUi);
     });
+    connect(txUi->altri, &QPushButton::clicked, this, [this, &altroTemp, &dialog]() {
+        modificaAltri(altroTemp, &dialog);
+    });
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
         aggiornaQsoDaTxDialog(*qso, txUi);
+        qso->altro = altroTemp;
         qso->locatoreRx = locatoreEdit->text().trimmed().toUpper();
         qso->nominativoRx = nominativoEdit->text().trimmed().toUpper();
         qso->segnaleRx = segnaleEdit->text().trimmed().toDouble();
@@ -1850,6 +1865,81 @@ void MainWindow::setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi) {
     txUi->operatore->setText(res->getCella(0));
     delete q;
     delete res;
+}
+
+void MainWindow::modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *parent) {
+    QDialog dialog(parent ? parent : this);
+    dialog.setWindowTitle(tr("Altri parametri"));
+    dialog.resize(520, 360);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+
+    QTableWidget *table = new QTableWidget(&dialog);
+    table->setColumnCount(2);
+    table->setHorizontalHeaderLabels(QStringList() << tr("Nome") << tr("Valore"));
+    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+    layout->addWidget(table);
+
+    for (const auto &item : altro) {
+        int row = table->rowCount();
+        table->insertRow(row);
+        table->setItem(row, 0, new QTableWidgetItem(item.nome));
+        table->setItem(row, 1, new QTableWidgetItem(item.valore));
+    }
+
+    QHBoxLayout *actionsLayout = new QHBoxLayout();
+    QPushButton *aggiungi = new QPushButton(tr("Aggiungi"), &dialog);
+    QPushButton *elimina = new QPushButton(tr("Elimina"), &dialog);
+    actionsLayout->addWidget(aggiungi);
+    actionsLayout->addWidget(elimina);
+    actionsLayout->addStretch();
+    layout->addLayout(actionsLayout);
+
+    connect(aggiungi, &QPushButton::clicked, &dialog, [table]() {
+        int row = table->rowCount();
+        table->insertRow(row);
+        table->setItem(row, 0, new QTableWidgetItem());
+        table->setItem(row, 1, new QTableWidgetItem());
+        table->setCurrentCell(row, 0);
+    });
+
+    connect(elimina, &QPushButton::clicked, &dialog, [table]() {
+        int row = table->currentRow();
+        if (row >= 0) {
+            table->removeRow(row);
+        }
+    });
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
+    buttons->button(QDialogButtonBox::Save)->setText(tr("Salva"));
+    buttons->button(QDialogButtonBox::Cancel)->setText(tr("Annulla"));
+    layout->addWidget(buttons);
+
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    QVector<Qso::AltriParametri> nuovoAltro;
+    for (int row = 0; row < table->rowCount(); ++row) {
+        QTableWidgetItem *nomeItem = table->item(row, 0);
+        QTableWidgetItem *valoreItem = table->item(row, 1);
+        const QString nome = nomeItem ? nomeItem->text().trimmed() : QString();
+        const QString valore = valoreItem ? valoreItem->text().trimmed() : QString();
+        if (nome.isEmpty()) {
+            continue;
+        }
+        Qso::AltriParametri parametro;
+        parametro.nome = nome;
+        parametro.valore = valore;
+        nuovoAltro.append(parametro);
+    }
+    altro = nuovoAltro;
 }
 
 void MainWindow::aggiornaTabella()
