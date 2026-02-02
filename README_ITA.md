@@ -1,6 +1,11 @@
 # RFLog
 
-RFLog è un’applicazione Qt per la gestione dei log radioamatoriali.
+RFLog è un’applicazione desktop basata su Qt per la gestione dei log radioamatoriali, con particolare attenzione alla **visualizzazione geografica offline**.
+
+Il software è progettato per funzionare completamente senza connessione a Internet, risultando adatto a utilizzi portabili, postazioni remote e attività sul campo. Tutti i dati — inclusi nominativi, locator e mappe — sono gestiti localmente.
+
+RFLog nasce con l’obiettivo di unire la gestione dei QSO all’analisi geografica, in un’applicazione desktop leggera e autonoma, senza dipendenze da servizi online.
+
 
 ## Requisiti (Debian/Ubuntu)
 
