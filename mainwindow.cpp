@@ -241,11 +241,15 @@ MainWindow::MainWindow(QWidget *parent)
     Orario->setStyleSheet(formato);
 
     ui->grigliaInput->addWidget(Nominativo, 2, 2);
-    ui->grigliaInput->addWidget(Progressivo, 2, 3);
-    ui->grigliaInput->addWidget(Locatore, 2, 4);
+    ui->grigliaInput->addWidget(Locatore, 2, 3);
+    ui->grigliaInput->addWidget(Progressivo, 2, 4);
     ui->grigliaInput->addWidget(Segnale, 2, 5);
     ui->grigliaInput->addWidget(Frequenza, 2, 6);
     ui->grigliaInput->addWidget(Orario, 2, 7);
+
+    QFont f = ui->successivo->font();
+    f.setPointSizeF(f.pointSizeF() * 1.4);
+    ui->successivo->setFont(f);
 
     QWidget::setTabOrder(Nominativo, Progressivo);
     QWidget::setTabOrder(Progressivo, Locatore);

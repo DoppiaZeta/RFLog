@@ -419,11 +419,11 @@ Year: 2025 and later</translation>
     </message>
     <message>
         <source>Progressivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Serial</translation>
     </message>
     <message>
         <source>Prog. RX</source>
-        <translation type="unfinished"></translation>
+        <translation>RX Serial</translation>
     </message>
 </context>
 <context>

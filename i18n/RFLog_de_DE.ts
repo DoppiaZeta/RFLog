@@ -419,11 +419,11 @@ Jahr: 2025 und später</translation>
     </message>
     <message>
         <source>Progressivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Laufende Nummer</translation>
     </message>
     <message>
         <source>Prog. RX</source>
-        <translation type="unfinished"></translation>
+        <translation>RX-Nr.</translation>
     </message>
 </context>
 <context>

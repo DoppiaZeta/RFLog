@@ -416,11 +416,11 @@ Anno: 2025 e successivi</source>
     </message>
     <message>
         <source>Progressivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Progressivo</translation>
     </message>
     <message>
         <source>Prog. RX</source>
-        <translation type="unfinished"></translation>
+        <translation>Prog. RX</translation>
     </message>
 </context>
 <context>
