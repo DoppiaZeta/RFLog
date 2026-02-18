@@ -4,7 +4,6 @@
 #include <QPainter>
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
-#include <QFuture>
 #include <QElapsedTimer>
 #include <QVector>
 #include <QPair>
@@ -77,7 +76,6 @@ private:
     tipoMappa tipomappa;
 
     QWidget *mappaConfigWidget;
-    QFuture<void> matriceLoadFuture;
 };
 
 #endif // MAPPA_H
