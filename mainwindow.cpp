@@ -47,6 +47,125 @@ QString adifField(const QString &name, const QString &value) {
     return QString("<%1:%2>%3").arg(name, QString::number(value.size()), value);
 }
 
+QPair<QString, QString> adifModeSubmodeFromTxMode(const QString &txMode) {
+    const QString normalized = txMode.trimmed().toUpper();
+    if (normalized == QStringLiteral("USB") || normalized == QStringLiteral("LSB")) {
+        return qMakePair(QStringLiteral("SSB"), normalized);
+    }
+    return qMakePair(normalized, QString());
+}
+
+
+QString adifBandFromFrequency(double freqMHz) {
+    if (freqMHz <= 0.0) {
+        return QString();
+    }
+
+    struct BandRange {
+        double min;
+        double max;
+        const char *band;
+    };
+
+    static const BandRange ranges[] = {
+        {1.8, 2.0, "160m"},
+        {3.5, 4.0, "80m"},
+        {5.0, 5.5, "60m"},
+        {7.0, 7.3, "40m"},
+        {10.1, 10.15, "30m"},
+        {14.0, 14.35, "20m"},
+        {18.068, 18.168, "17m"},
+        {21.0, 21.45, "15m"},
+        {24.89, 24.99, "12m"},
+        {28.0, 29.7, "10m"},
+        {50.0, 54.0, "6m"},
+        {144.0, 148.0, "2m"},
+        {420.0, 450.0, "70cm"},
+        {1240.0, 1300.0, "23cm"}
+    };
+
+    for (const auto &range : ranges) {
+        if (freqMHz >= range.min && freqMHz <= range.max) {
+            return QString::fromLatin1(range.band);
+        }
+    }
+
+    return QString();
+}
+double parseFrequencyValue(const QString &text) {
+    const QString normalized = text.trimmed().replace(',', '.');
+    bool ok = false;
+    const double direct = normalized.toDouble(&ok);
+    if (ok) {
+        return direct;
+    }
+
+    static const QRegularExpression freqRegex(R"((\d+(?:\.\d+)?))");
+    const QRegularExpressionMatch match = freqRegex.match(normalized);
+    if (!match.hasMatch()) {
+        return 0.0;
+    }
+
+    return match.captured(1).toDouble();
+}
+
+QStringList frequenzaSuggerimentiPrincipali() {
+    return {
+        QStringLiteral("14.250 (20m SSB)") ,
+        QStringLiteral("1.840 (160m)") ,
+        QStringLiteral("3.760 (80m)") ,
+        QStringLiteral("7.074 (40m FT8)") ,
+        QStringLiteral("7.120 (40m SSB)") ,
+        QStringLiteral("10.136 (30m FT8)") ,
+        QStringLiteral("14.074 (20m FT8)") ,
+        QStringLiteral("18.100 (17m FT8)") ,
+        QStringLiteral("21.074 (15m FT8)") ,
+        QStringLiteral("21.300 (15m SSB)") ,
+        QStringLiteral("24.915 (12m FT8)") ,
+        QStringLiteral("28.074 (10m FT8)") ,
+        QStringLiteral("28.500 (10m SSB)") ,
+        QStringLiteral("50.313 (6m FT8)") ,
+        QStringLiteral("145.500 (2m FM)") ,
+        QStringLiteral("433.500 (70cm FM)")
+    };
+}
+
+
+double frequenzaDefault20mMHz() {
+    return 14.250;
+}
+
+
+QStringList segnaleSuggerimentiPrincipali() {
+    return {
+        QStringLiteral("59"),
+        QStringLiteral("599")
+    };
+}
+
+QString rstDefaultFromMode(const QString &mode) {
+    const QString normalized = mode.trimmed().toUpper();
+    if (normalized.contains(QStringLiteral("CW"))) {
+        return QStringLiteral("599");
+    }
+
+    static const QStringList foniaModes = {
+        QStringLiteral("SSB"),
+        QStringLiteral("USB"),
+        QStringLiteral("LSB"),
+        QStringLiteral("FM"),
+        QStringLiteral("AM"),
+        QStringLiteral("PHONE")
+    };
+    for (const QString &phoneMode : foniaModes) {
+        if (normalized == phoneMode || normalized.contains(phoneMode)) {
+            return QStringLiteral("59");
+        }
+    }
+
+    return QString();
+}
+
 QString safeAdifFilename(const QString &value) {
     QString safe = value.trimmed();
     safe.replace(QRegularExpression("[^A-Za-z0-9_-]+"), "_");
@@ -170,6 +289,9 @@ MainWindow::MainWindow(QWidget *parent)
     nominativoPaletteSet = true;
 
     Nominativo->setSuggestions(QStringList());
+    Segnale->setSuggestions(segnaleSuggerimentiPrincipali());
+    Frequenza->setSuggestions(frequenzaSuggerimentiPrincipali());
+    Frequenza->setPlaceholderText(QStringLiteral("14.250 (20m)"));
 
     Nominativo->setStyleSheet(formato);
     Locatore->setStyleSheet(formato);
@@ -220,6 +342,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Locatore, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Segnale, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
     connect(Frequenza, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
+    connect(Frequenza, &SuggestiveLineEdit::completionAccepted, this, [this](const QString &value) {
+        const double frequenza = parseFrequencyValue(value);
+        if (frequenza > 0) {
+            Frequenza->setText(QString::number(frequenza, 'f', 3));
+        }
+    });
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
 
@@ -674,10 +802,21 @@ void MainWindow::confermaLinea() {
     qso->operatoreRx = QString();
     qso->locatoreRx = Locatore->text().trimmed().toUpper();
     qso->segnaleRx = Segnale->text().trimmed().toDouble();
-    qso->frequenzaRx = Frequenza->text().trimmed().toDouble();
+    qso->frequenzaRx = parseFrequencyValue(Frequenza->text());
+    if (qso->frequenzaRx <= 0.0) {
+        qso->frequenzaRx = frequenzaDefault20mMHz();
+        Frequenza->setText(QString::number(qso->frequenzaRx, 'f', 3));
+    }
     qso->duplicato = nominativoPresenteInLista(nominativoText);
 
     aggiornaQsoDaTxDialog(*qso, tx);
+    if (qso->segnaleRx <= 0.0) {
+        const QString rstDefault = rstDefaultFromMode(qso->trasmissioneTx);
+        if (!rstDefault.isEmpty()) {
+            qso->segnaleRx = rstDefault.toDouble();
+            Segnale->setText(rstDefault);
+        }
+    }
     qso->altro = altriTx;
 
     if (qso->nominativoTx.isEmpty()) {
@@ -1616,10 +1755,18 @@ void MainWindow::menuEsportaAdifTx() {
             record += adifField("my_gridsquare", qso->locatoreTx.trimmed().toUpper());
             record += adifField("gridsquare", qso->locatoreRx.trimmed().toUpper());
             record += adifField("tx_pwr", qso->potenzaTx > 0 ? QString::number(qso->potenzaTx) : QString());
-            record += adifField("mode", qso->trasmissioneTx.trimmed().toUpper());
-            record += adifField("rst_sent", qso->segnaleRx > 0 ? QString::number(qso->segnaleRx) : QString());
+            const auto modeSubmode = adifModeSubmodeFromTxMode(qso->trasmissioneTx);
+            record += adifField("mode", modeSubmode.first);
+            record += adifField("submode", modeSubmode.second);
+            QString rst = qso->segnaleRx > 0 ? QString::number(qso->segnaleRx) : QString();
+            if (rst.isEmpty()) {
+                rst = rstDefaultFromMode(qso->trasmissioneTx);
+            }
+            record += adifField("rst_sent", rst);
+            record += adifField("rst_rcvd", rst);
             record += adifField("freq", qso->frequenzaRx > 0 ? QString::number(qso->frequenzaRx, 'f', 3) : QString());
-            record += adifField("qsl_rcvd", qso->qsl ? QStringLiteral("S") : QStringLiteral("N"));
+            record += adifField("band", adifBandFromFrequency(qso->frequenzaRx));
+            record += adifField("qsl_rcvd", qso->qsl ? QStringLiteral("Y") : QStringLiteral("N"));
 
             if (orario.isValid()) {
                 record += adifField("qso_date", orario.toString("yyyyMMdd"));
@@ -1998,7 +2145,18 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
         qso->locatoreRx = locatoreEdit->text().trimmed().toUpper();
         qso->nominativoRx = nominativoEdit->text().trimmed().toUpper();
         qso->segnaleRx = segnaleEdit->text().trimmed().toDouble();
-        qso->frequenzaRx = frequenzaEdit->text().trimmed().toDouble();
+        if (qso->segnaleRx <= 0.0) {
+            const QString rstDefault = rstDefaultFromMode(qso->trasmissioneTx);
+            if (!rstDefault.isEmpty()) {
+                qso->segnaleRx = rstDefault.toDouble();
+                segnaleEdit->setText(rstDefault);
+            }
+        }
+        qso->frequenzaRx = parseFrequencyValue(frequenzaEdit->text());
+        if (qso->frequenzaRx <= 0.0) {
+            qso->frequenzaRx = frequenzaDefault20mMHz();
+            frequenzaEdit->setText(QString::number(qso->frequenzaRx, 'f', 3));
+        }
 
         const QString orarioText = orarioEdit->text().trimmed();
         if (!orarioText.isEmpty()) {
