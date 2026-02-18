@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QDateTime>
@@ -35,6 +36,7 @@ public:
     ~MainWindow();
 
 protected:
+    void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
