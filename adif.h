@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QMap>
 #include <QList>
+#include <QPair>
 
 class Qso;
 
@@ -33,6 +34,12 @@ public:
     const QMap<QString, QString>& getIntestazione() const;
 
 private:
+    static QString adifField(const QString &name, const QString &value);
+    static QPair<QString, QString> adifModeSubmodeFromTxMode(const QString &txMode);
+    static QString adifBandFromFrequency(double freqMHz);
+    static QString rstDefaultFromMode(const QString &mode);
+    static QString safeAdifFilename(const QString &value);
+
     QMap<QString, QString> intestazione; // Dati dell'intestazione
     QList<QMap<QString, QString>> contatti; // Lista di mappe, ciascuna rappresentante un contatto
 };

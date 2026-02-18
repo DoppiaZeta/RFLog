@@ -28,6 +28,8 @@ protected:
     void focusInEvent(QFocusEvent *event) override;
 
 private:
+    static QString completionFromPopup(QCompleter *completer);
+
     QCompleter *completer;
     QStringListModel *model;
 };

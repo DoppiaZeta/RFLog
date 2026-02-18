@@ -27,7 +27,6 @@
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QTimeZone>
-#include <QXmlStreamReader>
 
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
@@ -37,9 +36,9 @@
 #include "nuovolog.h"
 #include "miaradio.h"
 #include "mappasrpc.h"
+#include "traduttore.h"
 
-namespace {
-double parseFrequencyValue(const QString &text) {
+double MainWindow::parseFrequencyValue(const QString &text) {
     const QString normalized = text.trimmed().replace(',', '.');
     bool ok = false;
     const double direct = normalized.toDouble(&ok);
@@ -56,7 +55,7 @@ double parseFrequencyValue(const QString &text) {
     return match.captured(1).toDouble();
 }
 
-QStringList frequenzaSuggerimentiPrincipali() {
+QStringList MainWindow::frequenzaSuggerimentiPrincipali() {
     return {
         QStringLiteral("14.250 (20m SSB)") ,
         QStringLiteral("1.840 (160m)") ,
@@ -78,19 +77,19 @@ QStringList frequenzaSuggerimentiPrincipali() {
 }
 
 
-double frequenzaDefault20mMHz() {
+double MainWindow::frequenzaDefault20mMHz() {
     return 14.250;
 }
 
 
-QStringList segnaleSuggerimentiPrincipali() {
+QStringList MainWindow::segnaleSuggerimentiPrincipali() {
     return {
         QStringLiteral("59"),
         QStringLiteral("599")
     };
 }
 
-QString rstDefaultFromMode(const QString &mode) {
+QString MainWindow::rstDefaultFromMode(const QString &mode) {
     const QString normalized = mode.trimmed().toUpper();
     if (normalized.contains(QStringLiteral("CW"))) {
         return QStringLiteral("599");
@@ -113,78 +112,6 @@ QString rstDefaultFromMode(const QString &mode) {
     return QString();
 }
 
-class TsTranslator final : public QTranslator {
-public:
-    bool loadFromTs(const QString &filePath) {
-        QFile file(filePath);
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            return false;
-        }
-
-        QXmlStreamReader xml(&file);
-        QString contextName;
-        while (!xml.atEnd()) {
-            xml.readNext();
-            if (!xml.isStartElement()) {
-                continue;
-            }
-
-            if (xml.name() == QLatin1String("context")) {
-                contextName.clear();
-                continue;
-            }
-
-            if (xml.name() == QLatin1String("name")) {
-                contextName = xml.readElementText();
-                continue;
-            }
-
-            if (xml.name() == QLatin1String("message")) {
-                QString sourceText;
-                QString translationText;
-                bool unfinished = false;
-                while (!(xml.isEndElement() && xml.name() == QLatin1String("message")) && !xml.atEnd()) {
-                    xml.readNext();
-                    if (!xml.isStartElement()) {
-                        continue;
-                    }
-
-                    if (xml.name() == QLatin1String("source")) {
-                        sourceText = xml.readElementText();
-                        continue;
-                    }
-
-                    if (xml.name() == QLatin1String("translation")) {
-                        const auto typeAttr = xml.attributes().value(QLatin1String("type"));
-                        unfinished = (typeAttr == QLatin1String("unfinished"));
-                        translationText = xml.readElementText();
-                        continue;
-                    }
-                }
-
-                if (!contextName.isEmpty() && !sourceText.isEmpty() && !translationText.isEmpty() && !unfinished) {
-                    const QString key = contextName + kSeparator + sourceText;
-                    translations.insert(key, translationText);
-                }
-            }
-        }
-
-        return !xml.hasError() && !translations.isEmpty();
-    }
-
-    QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const override {
-        Q_UNUSED(disambiguation);
-        Q_UNUSED(n);
-
-        const QString key = QString::fromUtf8(context) + kSeparator + QString::fromUtf8(sourceText);
-        return translations.value(key);
-    }
-
-private:
-    static constexpr QChar kSeparator = QChar(0x1f);
-    QHash<QString, QString> translations;
-};
-}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -7,23 +7,21 @@
 #include <QStringListModel>
 #include <algorithm>
 
-// Prende la voce evidenziata nel popup (NON sempre la prima!)
-static QString completionFromPopup(QCompleter *c)
+QString SuggestiveLineEdit::completionFromPopup(QCompleter *completer)
 {
-    if (!c || !c->popup())
+    if (!completer || !completer->popup())
         return {};
 
-    QModelIndex idx = c->popup()->currentIndex();
+    QModelIndex idx = completer->popup()->currentIndex();
     if (idx.isValid())
         return idx.data(Qt::DisplayRole).toString();
 
-    // fallback
-    const QString cc = c->currentCompletion();
-    if (!cc.isEmpty())
-        return cc;
+    const QString currentCompletion = completer->currentCompletion();
+    if (!currentCompletion.isEmpty())
+        return currentCompletion;
 
-    if (c->completionCount() > 0)
-        return c->completionModel()->index(0, 0).data(Qt::DisplayRole).toString();
+    if (completer->completionCount() > 0)
+        return completer->completionModel()->index(0, 0).data(Qt::DisplayRole).toString();
 
     return {};
 }

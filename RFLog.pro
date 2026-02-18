@@ -21,7 +21,8 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    mappasrpc.h \
    miaradio.h \
    nuovolog.h \
-   qso.h
+   qso.h \
+   traduttore.h
 FORMS += mainwindow.ui \
    locatoripreferiti.ui \
    mappaconfig.ui \
@@ -45,7 +46,8 @@ SOURCES += databasemanager.cpp \
            miaradio.cpp \
            nuovolog.cpp \
            qso.cpp \
-           suggestivelineedit.cpp
+           suggestivelineedit.cpp \
+           traduttore.cpp
 
 # Aggiungi definizioni per OpenGL se necessario
 #DEFINES += QT_OPENGL_LIB

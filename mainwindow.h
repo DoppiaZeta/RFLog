@@ -162,6 +162,11 @@ private:
     void aggiornaEtichettaSuccessivo();
     void ricalcolaDuplicatiQso();
     std::unique_ptr<QTranslator> createAppTranslator(const QString &localeName);
+    static double parseFrequencyValue(const QString &text);
+    static QStringList frequenzaSuggerimentiPrincipali();
+    static double frequenzaDefault20mMHz();
+    static QStringList segnaleSuggerimentiPrincipali();
+    static QString rstDefaultFromMode(const QString &mode);
 
     Ui::MainWindow *ui;
     Ui::MappaConfig *mappaConfig;

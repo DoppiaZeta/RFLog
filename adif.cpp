@@ -10,94 +10,6 @@
 #include "coordinate.h"
 #include "qso.h"
 
-namespace {
-QString adifField(const QString &name, const QString &value) {
-    const QString normalizedName = name.trimmed().toUpper();
-    const QString normalizedValue = value.trimmed().toUpper();
-    if (normalizedName.isEmpty() || normalizedValue.isEmpty()) {
-        return QString();
-    }
-    return QString("<%1:%2>%3").arg(normalizedName, QString::number(normalizedValue.size()), normalizedValue);
-}
-
-QPair<QString, QString> adifModeSubmodeFromTxMode(const QString &txMode) {
-    const QString normalized = txMode.trimmed().toUpper();
-    if (normalized == QStringLiteral("USB") || normalized == QStringLiteral("LSB")) {
-        return qMakePair(QStringLiteral("SSB"), normalized);
-    }
-    return qMakePair(normalized, QString());
-}
-
-QString adifBandFromFrequency(double freqMHz) {
-    if (freqMHz <= 0.0) {
-        return QString();
-    }
-
-    struct BandRange {
-        double min;
-        double max;
-        const char *band;
-    };
-
-    static const BandRange ranges[] = {
-        {1.8, 2.0, "160m"},
-        {3.5, 4.0, "80m"},
-        {5.0, 5.5, "60m"},
-        {7.0, 7.3, "40m"},
-        {10.1, 10.15, "30m"},
-        {14.0, 14.35, "20m"},
-        {18.068, 18.168, "17m"},
-        {21.0, 21.45, "15m"},
-        {24.89, 24.99, "12m"},
-        {28.0, 29.7, "10m"},
-        {50.0, 54.0, "6m"},
-        {144.0, 148.0, "2m"},
-        {420.0, 450.0, "70cm"},
-        {1240.0, 1300.0, "23cm"}
-    };
-
-    for (const auto &range : ranges) {
-        if (freqMHz >= range.min && freqMHz <= range.max) {
-            return QString::fromLatin1(range.band);
-        }
-    }
-
-    return QString();
-}
-
-QString rstDefaultFromMode(const QString &mode) {
-    const QString normalized = mode.trimmed().toUpper();
-    if (normalized.contains(QStringLiteral("CW"))) {
-        return QStringLiteral("599");
-    }
-
-    static const QStringList foniaModes = {
-        QStringLiteral("SSB"),
-        QStringLiteral("USB"),
-        QStringLiteral("LSB"),
-        QStringLiteral("FM"),
-        QStringLiteral("AM"),
-        QStringLiteral("PHONE")
-    };
-    for (const QString &phoneMode : foniaModes) {
-        if (normalized == phoneMode || normalized.contains(phoneMode)) {
-            return QStringLiteral("59");
-        }
-    }
-
-    return QString();
-}
-
-QString safeAdifFilename(const QString &value) {
-    QString safe = value.trimmed();
-    safe.replace(QRegularExpression("[^A-Za-z0-9_-]+"), "_");
-    if (safe.isEmpty()) {
-        return QStringLiteral("tx");
-    }
-    return safe;
-}
-
-}
 
 void Adif::impostaIntestazione(const QMap<QString, QString>& header) {
     intestazione = header;
@@ -323,3 +235,90 @@ bool Adif::exportTxAdif(const QString& directoryPath,
 
     return exportedAnyFile;
 }
+
+QString Adif::adifField(const QString &name, const QString &value) {
+    const QString normalizedName = name.trimmed().toUpper();
+    const QString normalizedValue = value.trimmed().toUpper();
+    if (normalizedName.isEmpty() || normalizedValue.isEmpty()) {
+        return QString();
+    }
+    return QString("<%1:%2>%3").arg(normalizedName, QString::number(normalizedValue.size()), normalizedValue);
+}
+
+QPair<QString, QString> Adif::adifModeSubmodeFromTxMode(const QString &txMode) {
+    const QString normalized = txMode.trimmed().toUpper();
+    if (normalized == QStringLiteral("USB") || normalized == QStringLiteral("LSB")) {
+        return qMakePair(QStringLiteral("SSB"), normalized);
+    }
+    return qMakePair(normalized, QString());
+}
+
+QString Adif::adifBandFromFrequency(double freqMHz) {
+    if (freqMHz <= 0.0) {
+        return QString();
+    }
+
+    struct BandRange {
+        double min;
+        double max;
+        const char *band;
+    };
+
+    static const BandRange ranges[] = {
+        {1.8, 2.0, "160m"},
+        {3.5, 4.0, "80m"},
+        {5.0, 5.5, "60m"},
+        {7.0, 7.3, "40m"},
+        {10.1, 10.15, "30m"},
+        {14.0, 14.35, "20m"},
+        {18.068, 18.168, "17m"},
+        {21.0, 21.45, "15m"},
+        {24.89, 24.99, "12m"},
+        {28.0, 29.7, "10m"},
+        {50.0, 54.0, "6m"},
+        {144.0, 148.0, "2m"},
+        {420.0, 450.0, "70cm"},
+        {1240.0, 1300.0, "23cm"}
+    };
+
+    for (const auto &range : ranges) {
+        if (freqMHz >= range.min && freqMHz <= range.max) {
+            return QString::fromLatin1(range.band);
+        }
+    }
+
+    return QString();
+}
+
+QString Adif::rstDefaultFromMode(const QString &mode) {
+    const QString normalized = mode.trimmed().toUpper();
+    if (normalized.contains(QStringLiteral("CW"))) {
+        return QStringLiteral("599");
+    }
+
+    static const QStringList foniaModes = {
+        QStringLiteral("SSB"),
+        QStringLiteral("USB"),
+        QStringLiteral("LSB"),
+        QStringLiteral("FM"),
+        QStringLiteral("AM"),
+        QStringLiteral("PHONE")
+    };
+    for (const QString &phoneMode : foniaModes) {
+        if (normalized == phoneMode || normalized.contains(phoneMode)) {
+            return QStringLiteral("59");
+        }
+    }
+
+    return QString();
+}
+
+QString Adif::safeAdifFilename(const QString &value) {
+    QString safe = value.trimmed();
+    safe.replace(QRegularExpression("[^A-Za-z0-9_-]+"), "_");
+    if (safe.isEmpty()) {
+        return QStringLiteral("tx");
+    }
+    return safe;
+}
+

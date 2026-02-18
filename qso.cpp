@@ -85,51 +85,6 @@ where id = :id
     }
 }
 
-bool Qso::operator==(const Qso &q) const {
-    return nominativoRx == q.nominativoRx;
-}
-
-bool Qso::operator<(const Qso &q) const {
-    return orarioRx < q.orarioRx;
-}
-
-bool Qso::operator>(const Qso &q) const {
-    return orarioRx > q.orarioRx;
-}
-
-void Qso::sort(QList<Qso*> & qsoList) {
-    std::sort(qsoList.begin(), qsoList.end(), [](Qso* a, Qso* b) {
-        return a->operator>(*b);
-    });
-}
-
-double Qso::getBandaMt() const {
-    if (frequenzaRx == 0) {
-        return 0.0; // Valore non valido
-    }
-
-    double bestBanda = 0.0;
-    double minDiff = std::numeric_limits<double>::max();
-
-    for (const auto& pair : bandaToFreq) {
-        double diff = std::abs(frequenzaRx - pair.second);
-        if (diff < minDiff) {
-            minDiff = diff;
-            bestBanda = pair.first;
-        }
-    }
-
-    return bestBanda;
-}
-
-double Qso::getFrequenza(double banda) {
-    auto it = bandaToFreq.find(banda);
-    if (it != bandaToFreq.end()) {
-        return it->second;
-    }
-    return 0.0; // Valore non valido
-}
-
 void Qso::eliminaDB() {
     if(mioId > 0 && logId > 0) {
         QSqlQuery *q = RFLog->getQueryBind();
@@ -456,4 +411,49 @@ void Qso::insertDaEdi(const QMap<QString, QString> &header, const EdiRecord &rec
 
 Linee Qso::getLinea() const {
     return Linee(locatoreTx, locatoreRx);
+}
+
+bool Qso::operator==(const Qso &q) const {
+    return nominativoRx == q.nominativoRx;
+}
+
+bool Qso::operator<(const Qso &q) const {
+    return orarioRx < q.orarioRx;
+}
+
+bool Qso::operator>(const Qso &q) const {
+    return orarioRx > q.orarioRx;
+}
+
+void Qso::sort(QList<Qso*> & qsoList) {
+    std::sort(qsoList.begin(), qsoList.end(), [](Qso* a, Qso* b) {
+        return a->operator>(*b);
+    });
+}
+
+double Qso::getBandaMt() const {
+    if (frequenzaRx == 0) {
+        return 0.0; // Valore non valido
+    }
+
+    double bestBanda = 0.0;
+    double minDiff = std::numeric_limits<double>::max();
+
+    for (const auto& pair : bandaToFreq) {
+        double diff = std::abs(frequenzaRx - pair.second);
+        if (diff < minDiff) {
+            minDiff = diff;
+            bestBanda = pair.first;
+        }
+    }
+
+    return bestBanda;
+}
+
+double Qso::getFrequenza(double banda) {
+    auto it = bandaToFreq.find(banda);
+    if (it != bandaToFreq.end()) {
+        return it->second;
+    }
+    return 0.0; // Valore non valido
 }
