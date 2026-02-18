@@ -109,7 +109,14 @@ QString rstDefaultFromMode(const QString &mode) {
         }
     }
 
-    return QString();
+    if (normalized.contains(QStringLiteral("FT")) ||
+        normalized.contains(QStringLiteral("DIGI")) ||
+        normalized.contains(QStringLiteral("RTTY")) ||
+        normalized.contains(QStringLiteral("PSK"))) {
+        return QStringLiteral("599");
+    }
+
+    return QStringLiteral("59");
 }
 
 class TsTranslator final : public QTranslator {
@@ -416,6 +423,16 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {
     delete ui;
     delete mappaConfig;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (mappa) {
+        mappa->setParent(nullptr);
+        delete mappa;
+        mappa = nullptr;
+    }
+
+    QMainWindow::closeEvent(event);
 }
 
 void MainWindow::setupLanguageMenu() {

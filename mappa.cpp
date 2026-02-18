@@ -17,6 +17,10 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
 }
 
 Mappa::~Mappa() {
+    if (matriceLoadFuture.isRunning()) {
+        matriceLoadFuture.waitForFinished();
+    }
+
     if (m_matrice) {
         for (auto& row : *m_matrice) {
             for (auto& coord : row) {
@@ -43,7 +47,11 @@ void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
     timer.start();
     update();
 
-    auto future = QtConcurrent::run([this, locatore_da, locatore_a]() {
+    if (matriceLoadFuture.isRunning()) {
+        matriceLoadFuture.waitForFinished();
+    }
+
+    matriceLoadFuture = QtConcurrent::run([this, locatore_da, locatore_a]() {
         // Carica la matrice direttamente dal database
         QVector<QVector<Coordinate*>>* nuovaMatrice = caricaMatriceDaDb(locatore_da, locatore_a);
 
