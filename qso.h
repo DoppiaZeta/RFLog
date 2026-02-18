@@ -46,6 +46,7 @@ public:
 
     QList<NominativoNome> nominativoTx;
     QString locatoreTx;
+    QString progressivoRx;
     QString radioTx;
     int potenzaTx;
     QString trasmissioneTx;

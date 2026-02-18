@@ -27,6 +27,7 @@ void MainWindow::creaDBRFLog() {
         "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "  idLog INTEGER NOT NULL,"
         "  locatoreTx TEXT,"
+        "  progressivoRx TEXT,"
         "  radioTx TEXT,"
         "  potenzaTx INTEGER,"
         "  trasmissioneTx TEXT,"
@@ -58,6 +59,7 @@ void MainWindow::creaDBRFLog() {
         "  FOREIGN KEY (idQso) REFERENCES qso(id)"
         ");"
         );
+
 
     RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_idLog ON qso(idLog);");
     RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_locRx ON qso(locatoreRx);");

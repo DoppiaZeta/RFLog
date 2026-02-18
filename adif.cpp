@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "adif.h"
+#include "coordinate.h"
 #include "qso.h"
 
 namespace {
@@ -269,6 +270,22 @@ bool Adif::exportTxAdif(const QString& directoryPath,
             record += adifField("NAME", rxOperatore);
             record += adifField("MY_GRIDSQUARE", qso->locatoreTx.trimmed());
             record += adifField("GRIDSQUARE", qso->locatoreRx.trimmed());
+            record += adifField("SRX", qso->progressivoRx.trimmed());
+
+            const Coordinate::CqItu txCqItu = Coordinate::getCqItu(qso->locatoreTx.trimmed().toUpper());
+            const Coordinate::CqItu rxCqItu = Coordinate::getCqItu(qso->locatoreRx.trimmed().toUpper());
+            if (txCqItu.cq > 0) {
+                record += adifField("MY_CQ_ZONE", QString::number(txCqItu.cq));
+            }
+            if (txCqItu.itu > 0) {
+                record += adifField("MY_ITU_ZONE", QString::number(txCqItu.itu));
+            }
+            if (rxCqItu.cq > 0) {
+                record += adifField("CQZ", QString::number(rxCqItu.cq));
+            }
+            if (rxCqItu.itu > 0) {
+                record += adifField("ITUZ", QString::number(rxCqItu.itu));
+            }
             record += adifField("TX_PWR", qso->potenzaTx > 0 ? QString::number(qso->potenzaTx) : QString());
             const auto modeSubmode = adifModeSubmodeFromTxMode(qso->trasmissioneTx);
             record += adifField("MODE", modeSubmode.first);

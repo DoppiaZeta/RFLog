@@ -218,6 +218,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     Nominativo = new SuggestiveLineEdit(this);
+    Progressivo = new SuggestiveLineEdit(this);
     Locatore = new SuggestiveLineEdit(this);
     Segnale = new SuggestiveLineEdit(this);
     Frequenza = new SuggestiveLineEdit(this);
@@ -232,18 +233,21 @@ MainWindow::MainWindow(QWidget *parent)
     Frequenza->setPlaceholderText(QStringLiteral("14.250 (20m)"));
 
     Nominativo->setStyleSheet(formato);
+    Progressivo->setStyleSheet(formato);
     Locatore->setStyleSheet(formato);
     Segnale->setStyleSheet(formato);
     Frequenza->setStyleSheet(formato);
     Orario->setStyleSheet(formato);
 
-    ui->grigliaInput->addWidget(Nominativo, 2, 1);
-    ui->grigliaInput->addWidget(Locatore, 2, 2);
-    ui->grigliaInput->addWidget(Segnale, 2, 3);
-    ui->grigliaInput->addWidget(Frequenza, 2, 4);
-    ui->grigliaInput->addWidget(Orario, 2, 5);
+    ui->grigliaInput->addWidget(Nominativo, 2, 2);
+    ui->grigliaInput->addWidget(Progressivo, 2, 3);
+    ui->grigliaInput->addWidget(Locatore, 2, 4);
+    ui->grigliaInput->addWidget(Segnale, 2, 5);
+    ui->grigliaInput->addWidget(Frequenza, 2, 6);
+    ui->grigliaInput->addWidget(Orario, 2, 7);
 
-    QWidget::setTabOrder(Nominativo, Locatore);
+    QWidget::setTabOrder(Nominativo, Progressivo);
+    QWidget::setTabOrder(Progressivo, Locatore);
     QWidget::setTabOrder(Locatore, Segnale);
     QWidget::setTabOrder(Segnale, Frequenza);
     QWidget::setTabOrder(Frequenza, Orario);
@@ -745,6 +749,7 @@ void MainWindow::svuotaLineEdit() {
     QString q;
     Nominativo->setText(q);
     aggiornaColoreNominativoDuplicato(q);
+    Progressivo->setText(q);
     Locatore->setText(q);
     Segnale->setText(q);
     Frequenza->setText(q);
@@ -760,6 +765,7 @@ void MainWindow::confermaLinea() {
     Qso *qso = new Qso(RFLog, numeroLog);
     qso->nominativoRx = nominativoText;
     qso->operatoreRx = QString();
+    qso->progressivoRx = Progressivo->text().trimmed().toUpper();
     qso->locatoreRx = Locatore->text().trimmed().toUpper();
     qso->segnaleRx = Segnale->text().trimmed().toDouble();
     qso->frequenzaRx = parseFrequencyValue(Frequenza->text());
@@ -1952,6 +1958,7 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     QGroupBox *rxGroup = new QGroupBox(tr("RX"), &dialog);
     QFormLayout *rxLayout = new QFormLayout(rxGroup);
     QLineEdit *locatoreEdit = new QLineEdit(rxGroup);
+    QLineEdit *progressivoEdit = new QLineEdit(rxGroup);
     QLineEdit *nominativoEdit = new QLineEdit(rxGroup);
     QLineEdit *segnaleEdit = new QLineEdit(rxGroup);
     QLineEdit *frequenzaEdit = new QLineEdit(rxGroup);
@@ -1961,6 +1968,7 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     orarioEdit->setPlaceholderText(tr("yyyy-MM-dd HH:mm:ss"));
     rxLayout->addRow(tr("Nominativo RX"), nominativoEdit);
     rxLayout->addRow(tr("Locatore RX"), locatoreEdit);
+    rxLayout->addRow(tr("Progressivo"), progressivoEdit);
     rxLayout->addRow(tr("Segnale RX"), segnaleEdit);
     rxLayout->addRow(tr("Frequenza RX"), frequenzaEdit);
     rxLayout->addRow(tr("Orario RX (UTC)"), orarioEdit);
@@ -1983,6 +1991,7 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
 
     popolaTxDialog(txUi, *qso);
     locatoreEdit->setText(qso->locatoreRx);
+    progressivoEdit->setText(qso->progressivoRx);
     nominativoEdit->setText(qso->nominativoRx);
     segnaleEdit->setText(QString::number(qso->segnaleRx));
     frequenzaEdit->setText(QString::number(qso->frequenzaRx));
@@ -2015,6 +2024,7 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
         aggiornaQsoDaTxDialog(*qso, txUi);
         qso->altro = altroTemp;
         qso->locatoreRx = locatoreEdit->text().trimmed().toUpper();
+        qso->progressivoRx = progressivoEdit->text().trimmed().toUpper();
         qso->nominativoRx = nominativoEdit->text().trimmed().toUpper();
         qso->segnaleRx = segnaleEdit->text().trimmed().toDouble();
         if (qso->segnaleRx <= 0.0) {
@@ -2387,6 +2397,12 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         txt += QString::number(qso.segnaleRx);
         txt += " | ";
         txt += qso.trasmissioneTx;
+        if(!qso.progressivoRx.trimmed().isEmpty()) {
+            txt += " | ";
+            txt += tr("Prog. RX");
+            txt += " ";
+            txt += qso.progressivoRx.trimmed();
+        }
 
         item = new QTableWidgetItem(txt);
 

@@ -170,6 +170,7 @@ private:
     QString currentLocale;
 
     SuggestiveLineEdit *Nominativo;
+    SuggestiveLineEdit *Progressivo;
     SuggestiveLineEdit *Locatore;
     SuggestiveLineEdit *Segnale;
     SuggestiveLineEdit *Frequenza;

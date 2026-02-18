@@ -417,6 +417,14 @@ Année : 2025 et suivantes</translation>
         <source>No</source>
         <translation>Non</translation>
     </message>
+    <message>
+        <source>Progressivo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prog. RX</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MappaConfig</name>

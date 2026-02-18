@@ -1,4 +1,5 @@
 #include "qso.h"
+#include "coordinate.h"
 
 #include <QRegularExpression>
 #include <QTimeZone>
@@ -23,6 +24,7 @@ Qso::Qso(DatabaseManager *db, int log, int id) {
         q->prepare(R"(
 select
 locatoreTx,
+progressivoRx,
 radioTx,
 potenzaTx,
 trasmissioneTx,
@@ -40,6 +42,7 @@ where id = :id
         res = RFLog->executeQuery(q);
         if(res->hasRows()) {
             locatoreTx = res->getCella("locatoreTx");
+            progressivoRx = res->getCella("progressivoRx");
             radioTx = res->getCella("radioTx");
             potenzaTx = res->getCella("potenzaTx").toInt();
             trasmissioneTx = res->getCella("trasmissioneTx");
@@ -148,6 +151,7 @@ void Qso::insertAggiornaDB() {
                 INSERT INTO qso (
                     idLog,
                     locatoreTx,
+                    progressivoRx,
                     radioTx,
                     potenzaTx,
                     trasmissioneTx,
@@ -161,6 +165,7 @@ void Qso::insertAggiornaDB() {
                 ) VALUES (
                     :idLog,
                     :locatoreTx,
+                    :progressivoRx,
                     :radioTx,
                     :potenzaTx,
                     :trasmissioneTx,
@@ -179,6 +184,7 @@ void Qso::insertAggiornaDB() {
                 UPDATE qso
                 SET
                     locatoreTx = :locatoreTx,
+                    progressivoRx = :progressivoRx,
                     radioTx = :radioTx,
                     potenzaTx = :potenzaTx,
                     trasmissioneTx = :trasmissioneTx,
@@ -196,6 +202,7 @@ void Qso::insertAggiornaDB() {
 
         // Valori comuni per INSERT e UPDATE
         q->bindValue(":locatoreTx", locatoreTx);
+        q->bindValue(":progressivoRx", progressivoRx);
         q->bindValue(":radioTx", radioTx);
         q->bindValue(":potenzaTx", potenzaTx);
         q->bindValue(":trasmissioneTx", trasmissioneTx);
@@ -272,6 +279,10 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
         locatoreTx = contatto.value("my_gridsquare").toUpper();
         potenzaTx = contatto.value("tx_pwr").toInt();
         trasmissioneTx = contatto.value("mode");
+        progressivoRx = contatto.value("srx").trimmed();
+        if (progressivoRx.isEmpty()) {
+            progressivoRx = contatto.value("stx").trimmed();
+        }
 
         // Popola i dati del ricevitore
         nominativoRx = contatto.value("call").toUpper();
@@ -280,6 +291,24 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
         segnaleRx = contatto.value("rst_sent").toDouble();
         frequenzaRx = contatto.value("freq").toDouble();
         qsl = contatto.value("qsl_rcvd") == 'S';
+
+        const bool hasCqz = !contatto.value("cqz").trimmed().isEmpty();
+        const bool hasItuz = !contatto.value("ituz").trimmed().isEmpty();
+        if ((!hasCqz || !hasItuz) && Coordinate::validaLocatore(locatoreRx)) {
+            const Coordinate::CqItu cqitu = Coordinate::getCqItu(locatoreRx);
+            if (!hasCqz && cqitu.cq > 0) {
+                AltriParametri parametro;
+                parametro.nome = "cqz";
+                parametro.valore = QString::number(cqitu.cq);
+                altro.append(parametro);
+            }
+            if (!hasItuz && cqitu.itu > 0) {
+                AltriParametri parametro;
+                parametro.nome = "ituz";
+                parametro.valore = QString::number(cqitu.itu);
+                altro.append(parametro);
+            }
+        }
 
 
         // Recuperi le stringhe dal contatto ADIF
@@ -323,6 +352,19 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
             nominativoTx.append(nominativo);
         }
 
+        if (hasCqz) {
+            AltriParametri parametro;
+            parametro.nome = "cqz";
+            parametro.valore = contatto.value("cqz").trimmed();
+            altro.append(parametro);
+        }
+        if (hasItuz) {
+            AltriParametri parametro;
+            parametro.nome = "ituz";
+            parametro.valore = contatto.value("ituz").trimmed();
+            altro.append(parametro);
+        }
+
         // Gestisce eventuali parametri aggiuntivi
         for (auto it = contatto.begin(); it != contatto.end(); ++it) {
             if (it.key() != "my_gridsquare" && it.key() != "my_name" &&
@@ -331,7 +373,8 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
                 it.key() != "gridsquare" && it.key() != "rst_sent" &&
                 it.key() != "freq" && it.key() != "qso_date" &&
                 it.key() != "time_on" && it.key() != "station_callsign" &&
-                it.key() != "qsl_rcvd") {
+                it.key() != "qsl_rcvd" && it.key() != "srx" && it.key() != "stx" &&
+                it.key() != "cqz" && it.key() != "ituz") {
                 AltriParametri parametro;
                 parametro.nome = it.key();
                 parametro.valore = it.value();
