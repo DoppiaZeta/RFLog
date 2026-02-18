@@ -1,5 +1,6 @@
 #include <QDir>
 #include <QFile>
+#include <QHash>
 #include <QRegularExpression>
 #include <QSet>
 #include <QTextStream>
@@ -203,10 +204,15 @@ bool Adif::exportTxAdif(const QString& directoryPath,
     }
 
     QMap<QString, QList<QPair<Qso*, Qso::NominativoNome>>> qsosPerTx;
-    for (Qso *qso : qsoList) {
+    QHash<Qso*, QString> stxByQso;
+    for (int i = 0; i < qsoList.count(); ++i) {
+        Qso *qso = qsoList[i];
         if (!qso) {
             continue;
         }
+
+        stxByQso.insert(qso, QString::number(qsoList.count() - i));
+
         QSet<QString> aggiunti;
         for (const auto &txInfo : qso->nominativoTx) {
             const QString nominativo = txInfo.nominativo.trimmed().toUpper();
@@ -270,6 +276,7 @@ bool Adif::exportTxAdif(const QString& directoryPath,
             record += adifField("NAME", rxOperatore);
             record += adifField("MY_GRIDSQUARE", qso->locatoreTx.trimmed());
             record += adifField("GRIDSQUARE", qso->locatoreRx.trimmed());
+            record += adifField("STX", stxByQso.value(qso));
             record += adifField("SRX", qso->progressivoRx.trimmed());
 
             const Coordinate::CqItu txCqItu = Coordinate::getCqItu(qso->locatoreTx.trimmed().toUpper());

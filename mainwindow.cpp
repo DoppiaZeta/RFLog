@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QPushButton>
+#include <QSet>
 #include <QVBoxLayout>
 #include <QSignalBlocker>
 #include <QTimer>
@@ -573,6 +574,7 @@ void MainWindow::retranslateUi() {
     tx->retranslateUi(ui->tx);
     updateTableHeaders();
     updateColoreStatoItems();
+    aggiornaEtichettaSuccessivo();
 }
 
 void MainWindow::updateTableHeaders() {
@@ -633,6 +635,33 @@ bool MainWindow::nominativoPresenteInLista(const QString &txt) const
     }
 
     return false;
+}
+
+void MainWindow::aggiornaEtichettaSuccessivo() {
+    ui->successivo->setText(QString::number(qsoList.count() + 1));
+}
+
+void MainWindow::ricalcolaDuplicatiQso() {
+    QSet<QString> nominativiVisti;
+    for (int i = qsoList.count() - 1; i >= 0; --i) {
+        Qso *qso = qsoList[i];
+        if (!qso) {
+            continue;
+        }
+
+        const QString nominativo = qso->nominativoRx.trimmed().toUpper();
+        if (nominativo.isEmpty()) {
+            qso->duplicato = false;
+            continue;
+        }
+
+        if (nominativiVisti.contains(nominativo)) {
+            qso->duplicato = true;
+        } else {
+            qso->duplicato = false;
+            nominativiVisti.insert(nominativo);
+        }
+    }
 }
 
 void MainWindow::aggiornaColoreNominativoDuplicato(const QString &txt)
@@ -816,6 +845,7 @@ void MainWindow::confermaLinea() {
 
     qso->insertAggiornaDB();
     qsoList.prepend(qso);
+    aggiornaEtichettaSuccessivo();
     aggiornaTabella();
     updateMappaLocatori();
 }
@@ -1578,6 +1608,8 @@ void MainWindow::menuApriAdif() {
         }
 
         Qso::sort(qsoList);
+        ricalcolaDuplicatiQso();
+        aggiornaEtichettaSuccessivo();
         aggiornaTabella();
         updateMappaLocatori();
     }
@@ -1623,6 +1655,8 @@ void MainWindow::menuApriEdi() {
     }
 
     Qso::sort(qsoList);
+    ricalcolaDuplicatiQso();
+    aggiornaEtichettaSuccessivo();
     aggiornaTabella();
     updateMappaLocatori();
 }
@@ -1692,6 +1726,7 @@ void MainWindow::menuIniziaLog() {
             delete qsoList[i];
         }
         qsoList.clear();
+        aggiornaEtichettaSuccessivo();
 
         auto listaId = Qso::getListaQso(RFLog, numeroLog);
 
@@ -1703,6 +1738,9 @@ void MainWindow::menuIniziaLog() {
             if(qsoAttingi == nullptr)
                 qsoAttingi = qso;
         }
+
+        ricalcolaDuplicatiQso();
+        aggiornaEtichettaSuccessivo();
 
         if(qsoAttingi != nullptr) {
             tx->locatore->setText(qsoAttingi->locatoreTx);
@@ -2053,6 +2091,8 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
         }
 
         qso->insertAggiornaDB();
+        ricalcolaDuplicatiQso();
+        aggiornaEtichettaSuccessivo();
         aggiornaTabella();
         updateMappaLocatori();
     }
@@ -2243,6 +2283,7 @@ void MainWindow::modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *par
 
 void MainWindow::aggiornaTabella()
 {
+    aggiornaEtichettaSuccessivo();
     ui->Tabella->setUpdatesEnabled(false);
     const bool wasSortingEnabled = ui->Tabella->isSortingEnabled();
     ui->Tabella->setSortingEnabled(false);

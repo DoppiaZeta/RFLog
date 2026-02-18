@@ -159,6 +159,8 @@ private:
     void retranslateUi();
     void updateTableHeaders();
     void updateColoreStatoItems();
+    void aggiornaEtichettaSuccessivo();
+    void ricalcolaDuplicatiQso();
     std::unique_ptr<QTranslator> createAppTranslator(const QString &localeName);
 
     Ui::MainWindow *ui;
