@@ -3,11 +3,13 @@
 
 #include <QPainter>
 #include <QWidget>
-#include <QtConcurrent/QtConcurrent>
 #include <QElapsedTimer>
 #include <QVector>
 #include <QPair>
 #include <QMouseEvent>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 #include "databasemanager.h"
 #include "coordinate.h"
 #include "linee.h"
@@ -46,7 +48,29 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
-    QVector<QVector<Coordinate*>> * caricaMatriceDaDb(QString locatore_da, QString locatore_a);
+    struct MatriceLoadRequest {
+        QString locatoreDa;
+        QString locatoreA;
+        QString stato;
+        tipoMappa tipo;
+        QList<Linee> linee;
+        int requestId;
+    };
+
+    struct MatriceLoadResult {
+        QVector<QVector<Coordinate*>> *matrice;
+        QString primoLocatore;
+        QString ultimoLocatore;
+        QString locatoreDa;
+        QString locatoreA;
+        int requestId;
+    };
+
+    QVector<QVector<Coordinate*>> * caricaMatriceDaDb(const MatriceLoadRequest &request, QString &primo, QString &ultimo);
+    void startLoaderThread();
+    void stopLoaderThread();
+    void loaderLoop();
+    void liberaMatrice(QVector<QVector<Coordinate *>> *matrice);
 
     void drawSquare(QPainter &painter, const QRect &rect, const QColor &color, bool border = false);
     void drawLine(QPainter &painter, float x1f, float y1f, float x2f, float y2f);
@@ -76,6 +100,14 @@ private:
     tipoMappa tipomappa;
 
     QWidget *mappaConfigWidget;
+
+    QThread *loaderThread;
+    QMutex loaderMutex;
+    QWaitCondition loaderCv;
+    bool loaderRunning;
+    bool hasPendingRequest;
+    MatriceLoadRequest pendingRequest;
+    int lastRequestId;
 };
 
 #endif // MAPPA_H

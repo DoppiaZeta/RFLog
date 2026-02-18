@@ -3,7 +3,7 @@
 #include <QSet>
 #include <QtMath>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
-    : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
+    : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()), loaderThread(nullptr), loaderRunning(false), hasPendingRequest(false), lastRequestId(0) {
     db = dbm;
     mappaConfigWidget = mappaConfig;
     primoLocatore = QString();
@@ -17,49 +17,131 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
 }
 
 Mappa::~Mappa() {
-    if (m_matrice) {
-        for (auto& row : *m_matrice) {
-            for (auto& coord : row) {
-                delete coord;
-            }
-        }
-        delete m_matrice;
-    }
+    stopLoaderThread();
+    liberaMatrice(m_matrice);
+    m_matrice = nullptr;
     delete linee;
 }
 
 void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
-    // Libera la matrice precedente se esiste
-    if (m_matrice) {
-        for (auto& row : *m_matrice) {
-            for (auto& coord : row) {
-                delete coord;
-            }
-        }
-        delete m_matrice;
-        m_matrice = nullptr; // Evita dangling pointers
-    }
+    liberaMatrice(m_matrice);
+    m_matrice = nullptr;
 
     timer.start();
     update();
 
-    auto future = QtConcurrent::run([this, locatore_da, locatore_a]() {
-        // Carica la matrice direttamente dal database
-        QVector<QVector<Coordinate*>>* nuovaMatrice = caricaMatriceDaDb(locatore_da, locatore_a);
+    startLoaderThread();
 
-        // Trasferisci la matrice al thread principale
-        QMetaObject::invokeMethod(this, [this, nuovaMatrice, locatore_a, locatore_da]() {
-            // Assegna la nuova matrice
-            m_matrice = nuovaMatrice;
+    MatriceLoadRequest request;
+    request.locatoreDa = locatore_da;
+    request.locatoreA = locatore_a;
+    request.stato = stato;
+    request.tipo = tipomappa;
+    request.linee = *linee;
 
-            // Aggiorna il widget
-            update();
+    {
+        QMutexLocker lock(&loaderMutex);
+        request.requestId = ++lastRequestId;
+        pendingRequest = request;
+        hasPendingRequest = true;
+    }
 
-            // Emetti il segnale che la matrice è stata caricata
-            emit matriceCaricata();
-            emit matriceDaA(locatore_da, locatore_a);
-        }, Qt::QueuedConnection);
+    loaderCv.wakeOne();
+}
+
+void Mappa::startLoaderThread() {
+    QMutexLocker lock(&loaderMutex);
+    if (loaderRunning) {
+        return;
+    }
+
+    loaderRunning = true;
+    loaderThread = QThread::create([this]() {
+        loaderLoop();
     });
+    loaderThread->start();
+}
+
+void Mappa::stopLoaderThread() {
+    QThread *threadToStop = nullptr;
+
+    {
+        QMutexLocker lock(&loaderMutex);
+        if (!loaderRunning) {
+            return;
+        }
+
+        loaderRunning = false;
+        hasPendingRequest = false;
+        threadToStop = loaderThread;
+        loaderThread = nullptr;
+    }
+
+    loaderCv.wakeOne();
+
+    if (threadToStop) {
+        threadToStop->wait();
+        delete threadToStop;
+    }
+}
+
+void Mappa::liberaMatrice(QVector<QVector<Coordinate *>> *matrice) {
+    if (!matrice) {
+        return;
+    }
+
+    for (auto &row : *matrice) {
+        for (auto &coord : row) {
+            delete coord;
+        }
+    }
+
+    delete matrice;
+}
+
+void Mappa::loaderLoop() {
+    while (true) {
+        MatriceLoadRequest request;
+
+        {
+            QMutexLocker lock(&loaderMutex);
+            while (loaderRunning && !hasPendingRequest) {
+                loaderCv.wait(&loaderMutex);
+            }
+
+            if (!loaderRunning) {
+                return;
+            }
+
+            request = pendingRequest;
+            hasPendingRequest = false;
+        }
+
+        QString primo;
+        QString ultimo;
+        QVector<QVector<Coordinate*>> *nuovaMatrice = caricaMatriceDaDb(request, primo, ultimo);
+
+        MatriceLoadResult result{nuovaMatrice, primo, ultimo, request.locatoreDa, request.locatoreA, request.requestId};
+
+        QMetaObject::invokeMethod(this, [this, result]() mutable {
+            {
+                QMutexLocker lock(&loaderMutex);
+                if (result.requestId != lastRequestId) {
+                    liberaMatrice(result.matrice);
+                    return;
+                }
+            }
+
+            liberaMatrice(m_matrice);
+            m_matrice = result.matrice;
+            primoLocatore = result.primoLocatore;
+            ultimoLocatore = result.ultimoLocatore;
+
+            update();
+            emit matriceCaricata();
+            emit matriceDaA(result.locatoreDa, result.locatoreA);
+        }, Qt::QueuedConnection);
+    }
 }
 
 void Mappa::addLinea(const Linee l, bool refresh) {
@@ -88,10 +170,10 @@ void Mappa::setTipoMappa(tipoMappa t, bool ricarica) {
         reload();
 }
 
-QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QString locatore_a) {
+QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest &request, QString &primo, QString &ultimo) {
     int rowDa, colDa, rowA, colA;
-    Coordinate::toRowCol(locatore_da, rowDa, colDa);
-    Coordinate::toRowCol(locatore_a, rowA, colA);
+    Coordinate::toRowCol(request.locatoreDa, rowDa, colDa);
+    Coordinate::toRowCol(request.locatoreA, rowA, colA);
 
     int rTop = qMax(rowDa, rowA);
     int rBottom = qMin(rowDa, rowA);
@@ -121,14 +203,14 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
 
     //qDebug() << "Moltiplicatori" << colStep << rowStep;
 
-    primoLocatore = Coordinate::fromRowCol(rBottom, cRight);
-    ultimoLocatore = Coordinate::fromRowCol(rTop, cLeft);
+    primo = Coordinate::fromRowCol(rBottom, cRight);
+    ultimo = Coordinate::fromRowCol(rTop, cLeft);
 
     const bool includeConfini = (
-        tipomappa == tipoMappa::stati ||
-        tipomappa == tipoMappa::regioni ||
-        tipomappa == tipoMappa::provincie ||
-        tipomappa == tipoMappa::comuni
+        request.tipo == tipoMappa::stati ||
+        request.tipo == tipoMappa::regioni ||
+        request.tipo == tipoMappa::provincie ||
+        request.tipo == tipoMappa::comuni
         );
 
     QSet<QString> gialloStati;
@@ -147,14 +229,14 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
     };
 
     if (includeConfini) {
-        for(int i = 0; i < linee->count(); i++) {
+        for(int i = 0; i < request.linee.count(); i++) {
             QSqlQuery *q = db->getQueryBind();
             q->prepare(R"(
     SELECT locatore, stato, regione, provincia, comune
     FROM locatori
     WHERE locatore = :locatore
 )");
-            q->bindValue(":locatore", linee->at(i).locatore_a);
+            q->bindValue(":locatore", request.linee.at(i).locatore_a);
             DBResult *res = db->executeQuery(q);
 
             const QString statoVal = res->getCella("stato");
@@ -237,7 +319,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(QString locatore_da, QSt
             if (includeConfini) {
                 QSqlQuery *q = db->getQueryBind();
                 q->prepare(selectQuery);
-                q->bindValue(":stato", stato);
+                q->bindValue(":stato", request.stato);
                 resQuery = db->executeQuery(q);
                 delete q;
             } else {
