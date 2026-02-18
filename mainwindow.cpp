@@ -433,6 +433,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 
     QMainWindow::closeEvent(event);
+    QCoreApplication::quit();
 }
 
 void MainWindow::setupLanguageMenu() {

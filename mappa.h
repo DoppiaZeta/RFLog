@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
+#include <QFutureWatcher>
 #include <QElapsedTimer>
 #include <QVector>
 #include <QPair>
@@ -77,7 +78,9 @@ private:
     tipoMappa tipomappa;
 
     QWidget *mappaConfigWidget;
-    QFuture<void> matriceLoadFuture;
+    QFuture<QVector<QVector<Coordinate*>>*> matriceLoadFuture;
+    quint64 matrixRequestId = 0;
+    bool closing = false;
 };
 
 #endif // MAPPA_H

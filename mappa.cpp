@@ -2,6 +2,20 @@
 #include <QPainterPath>
 #include <QSet>
 #include <QtMath>
+
+namespace {
+void freeMatrix(QVector<QVector<Coordinate*>> *matrix) {
+    if (!matrix) {
+        return;
+    }
+    for (auto &row : *matrix) {
+        for (auto *coord : row) {
+            delete coord;
+        }
+    }
+    delete matrix;
+}
+}
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()) {
     db = dbm;
@@ -17,57 +31,49 @@ Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
 }
 
 Mappa::~Mappa() {
+    closing = true;
+    ++matrixRequestId;
     if (matriceLoadFuture.isRunning()) {
         matriceLoadFuture.waitForFinished();
     }
 
-    if (m_matrice) {
-        for (auto& row : *m_matrice) {
-            for (auto& coord : row) {
-                delete coord;
-            }
-        }
-        delete m_matrice;
-    }
+    freeMatrix(m_matrice);
+    m_matrice = nullptr;
     delete linee;
 }
 
 void Mappa::setMatrice(const QString& locatore_da, const QString& locatore_a) {
-    // Libera la matrice precedente se esiste
-    if (m_matrice) {
-        for (auto& row : *m_matrice) {
-            for (auto& coord : row) {
-                delete coord;
-            }
-        }
-        delete m_matrice;
-        m_matrice = nullptr; // Evita dangling pointers
-    }
-
-    timer.start();
-    update();
-
     if (matriceLoadFuture.isRunning()) {
         matriceLoadFuture.waitForFinished();
     }
 
+    freeMatrix(m_matrice);
+    m_matrice = nullptr;
+
+    timer.start();
+    update();
+
+    const quint64 requestId = ++matrixRequestId;
     matriceLoadFuture = QtConcurrent::run([this, locatore_da, locatore_a]() {
-        // Carica la matrice direttamente dal database
-        QVector<QVector<Coordinate*>>* nuovaMatrice = caricaMatriceDaDb(locatore_da, locatore_a);
-
-        // Trasferisci la matrice al thread principale
-        QMetaObject::invokeMethod(this, [this, nuovaMatrice, locatore_a, locatore_da]() {
-            // Assegna la nuova matrice
-            m_matrice = nuovaMatrice;
-
-            // Aggiorna il widget
-            update();
-
-            // Emetti il segnale che la matrice è stata caricata
-            emit matriceCaricata();
-            emit matriceDaA(locatore_da, locatore_a);
-        }, Qt::QueuedConnection);
+        return caricaMatriceDaDb(locatore_da, locatore_a);
     });
+
+    auto *watcher = new QFutureWatcher<QVector<QVector<Coordinate*>>*>(this);
+    connect(watcher, &QFutureWatcher<QVector<QVector<Coordinate*>>*>::finished, this, [this, watcher, requestId, locatore_da, locatore_a]() {
+        QVector<QVector<Coordinate*>> *nuovaMatrice = watcher->result();
+        watcher->deleteLater();
+
+        if (closing || requestId != matrixRequestId) {
+            freeMatrix(nuovaMatrice);
+            return;
+        }
+
+        m_matrice = nuovaMatrice;
+        update();
+        emit matriceCaricata();
+        emit matriceDaA(locatore_da, locatore_a);
+    });
+    watcher->setFuture(matriceLoadFuture);
 }
 
 void Mappa::addLinea(const Linee l, bool refresh) {
