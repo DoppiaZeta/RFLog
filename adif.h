@@ -7,12 +7,18 @@
 #include <QMap>
 #include <QList>
 
+class Qso;
+
 class Adif : public QObject
 {
     Q_OBJECT
 public:
     // Init
     static void parseAdif(const QString& filePath, Adif& adif);
+
+    static bool exportTxAdif(const QString& directoryPath,
+                             const QString& nomeLog,
+                             const QList<Qso*>& qsoList);
 
     // Imposta i dati dell'intestazione
     void impostaIntestazione(const QMap<QString, QString>& header);

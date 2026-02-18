@@ -59,4 +59,13 @@ void MainWindow::creaDBRFLog() {
         ");"
         );
 
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_idLog ON qso(idLog);");
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_locRx ON qso(locatoreRx);");
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_locTx ON qso(locatoreTx);");
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qso_orario ON qso(orarioRx);");
+
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qsoNom_idQso ON qsoNominativi(idQso);");
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qsoAltro_idQso ON qsoAltro(idQso);");
+    RFLog->executeQueryNoRes("CREATE INDEX IF NOT EXISTS idx_qsoAltro_nome_idQso ON qsoAltro(nome, idQso);");
+
 }
