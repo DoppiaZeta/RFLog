@@ -40,7 +40,7 @@
         <property name="styleSheet">
          <string notr="true">background-color: lightgray;</string>
         </property>
-        <layout class="QGridLayout" name="grigliaInput">
+        <layout class="QGridLayout" name="grigliaInput" columnstretch="0,5,5,2,3,2">
          <property name="leftMargin">
           <number>5</number>
          </property>
@@ -56,16 +56,6 @@
          <property name="spacing">
           <number>0</number>
          </property>
-         <item row="1" column="2">
-          <widget class="QLabel" name="label_2">
-           <property name="styleSheet">
-            <string notr="true">color: blue;</string>
-           </property>
-           <property name="text">
-            <string>Locatore</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="5">
           <widget class="QLabel" name="label_4">
            <property name="styleSheet">
@@ -73,16 +63,6 @@
            </property>
            <property name="text">
             <string>Orario (UTC)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label">
-           <property name="styleSheet">
-            <string notr="true">color: blue;</string>
-           </property>
-           <property name="text">
-            <string>Nominativo</string>
            </property>
           </widget>
          </item>
@@ -96,6 +76,16 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="label_2">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Locatore</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="4">
           <widget class="QLabel" name="label_5">
            <property name="styleSheet">
@@ -103,6 +93,16 @@
            </property>
            <property name="text">
             <string>Frequenza</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Nominativo</string>
            </property>
           </widget>
          </item>

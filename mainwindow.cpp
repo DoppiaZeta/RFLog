@@ -289,7 +289,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
 
-    ui->Tabella->setColumnCount(8);
+    ui->Tabella->setColumnCount(7);
     updateTableHeaders();
 
     ui->Tabella->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -299,7 +299,30 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
+    ui->Tabella->setAlternatingRowColors(true);
+    ui->Tabella->setShowGrid(true);
+    ui->Tabella->setGridStyle(Qt::SolidLine);
+    ui->Tabella->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->Tabella->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->Tabella->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->Tabella->verticalHeader()->setVisible(true);
+    ui->Tabella->verticalHeader()->setDefaultSectionSize(24);
+    ui->Tabella->verticalHeader()->setMinimumSectionSize(20);
+    ui->Tabella->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->Tabella->setStyleSheet(
+        "QTableWidget {"
+        "  alternate-background-color: #f7f9fc;"
+        "  gridline-color: #d7dee7;"
+        "  selection-background-color: #dceeff;"
+        "  selection-color: #20262d;"
+        "}"
+        "QHeaderView::section {"
+        "  background-color: #e9eef5;"
+        "  border: 1px solid #d7dee7;"
+        "  font-weight: 600;"
+        "  padding: 4px;"
+        "}"
+    );
     ui->Tabella->installEventFilter(this);
 
 
@@ -556,7 +579,6 @@ void MainWindow::updateTableHeaders() {
                       << tr("RX")
                       << tr("TX dettagli")
                       << tr("Data/Ora UTC")
-                      << tr("QSL")
                       << tr("INFO")
         );
 }
@@ -2397,21 +2419,6 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         ui->Tabella->setItem(row, 5, item);
 
 
-        // QSL
-        item = new QTableWidgetItem(qso.qsl ? tr("Si") : tr("No"));
-
-        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-        // sfondo
-        if(qso.duplicato)
-            item->setBackground(rosso);
-        else
-            item->setBackground(verde);
-
-        // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 6, item);
-
-
         // INFO
         item = new QTableWidgetItem(QString::number(Coordinate::distanzaKm(qso.locatoreTx, qso.locatoreRx), 'f', 2) + " Km");
 
@@ -2424,7 +2431,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 7, item);
+        ui->Tabella->setItem(row, 6, item);
 }
 
 
