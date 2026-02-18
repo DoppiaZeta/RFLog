@@ -1658,6 +1658,7 @@ void MainWindow::menuIniziaLog() {
     nl.exec();
     int n = nl.getLogSelezionato();
     if(n > 0) {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
         numeroLog = n;
         for(int i = 0; i < qsoList.count(); i++) {
             delete qsoList[i];
@@ -1702,6 +1703,7 @@ void MainWindow::menuIniziaLog() {
         }
 
         updateMappaLocatori();
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
         QSqlQuery *q = RFLog->getQueryBind();
         q->prepare("select nome from log where id = :id");
@@ -1720,6 +1722,7 @@ color: darkblue;
         delete res;
 
         aggiornaTabella();
+        QApplication::restoreOverrideCursor();
     }
 }
 
@@ -2208,6 +2211,10 @@ void MainWindow::modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *par
 
 void MainWindow::aggiornaTabella()
 {
+    ui->Tabella->setUpdatesEnabled(false);
+    const bool wasSortingEnabled = ui->Tabella->isSortingEnabled();
+    ui->Tabella->setSortingEnabled(false);
+
     // Svuota la tabella (sia contenuto sia intestazioni).
     ui->Tabella->clearContents();
 
@@ -2215,9 +2222,23 @@ void MainWindow::aggiornaTabella()
     // Se la tabella è già configurata, puoi evitare queste righe.
     ui->Tabella->setRowCount(qsoList.count());
 
+    QStringList indiciRighe;
+    indiciRighe.reserve(qsoList.count());
+    for (int i = 0; i < qsoList.count(); ++i) {
+        indiciRighe << QString::number(qsoList.count() - i);
+    }
+    ui->Tabella->setVerticalHeaderLabels(indiciRighe);
+
+
     for (int i = 0; i < qsoList.count(); i++) {
         aggiungiATabella(*qsoList[i], i);
     }
+
+    ui->Tabella->resizeRowsToContents();
+    ui->Tabella->setSortingEnabled(wasSortingEnabled);
+
+    ui->Tabella->setUpdatesEnabled(true);
+    ui->Tabella->viewport()->update();
 }
 
 void MainWindow::aggiungiATabella(const Qso & qso, int row) {
@@ -2404,10 +2425,6 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
 
         // Inserisci l'item nella tabella
         ui->Tabella->setItem(row, 7, item);
-
-
-        // Facoltativo: adatta l'altezza della riga al contenuto
-        ui->Tabella->resizeRowToContents(row);
 }
 
 
