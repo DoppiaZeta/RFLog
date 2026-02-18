@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>965</width>
-    <height>304</height>
+    <height>250</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -26,18 +26,14 @@ QLineEdit
 { height: 15px; }
 
 QDoubleSpinBox
-{ height: 18px; }
-</string>
+{ height: 18px; }</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <property name="horizontalSpacing">
-    <number>0</number>
-   </property>
+  <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>2</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
@@ -45,23 +41,10 @@ QDoubleSpinBox
    <property name="bottomMargin">
     <number>3</number>
    </property>
-   <item row="0" column="1">
-    <widget class="QCheckBox" name="checkBox">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>15</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Mostra / nascondi TX dettagli</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
+   <property name="horizontalSpacing">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
     <widget class="QWidget" name="txwidget" native="true">
      <layout class="QGridLayout" name="gridLayout_4">
       <property name="leftMargin">
@@ -80,10 +63,7 @@ QDoubleSpinBox
        <number>0</number>
       </property>
       <item row="1" column="2">
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string/>
-        </property>
+       <widget class="QWidget" name="widgetExGroupBox" native="true">
         <layout class="QGridLayout" name="gridLayout_3" rowstretch="1,0,0,0,0,0,0" columnstretch="1,0">
          <property name="leftMargin">
           <number>0</number>
@@ -104,31 +84,10 @@ QDoubleSpinBox
           <number>0</number>
          </property>
          <item row="0" column="0" rowspan="4">
-          <layout class="QGridLayout" name="gridLayout_2" columnstretch="2,2,0">
+          <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,0,0" columnstretch="2,0,0">
            <property name="spacing">
             <number>1</number>
            </property>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Operatore</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Nominativo</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QComboBox" name="nominativo">
-             <property name="editable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="2">
             <widget class="QPushButton" name="aggiungi">
              <property name="text">
@@ -136,20 +95,10 @@ QDoubleSpinBox
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="operatore"/>
-           </item>
-           <item row="6" column="0" colspan="3">
-            <widget class="QPushButton" name="togli">
-             <property name="text">
-              <string>Togli</string>
-             </property>
-            </widget>
-           </item>
            <item row="5" column="0" colspan="3">
             <widget class="QTableWidget" name="nominativiList">
              <property name="styleSheet">
-              <string notr="true">background-color: #dff;
+              <string notr="true">background-color: aliceblue;
 color: black;</string>
              </property>
              <property name="editTriggers">
@@ -174,6 +123,37 @@ color: black;</string>
                <string>Operatore</string>
               </property>
              </column>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Operatore</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Nominativo</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="operatore"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QComboBox" name="nominativo">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" colspan="3">
+            <widget class="QPushButton" name="togli">
+             <property name="text">
+              <string>Togli</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -337,7 +317,7 @@ color: black;</string>
               <string notr="true">min-height: 20px;
 color: blue;
 font-weight: bold;
-background-color: #dff;
+background-color: aliceblue;
 letter-spacing: 2px;</string>
              </property>
              <property name="alignment">
@@ -367,18 +347,21 @@ letter-spacing: 2px;</string>
              <item row="4" column="2">
               <widget class="QTableWidget" name="preferiti">
                <property name="styleSheet">
-                <string notr="true">    QTableWidget {
-        font-size: 10px; /* Dimensione del testo */
-    }
-    QHeaderView::section {
-        font-size: 10px; /* Dimensione del testo negli header (se visibili) */
-        padding: 0px; /* Margini negli header */
-    }
+                <string notr="true">QTableWidget {
+	font-size: 10px; /* Dimensione del testo */
+	background-color: aliceblue;
+	color: black;
+}
+QHeaderView::section {
+	font-size: 10px; /* Dimensione del testo negli header (se visibili) */
+	padding: 0px; /* Margini negli header */
+}
 QTableWidget::item {
     padding: 0px; /* Margini interni delle celle */
     margin: 0px;  /* Margini esterni */
     border: 0px;  /* Nessun bordo */
 }
+
 </string>
                </property>
                <property name="horizontalScrollBarPolicy">
@@ -414,7 +397,6 @@ QTableWidget::item {
   </layout>
  </widget>
  <tabstops>
-  <tabstop>checkBox</tabstop>
   <tabstop>nominativo</tabstop>
   <tabstop>operatore</tabstop>
   <tabstop>aggiungi</tabstop>
@@ -427,22 +409,5 @@ QTableWidget::item {
   <tabstop>trasmissione</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>checkBox</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>txwidget</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>482</x>
-     <y>17</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>482</x>
-     <y>100</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -25,10 +25,10 @@
      <number>3</number>
     </property>
     <property name="horizontalSpacing">
-     <number>3</number>
+     <number>2</number>
     </property>
     <property name="verticalSpacing">
-     <number>6</number>
+     <number>0</number>
     </property>
     <item row="1" column="0">
      <layout class="QVBoxLayout" name="grigliaSinistra" stretch="0,0,10">
@@ -36,61 +36,78 @@
        <widget class="QWidget" name="tx" native="true"/>
       </item>
       <item>
-       <layout class="QGridLayout" name="grigliaInput">
-        <property name="spacing">
-         <number>0</number>
+       <widget class="QWidget" name="grigliaInputWidget" native="true">
+        <property name="styleSheet">
+         <string notr="true">background-color: lightgray;</string>
         </property>
-        <item row="1" column="2">
-         <widget class="QLabel" name="label_2">
-          <property name="styleSheet">
-           <string notr="true">color: blue;</string>
-          </property>
-          <property name="text">
-           <string>Locatore</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QLabel" name="label_4">
-          <property name="styleSheet">
-           <string notr="true">color: blue;</string>
-          </property>
-          <property name="text">
-           <string>Orario (UTC)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label">
-          <property name="styleSheet">
-           <string notr="true">color: blue;</string>
-          </property>
-          <property name="text">
-           <string>Nominativo</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="label_3">
-          <property name="styleSheet">
-           <string notr="true">color: blue;</string>
-          </property>
-          <property name="text">
-           <string>Segnale</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="4">
-         <widget class="QLabel" name="label_5">
-          <property name="styleSheet">
-           <string notr="true">color: blue;</string>
-          </property>
-          <property name="text">
-           <string>Frequenza</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+        <layout class="QGridLayout" name="grigliaInput">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="1" column="2">
+          <widget class="QLabel" name="label_2">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Locatore</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="5">
+          <widget class="QLabel" name="label_4">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Orario (UTC)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Nominativo</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QLabel" name="label_3">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Segnale</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QLabel" name="label_5">
+           <property name="styleSheet">
+            <string notr="true">color: blue;</string>
+           </property>
+           <property name="text">
+            <string>Frequenza</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QTableWidget" name="Tabella">

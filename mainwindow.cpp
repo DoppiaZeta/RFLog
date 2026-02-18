@@ -1922,7 +1922,6 @@ void MainWindow::modificaTxDaTabella(const QModelIndex &index) {
     QWidget *txWidget = new QWidget(&dialog);
     Ui::Tx *txUi = new Ui::Tx;
     txUi->setupUi(txWidget);
-    txUi->checkBox->setVisible(false);
     layout->addWidget(txWidget);
 
     QGroupBox *rxGroup = new QGroupBox(tr("RX"), &dialog);
@@ -2030,9 +2029,6 @@ void MainWindow::popolaTxDialog(Ui::Tx *txUi, const Qso &qso) {
     if (!txUi) {
         return;
     }
-
-    txUi->checkBox->setChecked(true);
-    txUi->txwidget->setVisible(true);
 
     txUi->locatore->setText(qso.locatoreTx);
     txUi->radio->setCurrentText(qso.radioTx);
