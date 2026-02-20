@@ -291,9 +291,8 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
 
         if (!tempLocatoriValues.isEmpty()) {
             const QString values = tempLocatoriValues.join(", ");
-            const QString tempTableName = QString("temp_locatori_%1_%2")
-                                              .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()))
-                                              .arg(columnIndex);
+            const QString tempTableName = QString("temp_locatori_%1")
+                                              .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()));
 
             QSqlDatabase readDb = db->getReadOnlyConnection();
 
@@ -304,8 +303,9 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                 }
             };
 
-            const QString createTempTableQuery = QString("CREATE TEMP TABLE IF NOT EXISTS %1 (locatore TEXT);").arg(tempTableName);
+            const QString createTempTableQuery = QString("CREATE TEMP TABLE IF NOT EXISTS %1 (locatore TEXT PRIMARY KEY);").arg(tempTableName);
             execNoRes(createTempTableQuery);
+            execNoRes(QString("DELETE FROM %1;").arg(tempTableName));
 
             const QString insertTempTableQuery = QString("INSERT INTO %1 (locatore) VALUES %2;").arg(tempTableName, values);
             execNoRes(insertTempTableQuery);
@@ -353,9 +353,6 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                     queryMap.insert(row[0], row);
                 }
             }
-
-            const QString dropTempTableQuery = QString("DROP TABLE IF EXISTS %1;").arg(tempTableName);
-            execNoRes(dropTempTableQuery);
 
             enum ColumnIndex {
                 Locatore = 0,
@@ -421,7 +418,6 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
             matrix->operator[](columnIndex) = columnCoordinates;
         }
 
-        db->releaseConnection();
     });
 
     db->cleanUpConnections();
