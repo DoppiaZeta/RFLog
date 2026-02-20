@@ -6,7 +6,7 @@ INCLUDEPATH += .
 # sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite
 
 # Aggiungi i moduli necessari
-QT += core gui widgets sql #opengl openglwidgets
+QT += core gui widgets sql concurrent #opengl openglwidgets
 
 #win32: LIBS += -lopengl32
 win32:LIBS += -lodbc32
