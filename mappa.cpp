@@ -265,8 +265,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
     auto matrix = new QVector<QVector<Coordinate*>>((cRight - cLeft) / colStep + 1);
     //matrix->reserve(rTop - rBottom + 1);
 
-    // Ogni iterazione usa connessioni DB thread-local tramite DatabaseManager.
-#pragma omp parallel for
+    // Elaborazione in worker Qt (loaderThread), senza OpenMP.
     for (int c = cRight; c >= cLeft; c -= colStep) {
         int columnIndex = (cRight - c) / colStep;
         QVector<Coordinate*> columnCoordinates;

@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QXmlStreamReader>
 
-bool TsTranslator::loadFromTs(const QString &filePath)
+bool Traduttore::loadFromTs(const QString &filePath)
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -61,7 +61,7 @@ bool TsTranslator::loadFromTs(const QString &filePath)
     return !xml.hasError() && !translations.isEmpty();
 }
 
-QString TsTranslator::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
+QString Traduttore::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
 {
     Q_UNUSED(disambiguation);
     Q_UNUSED(n);

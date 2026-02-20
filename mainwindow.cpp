@@ -418,7 +418,7 @@ std::unique_ptr<QTranslator> MainWindow::createAppTranslator(const QString &loca
         return translator;
     }
 
-    auto tsTranslator = std::make_unique<TsTranslator>();
+    auto tsTranslator = std::make_unique<Traduttore>();
     const QString resourceTs = QStringLiteral(":/i18n/") + baseName + QStringLiteral(".ts");
     if (tsTranslator->loadFromTs(resourceTs)) {
         return tsTranslator;

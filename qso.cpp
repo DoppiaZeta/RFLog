@@ -4,6 +4,17 @@
 #include <QRegularExpression>
 #include <QTimeZone>
 
+
+namespace {
+bool parseQslFlag(const QString &value) {
+    return value.trimmed().toUpper() == "Y";
+}
+
+QString toQslDbValue(const bool qsl) {
+    return qsl ? QStringLiteral("Y") : QStringLiteral("N");
+}
+}
+
 const std::map<double, double> Qso::bandaToFreq = {
     {160, 1.9}, {80, 3.5}, {60, 5.3}, {40, 7.1}, {30, 10.1}, {20, 14.1},
     {17, 18.1}, {15, 21.1}, {12, 24.9}, {10, 28.5}, {6, 50.1}, {2, 144.1},
@@ -51,7 +62,7 @@ where id = :id
             operatoreRx = res->getCella("operatoreRx");
             segnaleRx = res->getCella("segnaleRx").toDouble();
             frequenzaRx = res->getCella("frequenzaRx").toDouble();
-            qsl = res->getCella("qsl") == 'S';
+            qsl = parseQslFlag(res->getCella("qsl"));
             orarioRx = QDateTime::fromString(res->getCella("orarioRx"), Qt::ISODate);
         }
         delete res;
@@ -167,7 +178,7 @@ void Qso::insertAggiornaDB() {
         q->bindValue(":segnaleRx", segnaleRx);
         q->bindValue(":frequenzaRx", frequenzaRx);
         q->bindValue(":orarioRx", orarioRx);
-        q->bindValue(":qsl", qsl ? 'S' : 'N');
+        q->bindValue(":qsl", toQslDbValue(qsl));
         q->bindValue(":idLog", logId);
 
         RFLog->executeQueryNoRes(q);
@@ -245,7 +256,7 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
         locatoreRx = contatto.value("gridsquare").toUpper();
         segnaleRx = contatto.value("rst_sent").toDouble();
         frequenzaRx = contatto.value("freq").toDouble();
-        qsl = contatto.value("qsl_rcvd") == 'S';
+        qsl = parseQslFlag(contatto.value("qsl_rcvd"));
 
         const bool hasCqz = !contatto.value("cqz").trimmed().isEmpty();
         const bool hasItuz = !contatto.value("ituz").trimmed().isEmpty();

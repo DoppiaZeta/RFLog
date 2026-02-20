@@ -3,7 +3,7 @@ TARGET = RFLog
 INCLUDEPATH += .
 
 # per compilare sta roba:
-# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libomp-dev
+# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite
 
 # Aggiungi i moduli necessari
 QT += core gui widgets sql #opengl openglwidgets
@@ -91,9 +91,3 @@ QMAKE_CXXFLAGS_DEBUG = -g -DDEBUG -Wall
 # Abilita il linking con LTO per minimizzare il codice finale
 QMAKE_LFLAGS += -flto -Wl,--gc-sections
 
-# OpenMP
-QMAKE_CXXFLAGS += -fopenmp
-QMAKE_LFLAGS += -fopenmp
-win32:QMAKE_LFLAGS += -fopenmp -static-libgcc -static-libstdc++ -static
-msvc:QMAKE_CXXFLAGS += /openmp
-msvc:QMAKE_LFLAGS += /openmp
