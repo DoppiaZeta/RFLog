@@ -3,6 +3,7 @@
 #include <QSet>
 #include <QtMath>
 #include <QtConcurrent/QtConcurrent>
+#include <QTimer>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()), loaderThread(nullptr), loaderRunning(false), hasPendingRequest(false), lastRequestId(0) {
     db = dbm;
@@ -529,7 +530,6 @@ void Mappa::clessidra(QPainter &painter) {
     painter.drawPolygon(bottom);
 
     painter.restore();
-    update();
 }
 
 QPointF Mappa::mapToWidget(float xNorm, float yNorm) const {
@@ -773,6 +773,11 @@ void Mappa::paintEvent(QPaintEvent *event) {
 
     if (m_matrice == nullptr || m_matrice->isEmpty()) {
         clessidra(painter);
+        QTimer::singleShot(16, this, [this]() {
+            if (m_matrice == nullptr || m_matrice->isEmpty()) {
+                update();
+            }
+        });
         return;
     }
 
