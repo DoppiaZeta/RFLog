@@ -2,6 +2,7 @@
 #include <QPainterPath>
 #include <QSet>
 #include <QtMath>
+#include <QtConcurrent/QtConcurrent>
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()), loaderThread(nullptr), loaderRunning(false), hasPendingRequest(false), lastRequestId(0) {
     db = dbm;
@@ -263,20 +264,25 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
     }
 
     auto matrix = new QVector<QVector<Coordinate*>>((cRight - cLeft) / colStep + 1);
-    //matrix->reserve(rTop - rBottom + 1);
 
-    // Ogni iterazione usa connessioni DB thread-local tramite DatabaseManager.
-#pragma omp parallel for
+    QVector<int> colonne;
+    colonne.reserve(matrix->size());
     for (int c = cRight; c >= cLeft; c -= colStep) {
-        int columnIndex = (cRight - c) / colStep;
+        colonne.push_back(c);
+    }
+
+    QMutex matrixMutex;
+
+    // Elaborazione multi-thread con QtConcurrent (senza OpenMP).
+    QtConcurrent::blockingMap(colonne, [&](const int c) {
+        const int columnIndex = (cRight - c) / colStep;
         QVector<Coordinate*> columnCoordinates;
         columnCoordinates.reserve(totalRows / rowStep + 1);
 
         QStringList tempLocatoriValues;
 
-        // Costruisce la lista di locatori per la colonna corrente con salto progressivo
         for (int r = rBottom; r <= rTop; r += rowStep) {
-            QString newLoc = Coordinate::fromRowCol(r, c);
+            const QString newLoc = Coordinate::fromRowCol(r, c);
             Coordinate* coord = new Coordinate(includeConfini);
             coord->setLocatore(newLoc);
             columnCoordinates.push_back(coord);
@@ -284,20 +290,26 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
         }
 
         if (!tempLocatoriValues.isEmpty()) {
-            QString values = tempLocatoriValues.join(", ");
+            const QString values = tempLocatoriValues.join(", ");
+            const QString tempTableName = QString("temp_locatori_%1")
+                                              .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()));
 
-            // Genera un nome univoco per la tabella temporanea
-            QString tempTableName = QString("temp_locatori");
+            QSqlDatabase readDb = db->getReadOnlyConnection();
 
-            // 1. Crea la tabella temporanea
-            QString createTempTableQuery = QString("CREATE TEMP TABLE if not exists %1 (locatore TEXT);").arg(tempTableName);
-            db->executeQueryNoRes(createTempTableQuery);
+            const auto execNoRes = [&](const QString &queryText) {
+                QSqlQuery q(readDb);
+                if (!q.exec(queryText)) {
+                    qWarning() << "Errore query mappa:" << q.lastError().text() << queryText;
+                }
+            };
 
-            // 2. Inserisci i dati nella tabella temporanea
-            QString insertTempTableQuery = QString("INSERT INTO %1 (locatore) VALUES %2;").arg(tempTableName, values);
-            db->executeQueryNoRes(insertTempTableQuery);
+            const QString createTempTableQuery = QString("CREATE TEMP TABLE IF NOT EXISTS %1 (locatore TEXT PRIMARY KEY);").arg(tempTableName);
+            execNoRes(createTempTableQuery);
+            execNoRes(QString("DELETE FROM %1;").arg(tempTableName));
 
-            // 3. Esegui la query per ottenere i dati
+            const QString insertTempTableQuery = QString("INSERT INTO %1 (locatore) VALUES %2;").arg(tempTableName, values);
+            execNoRes(insertTempTableQuery);
+
             QString selectQuery;
             if (includeConfini) {
                 selectQuery = QString(R"(
@@ -315,26 +327,31 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
     ON l.locatore = t.locatore
 )").arg(tempTableName);
             }
-            DBResult* resQuery = nullptr;
+
+            QHash<QString, QVector<QString>> queryMap;
+            QSqlQuery selectSql(readDb);
             if (includeConfini) {
-                QSqlQuery *q = db->getQueryBind();
-                q->prepare(selectQuery);
-                q->bindValue(":stato", request.stato);
-                resQuery = db->executeQuery(q);
-                delete q;
+                selectSql.prepare(selectQuery);
+                selectSql.bindValue(":stato", request.stato);
+                if (!selectSql.exec()) {
+                    qWarning() << "Errore select mappa:" << selectSql.lastError().text() << selectQuery;
+                }
             } else {
-                resQuery = db->executeQuery(selectQuery);
+                if (!selectSql.exec(selectQuery)) {
+                    qWarning() << "Errore select mappa:" << selectSql.lastError().text() << selectQuery;
+                }
             }
 
-            // 4. Elimina la tabella temporanea
-            QString dropTempTableQuery = QString("DROP TABLE if exists %1;").arg(tempTableName);
-            db->executeQueryNoRes(dropTempTableQuery);
-
-
-            // Mappa per aggiornare i dati della riga corrente
-            QHash<QString, QVector<QString>> queryMap;
-            for (const auto& row : resQuery->tabella) {
-                queryMap.insert(row[0], row);
+            while (selectSql.next()) {
+                QVector<QString> row;
+                const int columns = selectSql.record().count();
+                row.reserve(columns);
+                for (int i = 0; i < columns; ++i) {
+                    row.append(selectSql.value(i).toString());
+                }
+                if (!row.isEmpty()) {
+                    queryMap.insert(row[0], row);
+                }
             }
 
             enum ColumnIndex {
@@ -359,7 +376,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                     continue;
                 }
 
-                QString locatoreStr = coord->getLocatore();
+                const QString locatoreStr = coord->getLocatore();
                 if (!queryMap.contains(locatoreStr)) {
                     delete coord;
                     coord = nullptr;
@@ -391,18 +408,17 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                     coord->setGialloRegione(gialloRegioni.contains(keyRegione(statoVal, regioneVal)));
                     coord->setGialloProvincia(gialloProvince.contains(keyProvincia(statoVal, regioneVal, provinciaVal)));
                     coord->setGialloComune(gialloComuni.contains(keyComune(statoVal, regioneVal, provinciaVal, comuneVal)));
-
                 }
             }
 
-            delete resQuery;
         }
 
+        {
+            QMutexLocker matrixLock(&matrixMutex);
+            matrix->operator[](columnIndex) = columnCoordinates;
+        }
 
-        // Aggiunge la riga aggiornata alla matrice
-        //matrix->push_back(columnCoordinates);
-        matrix->operator[](columnIndex) = (columnCoordinates);
-    }
+    });
 
     db->cleanUpConnections();
 

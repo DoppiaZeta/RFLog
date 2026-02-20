@@ -4,7 +4,7 @@
 #include <QHash>
 #include <QTranslator>
 
-class TsTranslator final : public QTranslator
+class Traduttore final : public QTranslator
 {
 public:
     bool loadFromTs(const QString &filePath);

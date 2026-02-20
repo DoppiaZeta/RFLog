@@ -37,8 +37,8 @@ void MainWindow::creaDBRFLog() {
         "  segnaleRx REAL,"
         "  frequenzaRx REAL,"
         "  orarioRx TEXT,"
-        "  qsl TEXT,"
-        "  FOREIGN KEY (idLog) REFERENCES log(id)"
+        "  qsl TEXT NOT NULL CHECK (qsl IN ('Y', 'N')),"
+        "  FOREIGN KEY (idLog) REFERENCES log(id) ON DELETE CASCADE"
         ");"
         );
 
@@ -47,7 +47,7 @@ void MainWindow::creaDBRFLog() {
         "  idQso INTEGER NOT NULL,"
         "  nominativo TEXT NOT NULL,"
         "  operatore TEXT,"
-        "  FOREIGN KEY (idQso) REFERENCES qso(id)"
+        "  FOREIGN KEY (idQso) REFERENCES qso(id) ON DELETE CASCADE"
         ");"
         );
 
@@ -56,7 +56,7 @@ void MainWindow::creaDBRFLog() {
         "  idQso INTEGER NOT NULL,"
         "  nome TEXT NOT NULL,"
         "  valore TEXT,"
-        "  FOREIGN KEY (idQso) REFERENCES qso(id)"
+        "  FOREIGN KEY (idQso) REFERENCES qso(id) ON DELETE CASCADE"
         ");"
         );
 
