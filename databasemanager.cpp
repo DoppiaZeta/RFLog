@@ -68,6 +68,10 @@ QSqlQuery * DatabaseManager::getQueryBind() {
     return new QSqlQuery(getConnection());
 }
 
+QSqlDatabase DatabaseManager::getReadOnlyConnection() {
+    return getConnection(false);
+}
+
 QString DatabaseManager::escape(const QString &txt) {
     QString escaped = txt;
     escaped.replace("'", "''");  // Raddoppia i singoli apici, necessario per SQLite
@@ -93,7 +97,7 @@ DBResult* DatabaseManager::executeQuery(QSqlQuery *query) {
     if (!query->exec()) {
         qWarning() << "Failed to execute query:" << query->lastError().text();
         qWarning() << "Query:" << query->lastQuery();
-        QString connectionName = getConnectionName();
+        QString connectionName = getConnectionName(false);
         if (QSqlDatabase::contains(connectionName)) {
             QSqlDatabase db = QSqlDatabase::database(connectionName, false);
             if (!db.isValid()) {
@@ -131,13 +135,14 @@ QString DatabaseManager::lastError() {
     return getConnection().lastError().text();
 }
 
-QString DatabaseManager::getConnectionName() {
-    return QString("Conn_%1").arg(QString::number(m_int) + "_" + QString::number((quintptr)QThread::currentThread()));
+QString DatabaseManager::getConnectionName(bool scrittura) {
+    const QString mode = scrittura ? QStringLiteral("W") : QStringLiteral("R");
+    return QString("Conn_%1").arg(QString::number(m_int) + "_" + QString::number((quintptr)QThread::currentThread()) + "_" + mode);
 }
 
 QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
     QMutexLocker locker(&mutex);
-    QString connectionName = getConnectionName();
+    QString connectionName = getConnectionName(scrittura);
 
     if (QSqlDatabase::contains(connectionName)) {
         QSqlDatabase dbret = QSqlDatabase::database(connectionName);
@@ -180,11 +185,17 @@ QSqlDatabase DatabaseManager::getConnection(bool scrittura) {
 
 void DatabaseManager::releaseConnection() {
     QMutexLocker locker(&mutex);
-    QString connectionName = getConnectionName();
 
-    if (QSqlDatabase::contains(connectionName)) {
-        QSqlDatabase::removeDatabase(connectionName);
-        activeConnections.remove(connectionName);
+    const QString readConnection = getConnectionName(false);
+    if (QSqlDatabase::contains(readConnection)) {
+        QSqlDatabase::removeDatabase(readConnection);
+        activeConnections.remove(readConnection);
+    }
+
+    const QString writeConnection = getConnectionName(true);
+    if (QSqlDatabase::contains(writeConnection)) {
+        QSqlDatabase::removeDatabase(writeConnection);
+        activeConnections.remove(writeConnection);
     }
 }
 
@@ -207,13 +218,13 @@ void DatabaseManager::cleanUpConnections() {
 }
 
 void DatabaseManager::transactionBegin() {
-    getConnection().transaction();
+    getConnection(true).transaction();
 }
 
 void DatabaseManager::transactionCommit() {
-    getConnection().commit();
+    getConnection(true).commit();
 }
 
 void DatabaseManager::transactionRollback() {
-    getConnection().rollback();
+    getConnection(true).rollback();
 }

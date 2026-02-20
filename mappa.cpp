@@ -295,11 +295,20 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                                               .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()))
                                               .arg(columnIndex);
 
+            QSqlDatabase readDb = db->getReadOnlyConnection();
+
+            const auto execNoRes = [&](const QString &queryText) {
+                QSqlQuery q(readDb);
+                if (!q.exec(queryText)) {
+                    qWarning() << "Errore query mappa:" << q.lastError().text() << queryText;
+                }
+            };
+
             const QString createTempTableQuery = QString("CREATE TEMP TABLE IF NOT EXISTS %1 (locatore TEXT);").arg(tempTableName);
-            db->executeQueryNoRes(createTempTableQuery);
+            execNoRes(createTempTableQuery);
 
             const QString insertTempTableQuery = QString("INSERT INTO %1 (locatore) VALUES %2;").arg(tempTableName, values);
-            db->executeQueryNoRes(insertTempTableQuery);
+            execNoRes(insertTempTableQuery);
 
             QString selectQuery;
             if (includeConfini) {
@@ -319,24 +328,34 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
 )").arg(tempTableName);
             }
 
-            DBResult* resQuery = nullptr;
+            QHash<QString, QVector<QString>> queryMap;
+            QSqlQuery selectSql(readDb);
             if (includeConfini) {
-                QSqlQuery *q = db->getQueryBind();
-                q->prepare(selectQuery);
-                q->bindValue(":stato", request.stato);
-                resQuery = db->executeQuery(q);
-                delete q;
+                selectSql.prepare(selectQuery);
+                selectSql.bindValue(":stato", request.stato);
+                if (!selectSql.exec()) {
+                    qWarning() << "Errore select mappa:" << selectSql.lastError().text() << selectQuery;
+                }
             } else {
-                resQuery = db->executeQuery(selectQuery);
+                if (!selectSql.exec(selectQuery)) {
+                    qWarning() << "Errore select mappa:" << selectSql.lastError().text() << selectQuery;
+                }
+            }
+
+            while (selectSql.next()) {
+                QVector<QString> row;
+                const int columns = selectSql.record().count();
+                row.reserve(columns);
+                for (int i = 0; i < columns; ++i) {
+                    row.append(selectSql.value(i).toString());
+                }
+                if (!row.isEmpty()) {
+                    queryMap.insert(row[0], row);
+                }
             }
 
             const QString dropTempTableQuery = QString("DROP TABLE IF EXISTS %1;").arg(tempTableName);
-            db->executeQueryNoRes(dropTempTableQuery);
-
-            QHash<QString, QVector<QString>> queryMap;
-            for (const auto& row : resQuery->tabella) {
-                queryMap.insert(row[0], row);
-            }
+            execNoRes(dropTempTableQuery);
 
             enum ColumnIndex {
                 Locatore = 0,
@@ -395,7 +414,6 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
                 }
             }
 
-            delete resQuery;
         }
 
         {
@@ -403,7 +421,7 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
             matrix->operator[](columnIndex) = columnCoordinates;
         }
 
-        db->cleanUpConnections();
+        db->releaseConnection();
     });
 
     db->cleanUpConnections();

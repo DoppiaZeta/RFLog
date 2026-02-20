@@ -42,6 +42,7 @@ public:
     ~DatabaseManager();
 
     QSqlQuery * getQueryBind();
+    QSqlDatabase getReadOnlyConnection();
     DBResult* executeQuery(const QString &queryStr);
     DBResult* executeQuery(QSqlQuery *query);
     void executeQueryNoRes(const QString &queryStr);
@@ -59,7 +60,7 @@ public:
 
 private:
     QSqlDatabase getConnection(bool scrittura = false);
-    QString getConnectionName();
+    QString getConnectionName(bool scrittura);
 
     QString m_databasePath;
 
