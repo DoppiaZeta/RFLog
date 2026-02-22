@@ -11,8 +11,6 @@
 #include <QMutex>
 #include <QtConcurrent/QtConcurrent>
 #include <QDebug>
-#include <cmath>
-#include <cstring>
 
 class DBResult {
 public:
@@ -39,6 +37,7 @@ class DatabaseManager : public QObject
     Q_OBJECT
 public:
     explicit DatabaseManager(const QString &databasePath, QObject *parent = nullptr);
+    explicit DatabaseManager(const DatabaseManager *otherManager, QObject *parent = nullptr);
     ~DatabaseManager();
 
     QSqlQuery * getQueryBind();

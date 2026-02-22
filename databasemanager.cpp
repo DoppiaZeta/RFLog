@@ -60,6 +60,14 @@ DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
     executeQueryNoRes("PRAGMA foreign_keys = ON;");
 }
 
+DatabaseManager::DatabaseManager(const DatabaseManager *otherManager, QObject *parent)
+    : QObject(parent), m_databasePath(otherManager ? otherManager->m_databasePath : QString()), m_int(m_int_static++)
+{
+    QSqlDatabase m_database = getConnection(false);
+    Q_UNUSED(m_database);
+    executeQueryNoRes("PRAGMA foreign_keys = ON;");
+}
+
 DatabaseManager::~DatabaseManager() {
     cleanUpConnections();
 }

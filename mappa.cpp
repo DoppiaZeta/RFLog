@@ -402,6 +402,10 @@ QVector<QVector<Coordinate*>>* Mappa::caricaMatriceDaDb(const MatriceLoadRequest
         // Aggiunge la riga aggiornata alla matrice
         //matrix->push_back(columnCoordinates);
         matrix->operator[](columnIndex) = (columnCoordinates);
+
+        // Rilascia esplicitamente la connessione thread-local al termine
+        // dell'iterazione, evitando connessioni pendenti su thread OpenMP.
+        db->releaseConnection();
     }
 
     db->cleanUpConnections();
