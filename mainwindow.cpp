@@ -2524,6 +2524,43 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
                 return true;
             }
         }
+        if (keyEvent->key() == Qt::Key_Delete) {
+            eliminaQsoSelezionato();
+            return true;
+        }
     }
     return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::eliminaQsoSelezionato() {
+    const int row = ui->Tabella->currentRow();
+    if (row < 0 || row >= qsoList.count()) {
+        return;
+    }
+
+    Qso *qso = qsoList[row];
+    if (!qso) {
+        return;
+    }
+
+    const QMessageBox::StandardButton confirm = QMessageBox::question(
+        this,
+        tr("Conferma eliminazione"),
+        tr("Sei sicuro di voler cancellare la riga selezionata?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+        );
+
+    if (confirm != QMessageBox::Yes) {
+        return;
+    }
+
+    qso->eliminaDB();
+    qsoList.removeAt(row);
+    delete qso;
+
+    ricalcolaDuplicatiQso();
+    aggiornaEtichettaSuccessivo();
+    aggiornaTabella();
+    updateMappaLocatori();
 }

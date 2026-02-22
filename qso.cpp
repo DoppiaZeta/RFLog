@@ -88,7 +88,7 @@ where id = :id
 void Qso::eliminaDB() {
     if(mioId > 0 && logId > 0) {
         QSqlQuery *q = RFLog->getQueryBind();
-        q->prepare("delete from qso where log = :log and id = :id");
+        q->prepare("delete from qso where idLog = :log and id = :id");
         q->bindValue(":log", logId);
         q->bindValue(":id", mioId);
         RFLog->executeQueryNoRes(q);

@@ -150,6 +150,7 @@ private:
     void aggiornaQsoDaTxDialog(Qso &qso, Ui::Tx *txUi);
     void aggiungiNominativoTx(Ui::Tx *txUi);
     void eliminaNominativoTx(Ui::Tx *txUi);
+    void eliminaQsoSelezionato();
     void setSelectedNominativoDBTx(const QString &txt, Ui::Tx *txUi);
     void setMatriceConAspect(const QString &locatoreDa, const QString &locatoreA);
     void modificaAltri(QVector<Qso::AltriParametri> &altro, QWidget *parent = nullptr);
