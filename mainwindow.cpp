@@ -38,81 +38,6 @@
 #include "mappasrpc.h"
 #include "traduttore.h"
 
-double MainWindow::parseFrequencyValue(const QString &text) {
-    const QString normalized = text.trimmed().replace(',', '.');
-    bool ok = false;
-    const double direct = normalized.toDouble(&ok);
-    if (ok) {
-        return direct;
-    }
-
-    static const QRegularExpression freqRegex(R"((\d+(?:\.\d+)?))");
-    const QRegularExpressionMatch match = freqRegex.match(normalized);
-    if (!match.hasMatch()) {
-        return 0.0;
-    }
-
-    return match.captured(1).toDouble();
-}
-
-QStringList MainWindow::frequenzaSuggerimentiPrincipali() {
-    return {
-        QStringLiteral("14.250 (20m SSB)") ,
-        QStringLiteral("1.840 (160m)") ,
-        QStringLiteral("3.760 (80m)") ,
-        QStringLiteral("7.074 (40m FT8)") ,
-        QStringLiteral("7.120 (40m SSB)") ,
-        QStringLiteral("10.136 (30m FT8)") ,
-        QStringLiteral("14.074 (20m FT8)") ,
-        QStringLiteral("18.100 (17m FT8)") ,
-        QStringLiteral("21.074 (15m FT8)") ,
-        QStringLiteral("21.300 (15m SSB)") ,
-        QStringLiteral("24.915 (12m FT8)") ,
-        QStringLiteral("28.074 (10m FT8)") ,
-        QStringLiteral("28.500 (10m SSB)") ,
-        QStringLiteral("50.313 (6m FT8)") ,
-        QStringLiteral("145.500 (2m FM)") ,
-        QStringLiteral("433.500 (70cm FM)")
-    };
-}
-
-
-double MainWindow::frequenzaDefault20mMHz() {
-    return 14.250;
-}
-
-
-QStringList MainWindow::segnaleSuggerimentiPrincipali() {
-    return {
-        QStringLiteral("59"),
-        QStringLiteral("599")
-    };
-}
-
-QString MainWindow::rstDefaultFromMode(const QString &mode) {
-    const QString normalized = mode.trimmed().toUpper();
-    if (normalized.contains(QStringLiteral("CW"))) {
-        return QStringLiteral("599");
-    }
-
-    static const QStringList foniaModes = {
-        QStringLiteral("SSB"),
-        QStringLiteral("USB"),
-        QStringLiteral("LSB"),
-        QStringLiteral("FM"),
-        QStringLiteral("AM"),
-        QStringLiteral("PHONE")
-    };
-    for (const QString &phoneMode : foniaModes) {
-        if (normalized == phoneMode || normalized.contains(phoneMode)) {
-            return QStringLiteral("59");
-        }
-    }
-
-    return QString();
-}
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -173,6 +98,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->grigliaInput->addWidget(Segnale, 2, 5);
     ui->grigliaInput->addWidget(Frequenza, 2, 6);
     ui->grigliaInput->addWidget(Orario, 2, 7);
+
+    aggiornaStatoCampiInput();
 
     QFont f = ui->successivo->font();
     f.setPointSizeF(f.pointSizeF() * 1.4);
@@ -377,6 +304,92 @@ MainWindow::~MainWindow() {
     delete mappaConfig;
 }
 
+void MainWindow::aggiornaStatoCampiInput() {
+    const bool logAttivo = (numeroLog > 0);
+    Nominativo->setEnabled(logAttivo);
+    Progressivo->setEnabled(logAttivo);
+    Locatore->setEnabled(logAttivo);
+    Segnale->setEnabled(logAttivo);
+    Frequenza->setEnabled(logAttivo);
+    Orario->setEnabled(logAttivo);
+}
+
+double MainWindow::parseFrequencyValue(const QString &text) {
+    const QString normalized = text.trimmed().replace(',', '.');
+    bool ok = false;
+    const double direct = normalized.toDouble(&ok);
+    if (ok) {
+        return direct;
+    }
+
+    static const QRegularExpression freqRegex(R"((\d+(?:\.\d+)?))");
+    const QRegularExpressionMatch match = freqRegex.match(normalized);
+    if (!match.hasMatch()) {
+        return 0.0;
+    }
+
+    return match.captured(1).toDouble();
+}
+
+QStringList MainWindow::frequenzaSuggerimentiPrincipali() {
+    return {
+        QStringLiteral("14.250 (20m SSB)") ,
+        QStringLiteral("1.840 (160m)") ,
+        QStringLiteral("3.760 (80m)") ,
+        QStringLiteral("7.074 (40m FT8)") ,
+        QStringLiteral("7.120 (40m SSB)") ,
+        QStringLiteral("10.136 (30m FT8)") ,
+        QStringLiteral("14.074 (20m FT8)") ,
+        QStringLiteral("18.100 (17m FT8)") ,
+        QStringLiteral("21.074 (15m FT8)") ,
+        QStringLiteral("21.300 (15m SSB)") ,
+        QStringLiteral("24.915 (12m FT8)") ,
+        QStringLiteral("28.074 (10m FT8)") ,
+        QStringLiteral("28.500 (10m SSB)") ,
+        QStringLiteral("50.313 (6m FT8)") ,
+        QStringLiteral("145.500 (2m FM)") ,
+        QStringLiteral("433.500 (70cm FM)")
+    };
+}
+
+
+double MainWindow::frequenzaDefault20mMHz() {
+    return 14.250;
+}
+
+
+QStringList MainWindow::segnaleSuggerimentiPrincipali() {
+    return {
+        QStringLiteral("59"),
+        QStringLiteral("599")
+    };
+}
+
+QString MainWindow::rstDefaultFromMode(const QString &mode) {
+    const QString normalized = mode.trimmed().toUpper();
+    if (normalized.contains(QStringLiteral("CW"))) {
+        return QStringLiteral("599");
+    }
+
+    static const QStringList foniaModes = {
+        QStringLiteral("SSB"),
+        QStringLiteral("USB"),
+        QStringLiteral("LSB"),
+        QStringLiteral("FM"),
+        QStringLiteral("AM"),
+        QStringLiteral("PHONE")
+    };
+    for (const QString &phoneMode : foniaModes) {
+        if (normalized == phoneMode || normalized.contains(phoneMode)) {
+            return QStringLiteral("59");
+        }
+    }
+
+    return QString();
+}
+
+
+
 void MainWindow::setupLanguageMenu() {
     if (!ui->menuLingua) {
         return;
@@ -418,7 +431,7 @@ std::unique_ptr<QTranslator> MainWindow::createAppTranslator(const QString &loca
         return translator;
     }
 
-    auto tsTranslator = std::make_unique<TsTranslator>();
+    auto tsTranslator = std::make_unique<Traduttore>();
     const QString resourceTs = QStringLiteral(":/i18n/") + baseName + QStringLiteral(".ts");
     if (tsTranslator->loadFromTs(resourceTs)) {
         return tsTranslator;
@@ -1653,6 +1666,7 @@ void MainWindow::menuIniziaLog() {
     if(n > 0) {
         QApplication::setOverrideCursor(Qt::WaitCursor);
         numeroLog = n;
+        aggiornaStatoCampiInput();
         for(int i = 0; i < qsoList.count(); i++) {
             delete qsoList[i];
         }

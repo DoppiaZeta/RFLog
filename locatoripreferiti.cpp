@@ -1,4 +1,5 @@
 #include "locatoripreferiti.h"
+#include "coordinate.h"
 
 LocatoriPreferiti::LocatoriPreferiti(DatabaseManager *db, QWidget *parent)
     : QDialog{parent}

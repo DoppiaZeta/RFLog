@@ -14,23 +14,6 @@
    <string>Le mie radio</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="2">
-    <widget class="QPushButton" name="nomeRadioOK">
-     <property name="text">
-      <string>Aggiungi</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="nomeRadio"/>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Nome radio:</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="2">
     <widget class="QPushButton" name="eliminaRadioOK">
      <property name="text">
@@ -39,7 +22,37 @@ selezionato</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="2">
+    <widget class="QPushButton" name="nomeRadioOK">
+     <property name="text">
+      <string>Aggiungi</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Nome radio:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="nomeRadio"/>
+   </item>
+   <item row="2" column="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" rowspan="2" colspan="2">
     <widget class="QListWidget" name="radioList">
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>

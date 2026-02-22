@@ -162,6 +162,7 @@ private:
     void updateColoreStatoItems();
     void aggiornaEtichettaSuccessivo();
     void ricalcolaDuplicatiQso();
+    void aggiornaStatoCampiInput();
     std::unique_ptr<QTranslator> createAppTranslator(const QString &localeName);
     static double parseFrequencyValue(const QString &text);
     static QStringList frequenzaSuggerimentiPrincipali();

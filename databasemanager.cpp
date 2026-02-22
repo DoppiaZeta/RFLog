@@ -2,6 +2,26 @@
 
 int DatabaseManager::m_int_static = 0;
 
+DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
+    : QObject(parent), m_databasePath(databasePath), m_int(m_int_static++)
+{
+    // Genera un nome unico per la connessione
+    QSqlDatabase m_database = getConnection(true);
+    executeQueryNoRes("PRAGMA foreign_keys = ON;");
+}
+
+DatabaseManager::DatabaseManager(const DatabaseManager *otherManager, QObject *parent)
+    : QObject(parent), m_databasePath(otherManager ? otherManager->m_databasePath : QString()), m_int(m_int_static++)
+{
+    QSqlDatabase m_database = getConnection(false);
+    Q_UNUSED(m_database);
+    executeQueryNoRes("PRAGMA foreign_keys = ON;");
+}
+
+DatabaseManager::~DatabaseManager() {
+    cleanUpConnections();
+}
+
 DBResult::DBResult() {
     successo = true;
 }
@@ -42,7 +62,7 @@ QString DBResult::getCella(const QString &colonna) {
 
 QString DBResult::getCella(const int & riga, const int & colonna) {
     if(tabella.size() > riga && colonne.size() > colonna && riga >= 0 && colonna >= 0) {
-            return tabella[riga][colonna];
+        return tabella[riga][colonna];
     }
 
     return QString();
@@ -50,26 +70,6 @@ QString DBResult::getCella(const int & riga, const int & colonna) {
 
 QString DBResult::getCella(const int & colonna) {
     return getCella(0, colonna);
-}
-
-DatabaseManager::DatabaseManager(const QString &databasePath, QObject *parent)
-    : QObject(parent), m_databasePath(databasePath), m_int(m_int_static++)
-{
-    // Genera un nome unico per la connessione
-    QSqlDatabase m_database = getConnection(true);
-    executeQueryNoRes("PRAGMA foreign_keys = ON;");
-}
-
-DatabaseManager::DatabaseManager(const DatabaseManager *otherManager, QObject *parent)
-    : QObject(parent), m_databasePath(otherManager ? otherManager->m_databasePath : QString()), m_int(m_int_static++)
-{
-    QSqlDatabase m_database = getConnection(false);
-    Q_UNUSED(m_database);
-    executeQueryNoRes("PRAGMA foreign_keys = ON;");
-}
-
-DatabaseManager::~DatabaseManager() {
-    cleanUpConnections();
 }
 
 QSqlQuery * DatabaseManager::getQueryBind() {

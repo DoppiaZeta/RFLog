@@ -4,9 +4,11 @@
 #include <QHash>
 #include <QTranslator>
 
-class TsTranslator final : public QTranslator
+class Traduttore final : public QTranslator
 {
 public:
+    Traduttore();
+    ~Traduttore() override = default;
     bool loadFromTs(const QString &filePath);
     QString translate(const char *context, const char *sourceText, const char *disambiguation, int n) const override;
 

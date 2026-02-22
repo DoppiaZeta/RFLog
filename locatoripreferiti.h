@@ -4,7 +4,6 @@
 #include <QDialog>
 #include <QDebug>
 #include "databasemanager.h"
-#include "coordinate.h"
 
 #include "ui_locatoripreferiti.h"
 
