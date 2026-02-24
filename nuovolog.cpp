@@ -18,6 +18,7 @@ NuovoLog::NuovoLog(DatabaseManager *db, QWidget *parent)
 
     connect(ui->nomeLogOK, &QPushButton::clicked, this, &NuovoLog::creaNuovoLog);
     connect(ui->logPassatoOK, &QPushButton::clicked, this, &NuovoLog::caricaLogPassato);
+    connect(ui->logPassato, &QTableWidget::doubleClicked, this, &NuovoLog::caricaLogPassato);
 
 
     DBResult *res = RFLog->executeQuery("select id, nome, data from log order by data desc");
@@ -32,6 +33,11 @@ NuovoLog::NuovoLog(DatabaseManager *db, QWidget *parent)
         ui->logPassato->setItem(newRow, 2, dataIem);
     }
     delete res;
+}
+
+void NuovoLog::mouseDoubleClickEvent(QMouseEvent *event) {
+    QDialog::mouseDoubleClickEvent(event);
+    caricaLogPassato();
 }
 
 void NuovoLog::creaNuovoLog() {

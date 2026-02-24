@@ -8,6 +8,7 @@
 #include <QLocale>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
+#include <QScrollBar>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
 #include <QTabWidget>
@@ -61,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     resizeTimer = new QTimer(this);
     resizeTimer->setSingleShot(true);
-    connect(resizeTimer, &QTimer::timeout, this, &MainWindow::updateMappaLocatori);
+    connect(resizeTimer, &QTimer::timeout, this, &MainWindow::aggiornaVistaDopoResize);
 
     DBResult *res;
 
@@ -154,16 +155,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
 
-    ui->Tabella->setColumnCount(7);
+    ui->Tabella->setColumnCount(6);
     updateTableHeaders();
 
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
-    ui->Tabella->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->Tabella->horizontalHeader()->setStretchLastSection(false);
+    ui->Tabella->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->Tabella->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    ui->Tabella->horizontalScrollBar()->setSingleStep(12);
+    ui->Tabella->setWordWrap(false);
     ui->Tabella->setAlternatingRowColors(true);
     ui->Tabella->setShowGrid(true);
     ui->Tabella->setGridStyle(Qt::SolidLine);
@@ -189,7 +189,6 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
     );
     ui->Tabella->installEventFilter(this);
-
 
     mappaConfig->tabWidget->setCurrentIndex(0);
 
@@ -526,8 +525,7 @@ void MainWindow::retranslateUi() {
 
 void MainWindow::updateTableHeaders() {
     ui->Tabella->setHorizontalHeaderLabels(
-        QStringList() << tr("TX Locatore")
-                      << tr("TX")
+        QStringList() << tr("TX")
                       << tr("RX Locatore")
                       << tr("RX")
                       << tr("TX dettagli")
@@ -556,6 +554,14 @@ void MainWindow::updateColoreStatoItems() {
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
     resizeTimer->start(200);
+}
+
+void MainWindow::aggiornaVistaDopoResize() {
+    updateMappaLocatori();
+    if (ui && ui->Tabella) {
+        ui->Tabella->resizeRowsToContents();
+        ui->Tabella->resizeColumnsToContents();
+    }
 }
 
 void MainWindow::compilaNominativo(const QString &txt) {
@@ -2219,6 +2225,7 @@ void MainWindow::aggiornaTabella()
     }
 
     ui->Tabella->resizeRowsToContents();
+    ui->Tabella->resizeColumnsToContents();
     ui->Tabella->setSortingEnabled(wasSortingEnabled);
 
     ui->Tabella->setUpdatesEnabled(true);
@@ -2234,21 +2241,6 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         QString freccia(QString(' ') + QChar(0x279C) + QString(' '));
         QFont font;
 
-        // TX LOCATORE
-        item = new QTableWidgetItem(qso.locatoreTx);
-
-        item->setForeground(QBrush(verdescuro));
-
-        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-        // sfondo
-        if(qso.duplicato)
-            item->setBackground(rosso);
-        else
-            item->setBackground(verde);
-
-        // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 0, item);
 
 
         int numNominativi = qso.nominativoTx.count();
@@ -2286,7 +2278,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         item->setFont(font);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 1, item);
+        ui->Tabella->setItem(row, 0, item);
 
 
         // RX LOCATORE
@@ -2308,7 +2300,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 2, item);
+        ui->Tabella->setItem(row, 1, item);
 
 
         // RX NOMINATIVO
@@ -2338,7 +2330,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         item->setFont(font);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 3, item);
+        ui->Tabella->setItem(row, 2, item);
 
 
         // TX DETTAGLI
@@ -2367,7 +2359,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 4, item);
+        ui->Tabella->setItem(row, 3, item);
 
 
         // ORA
@@ -2384,7 +2376,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 5, item);
+        ui->Tabella->setItem(row, 4, item);
 
 
         // INFO
@@ -2399,7 +2391,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 6, item);
+        ui->Tabella->setItem(row, 5, item);
 }
 
 

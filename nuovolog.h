@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QWidget>
 #include <QDateTime>
+#include <QMouseEvent>
 
 #include "databasemanager.h"
 
@@ -16,6 +17,9 @@ public:
     NuovoLog(DatabaseManager *db, QWidget *parent);
 
     int getLogSelezionato() const;
+
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private slots:
     void creaNuovoLog();

@@ -142,6 +142,7 @@ private:
 
 
     void updateMappaLocatori();
+    void aggiornaVistaDopoResize();
 
     void aggiornaTabella();
     void aggiungiATabella(const Qso & qso, int row);
