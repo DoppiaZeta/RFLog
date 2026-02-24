@@ -1,7 +1,9 @@
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QEvent>
+#include <QFontMetrics>
 #include <QKeyEvent>
+#include <QScrollBar>
 #include <QStringListModel>
 #include <algorithm>
 
@@ -26,6 +28,30 @@ QString SuggestiveLineEdit::completionFromPopup(QCompleter *completer)
     return {};
 }
 
+
+void SuggestiveLineEdit::updatePopupWidth()
+{
+    if (!completer || !completer->popup())
+        return;
+
+    int width = this->width();
+    const QStringList suggestions = model->stringList();
+    if (!suggestions.isEmpty()) {
+        const QFontMetrics metrics(completer->popup()->font());
+        int maxTextWidth = 0;
+        for (const QString &suggestion : suggestions) {
+            maxTextWidth = qMax(maxTextWidth, metrics.horizontalAdvance(suggestion));
+        }
+
+        width = qMax(width, maxTextWidth + 24);
+    }
+
+    if (completer->popup()->verticalScrollBar())
+        width += completer->popup()->verticalScrollBar()->sizeHint().width();
+
+    completer->popup()->setMinimumWidth(width);
+}
+
 SuggestiveLineEdit::SuggestiveLineEdit(QWidget *parent)
     : QLineEdit(parent)
 {
@@ -39,6 +65,7 @@ SuggestiveLineEdit::SuggestiveLineEdit(QWidget *parent)
             [this](const QString &text)
             {
                 completer->setCompletionPrefix(text);
+                updatePopupWidth();
                 completer->complete();
 
                 // forza sempre una riga selezionata (la prima), così ->/Tab hanno un target
@@ -82,6 +109,7 @@ void SuggestiveLineEdit::setSuggestions(const QStringList &list)
 
     if (hasFocus()) {
         completer->setCompletionPrefix(text());
+        updatePopupWidth();
         completer->complete();
 
         if (completer->popup() && completer->completionCount() > 0) {
@@ -186,6 +214,7 @@ void SuggestiveLineEdit::keyPressEvent(QKeyEvent *event)
     if (!popupVisible && event->key() == Qt::Key_Down) {
         emit suggestionsRequested(text());
         completer->setCompletionPrefix(text());
+        updatePopupWidth();
         completer->complete();
 
         if (completer->popup() && completer->completionCount() > 0) {
@@ -230,6 +259,7 @@ void SuggestiveLineEdit::mousePressEvent(QMouseEvent *event)
 
     if (completer) {
         completer->setCompletionPrefix(text());
+        updatePopupWidth();
         completer->complete();
 
         if (completer->popup() && completer->completionCount() > 0) {

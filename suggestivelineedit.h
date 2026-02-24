@@ -29,6 +29,7 @@ protected:
 
 private:
     static QString completionFromPopup(QCompleter *completer);
+    void updatePopupWidth();
 
     QCompleter *completer;
     QStringListModel *model;

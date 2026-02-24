@@ -155,7 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Orario, &QLineEdit::returnPressed, this, &MainWindow::confermaLinea);
 
 
-    ui->Tabella->setColumnCount(6);
+    ui->Tabella->setColumnCount(10);
     updateTableHeaders();
 
     ui->Tabella->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -528,9 +528,13 @@ void MainWindow::updateTableHeaders() {
         QStringList() << tr("TX")
                       << tr("RX Locatore")
                       << tr("RX")
-                      << tr("TX dettagli")
+                      << tr("Frequenza")
+                      << tr("Banda")
+                      << tr("Segnale")
+                      << tr("TX")
+                      << tr("Progressivo")
                       << tr("Data/Ora UTC")
-                      << tr("INFO")
+                      << tr("Km")
         );
 }
 
@@ -2333,22 +2337,8 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
         ui->Tabella->setItem(row, 2, item);
 
 
-        // TX DETTAGLI
-        txt = QString::number(qso.frequenzaRx) + "MHz";
-        txt += freccia;
-        txt += QString::number(qso.getBandaMt()) + "mt";
-        txt += " | ";
-        txt += QString::number(qso.segnaleRx);
-        txt += " | ";
-        txt += qso.trasmissioneTx;
-        if(!qso.progressivoRx.trimmed().isEmpty()) {
-            txt += " | ";
-            txt += tr("Prog. RX");
-            txt += " ";
-            txt += qso.progressivoRx.trimmed();
-        }
-
-        item = new QTableWidgetItem(txt);
+        // FREQ. RX
+        item = new QTableWidgetItem(QString::number(qso.frequenzaRx) + " MHz");
 
         item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
@@ -2360,6 +2350,62 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
 
         // Inserisci l'item nella tabella
         ui->Tabella->setItem(row, 3, item);
+
+        // BANDA
+        item = new QTableWidgetItem(QString::number(qso.getBandaMt()) + " mt");
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 4, item);
+
+        // SEGNALE
+        item = new QTableWidgetItem(QString::number(qso.segnaleRx));
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 5, item);
+
+        // TX
+        item = new QTableWidgetItem(qso.trasmissioneTx);
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 6, item);
+
+        // PROG. RX
+        item = new QTableWidgetItem(qso.progressivoRx.trimmed());
+
+        item->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+        // sfondo
+        if(qso.duplicato)
+            item->setBackground(rosso);
+        else
+            item->setBackground(verde);
+
+        // Inserisci l'item nella tabella
+        ui->Tabella->setItem(row, 7, item);
 
 
         // ORA
@@ -2376,7 +2422,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 4, item);
+        ui->Tabella->setItem(row, 8, item);
 
 
         // INFO
@@ -2391,7 +2437,7 @@ void MainWindow::aggiungiATabella(const Qso & qso, int row) {
             item->setBackground(verde);
 
         // Inserisci l'item nella tabella
-        ui->Tabella->setItem(row, 5, item);
+        ui->Tabella->setItem(row, 9, item);
 }
 
 
