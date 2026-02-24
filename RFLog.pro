@@ -3,10 +3,10 @@ TARGET = RFLog
 INCLUDEPATH += .
 
 # per compilare sta roba:
-# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite libomp-dev
+# sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite
 
 # Aggiungi i moduli necessari
-QT += core gui widgets sql #opengl openglwidgets
+QT += core gui widgets sql concurrent #opengl openglwidgets
 
 #win32: LIBS += -lopengl32
 win32:LIBS += -lodbc32
@@ -22,7 +22,8 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    miaradio.h \
    nuovolog.h \
    qso.h \
-   traduttore.h
+   traduttore.h \
+   informazionisu.h
 FORMS += mainwindow.ui \
    locatoripreferiti.ui \
    mappaconfig.ui \
@@ -47,7 +48,8 @@ SOURCES += databasemanager.cpp \
            nuovolog.cpp \
            qso.cpp \
            suggestivelineedit.cpp \
-           traduttore.cpp
+           traduttore.cpp \
+           informazionisu.cpp
 
 # Aggiungi definizioni per OpenGL se necessario
 #DEFINES += QT_OPENGL_LIB
@@ -91,9 +93,3 @@ QMAKE_CXXFLAGS_DEBUG = -g -DDEBUG -Wall
 # Abilita il linking con LTO per minimizzare il codice finale
 QMAKE_LFLAGS += -flto -Wl,--gc-sections
 
-# OpenMP
-QMAKE_CXXFLAGS += -fopenmp
-QMAKE_LFLAGS += -fopenmp
-win32:QMAKE_LFLAGS += -fopenmp -static-libgcc -static-libstdc++ -static
-msvc:QMAKE_CXXFLAGS += /openmp
-msvc:QMAKE_LFLAGS += /openmp

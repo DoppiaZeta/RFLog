@@ -18,7 +18,6 @@ sudo apt-get install -y \
   qt6-base-dev \
   qt6-base-dev-tools \
   libqt6sql6-sqlite \
-  libomp-dev \
   xz-utils
 ```
 

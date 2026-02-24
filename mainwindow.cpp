@@ -37,6 +37,7 @@
 #include "miaradio.h"
 #include "mappasrpc.h"
 #include "traduttore.h"
+#include "informazionisu.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -1792,58 +1793,10 @@ void MainWindow::usaLocatorePreferitoTx(Ui::Tx *txUi) {
 }
 
 void MainWindow::menuInformazioniSu() {
-    QDialog d;
-
-    QVBoxLayout *layout = new QVBoxLayout(&d);
-    d.setLayout(layout);
-    d.setWindowTitle(tr("Informazioni su RFLog"));
-
-    QHBoxLayout *headerLayout = new QHBoxLayout();
-    QLabel *img = new QLabel(&d);
-    QPixmap pix(":/antenna_log_trasparente.png");
-    img->setPixmap(pix);
-    img->setScaledContents(true);
-    img->setFixedSize(72, 72);
-
-    QLabel *creatoDa = new QLabel(tr(
-                                    "RFLog\n"
-                                    "Creato da Tommaso Moro\n"
-                                    "IN3KGW DoppiaZeta KaksiTzeta\n"
-                                    "Anno: 2025 e successivi"
-                                    ), &d);
-    creatoDa->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-    headerLayout->addWidget(img);
-    headerLayout->addStretch();
-    headerLayout->addWidget(creatoDa);
-
-    QTabWidget *tabs = new QTabWidget(&d);
-    auto loadFile = [](const QString &path, const QString &fallbackLabel) {
-        QFile file(path);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            return QString::fromUtf8(file.readAll());
-        }
-        return QObject::tr("%1\n\nImpossibile leggere il file: %2").arg(fallbackLabel, path);
-    };
-
-    QPlainTextEdit *licenseRfLog = new QPlainTextEdit(&d);
-    licenseRfLog->setReadOnly(true);
-    licenseRfLog->setPlainText(loadFile(QStringLiteral("LICENSE.txt"), tr("Licenza RFLog")));
-
-    QPlainTextEdit *licenseLocatori = new QPlainTextEdit(&d);
-    licenseLocatori->setReadOnly(true);
-    licenseLocatori->setPlainText(loadFile(QStringLiteral("LICENSE_locatoriDB.txt"), tr("Licenza Locatori DB")));
-
-    tabs->addTab(licenseRfLog, tr("Licenza RFLog"));
-    tabs->addTab(licenseLocatori, tr("Licenza Locatori DB"));
-
-    layout->addLayout(headerLayout);
-    layout->addWidget(tabs);
-
-    d.resize(640, 480);
-
-    d.exec();
+    InformazioniSu dialog(this);
+    dialog.exec();
 }
+
 
 void MainWindow::mappaGruppoSRPC() {
     MappaSRPC d(db, mappa->getStato(), this);
