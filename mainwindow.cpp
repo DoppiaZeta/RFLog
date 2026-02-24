@@ -35,6 +35,7 @@
 #include "locatoripreferiti.h"
 #include "nuovolog.h"
 #include "miaradio.h"
+#include "finestraqsl.h"
 #include "mappasrpc.h"
 #include "traduttore.h"
 #include "informazionisu.h"
@@ -273,6 +274,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->menuLocatoriPreferiti, &QAction::triggered, this, &MainWindow::menuLocatoriPreferiti);
     connect(ui->menuIniziaLog, &QAction::triggered, this, &MainWindow::menuIniziaLog);
     connect(ui->menuMieRadio, &QAction::triggered, this, &MainWindow::menuMiaRadio);
+    connect(ui->menuQsl, &QAction::triggered, this, &MainWindow::menuQsl);
     connect(ui->menuInformazioniSu, &QAction::triggered, this, &MainWindow::menuInformazioniSu);
 
     //top widget
@@ -1790,6 +1792,17 @@ void MainWindow::usaLocatorePreferitoTx(Ui::Tx *txUi) {
     if (selectedRow != -1) {
         txUi->locatore->setText(txUi->preferiti->item(selectedRow, 0)->text());
     }
+}
+
+
+void MainWindow::menuQsl() {
+    if (numeroLog <= 0) {
+        QMessageBox::warning(this, tr("Log non attivo"), tr("Prima di consultare i QSL devi iniziare o aprire un log."));
+        return;
+    }
+
+    FinestraQSL finestra(RFLog, numeroLog, this);
+    finestra.exec();
 }
 
 void MainWindow::menuInformazioniSu() {

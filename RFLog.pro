@@ -6,9 +6,8 @@ INCLUDEPATH += .
 # sudo apt-get install build-essential qt6-base-dev qt6-base-dev-tools libqt6sql6-sqlite
 
 # Aggiungi i moduli necessari
-QT += core gui widgets sql concurrent #opengl openglwidgets
+QT += core gui widgets sql concurrent
 
-#win32: LIBS += -lopengl32
 win32:LIBS += -lodbc32
 
 # Input
@@ -16,6 +15,7 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    adif.h \
    coordinate.h \
    edi.h \
+   finestraqsl.h \
    linee.h \
    locatoripreferiti.h \
    mappasrpc.h \
@@ -24,6 +24,7 @@ HEADERS += databasemanager.h mainwindow.h mappa.h suggestivelineedit.h \
    qso.h \
    traduttore.h \
    informazionisu.h
+
 FORMS += mainwindow.ui \
    locatoripreferiti.ui \
    mappaconfig.ui \
@@ -31,12 +32,14 @@ FORMS += mainwindow.ui \
    miaradio.ui \
    nuovolog.ui \
    tx.ui
+
 SOURCES += databasemanager.cpp \
            adif.cpp \
            coordinate.cpp \
            coordinate_cq.cpp \
            coordinate_itu.cpp \
            edi.cpp \
+           finestraqsl.cpp \
            linee.cpp \
            locatoripreferiti.cpp \
            main.cpp \
@@ -50,9 +53,6 @@ SOURCES += databasemanager.cpp \
            suggestivelineedit.cpp \
            traduttore.cpp \
            informazionisu.cpp
-
-# Aggiungi definizioni per OpenGL se necessario
-#DEFINES += QT_OPENGL_LIB
 
 RESOURCES += \
    icone.qrc \

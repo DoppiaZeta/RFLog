@@ -260,6 +260,8 @@ color: white;</string>
     </property>
     <addaction name="menuLocatoriPreferiti"/>
     <addaction name="menuMieRadio"/>
+    <addaction name="separator"/>
+    <addaction name="menuQsl"/>
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
@@ -341,6 +343,11 @@ color: white;</string>
   <action name="actionLinguaSpagnolo">
    <property name="text">
     <string>ES</string>
+   </property>
+  </action>
+  <action name="menuQsl">
+   <property name="text">
+    <string>QSL...</string>
    </property>
   </action>
  </widget>

@@ -103,6 +103,7 @@ private slots:
     void menuLocatoriPreferiti();
     void menuIniziaLog();
     void menuMiaRadio();
+    void menuQsl();
     void menuInformazioniSu();
 
     void aggiungiNominativo();
