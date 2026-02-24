@@ -1,13 +1,16 @@
-#include "finestraqsl.h"
-
+#include <QClipboard>
 #include <QDialogButtonBox>
+#include <QGuiApplication>
 #include <QLabel>
 #include <QListWidget>
+#include <QShortcut>
+#include <QStringList>
 #include <QVBoxLayout>
 
-#include "databasemanager.h"
+#include "finestraqsl.h"
+#include "qso.h"
 
-FinestraQSL::FinestraQSL(DatabaseManager *db, int idLog, QWidget *parent)
+FinestraQSL::FinestraQSL(const QList<Qso*> &qsoList, QWidget *parent)
     : QDialog(parent)
     , listaNominativi(new QListWidget(this))
 {
@@ -17,35 +20,50 @@ FinestraQSL::FinestraQSL(DatabaseManager *db, int idLog, QWidget *parent)
     QLabel *titolo = new QLabel(tr("Nominativi con QSL richiesto nel log corrente:"), this);
     layout->addWidget(titolo);
 
-    listaNominativi->setSelectionMode(QAbstractItemView::NoSelection);
+    listaNominativi->setSelectionMode(QAbstractItemView::ExtendedSelection);
     layout->addWidget(listaNominativi);
+
+    QShortcut *copyShortcut = new QShortcut(QKeySequence::Copy, listaNominativi);
+    connect(copyShortcut, &QShortcut::activated, this, [this]() {
+        QStringList selectedTexts;
+        const QList<QListWidgetItem*> selectedItems = listaNominativi->selectedItems();
+        for (QListWidgetItem *item : selectedItems) {
+            if (item) {
+                selectedTexts << item->text();
+            }
+        }
+
+        if (!selectedTexts.isEmpty()) {
+            QGuiApplication::clipboard()->setText(selectedTexts.join("\n"));
+        }
+    });
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     layout->addWidget(buttons);
 
-    QSqlQuery *q = db->getQueryBind();
-    q->prepare(R"(
-select distinct nominativoRx
-from qso
-where idLog = :idLog
-  and qsl = 'S'
-  and trim(ifnull(nominativoRx, '')) <> ''
-order by nominativoRx
-)");
-    q->bindValue(":idLog", idLog);
+    QStringList nominativi;
+    for (Qso *qso : qsoList) {
+        if (!qso || !qso->qsl) {
+            continue;
+        }
 
-    DBResult *res = db->executeQuery(q);
-    for (int i = 0; i < res->getRigheCount(); ++i) {
-        listaNominativi->addItem(res->getCella(i, 0));
+        const QString nominativo = qso->nominativoRx.trimmed();
+        if (!nominativo.isEmpty()) {
+            nominativi << nominativo;
+        }
     }
 
-    if (res->getRigheCount() == 0) {
+    nominativi.removeDuplicates();
+    nominativi.sort();
+
+    for (const QString &nominativo : nominativi) {
+        listaNominativi->addItem(nominativo);
+    }
+
+    if (nominativi.isEmpty()) {
         listaNominativi->addItem(tr("Nessun contatto con QSL richiesto."));
     }
-
-    delete res;
-    delete q;
 
     resize(440, 520);
 }

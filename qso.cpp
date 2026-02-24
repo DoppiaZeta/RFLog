@@ -1,8 +1,8 @@
-#include "qso.h"
-#include "coordinate.h"
-
 #include <QRegularExpression>
 #include <QTimeZone>
+
+#include "qso.h"
+#include "coordinate.h"
 
 const std::map<double, double> Qso::bandaToFreq = {
     {160, 1.9}, {80, 3.5}, {60, 5.3}, {40, 7.1}, {30, 10.1}, {20, 14.1},
@@ -51,7 +51,8 @@ where id = :id
             operatoreRx = res->getCella("operatoreRx");
             segnaleRx = res->getCella("segnaleRx").toDouble();
             frequenzaRx = res->getCella("frequenzaRx").toDouble();
-            qsl = res->getCella("qsl") == 'S';
+            const QString qslValue = res->getCella("qsl").trimmed();
+            qsl = (qslValue == "1") || (qslValue.compare("S", Qt::CaseInsensitive) == 0);
             orarioRx = QDateTime::fromString(res->getCella("orarioRx"), Qt::ISODate);
         }
         delete res;
@@ -167,7 +168,7 @@ void Qso::insertAggiornaDB() {
         q->bindValue(":segnaleRx", segnaleRx);
         q->bindValue(":frequenzaRx", frequenzaRx);
         q->bindValue(":orarioRx", orarioRx);
-        q->bindValue(":qsl", qsl ? 'S' : 'N');
+        q->bindValue(":qsl", qsl ? 1 : 0);
         q->bindValue(":idLog", logId);
 
         RFLog->executeQueryNoRes(q);
@@ -245,7 +246,8 @@ void Qso::insertDaAdif(const QMap<QString, QString> &contatto) {
         locatoreRx = contatto.value("gridsquare").toUpper();
         segnaleRx = contatto.value("rst_sent").toDouble();
         frequenzaRx = contatto.value("freq").toDouble();
-        qsl = contatto.value("qsl_rcvd") == 'S';
+        qsl = contatto.value("qsl_rcvd").trimmed().compare("Y", Qt::CaseInsensitive) == 0 ||
+              contatto.value("qsl_rcvd").trimmed().compare("S", Qt::CaseInsensitive) == 0;
 
         const bool hasCqz = !contatto.value("cqz").trimmed().isEmpty();
         const bool hasItuz = !contatto.value("ituz").trimmed().isEmpty();

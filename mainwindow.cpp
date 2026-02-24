@@ -1801,7 +1801,7 @@ void MainWindow::menuQsl() {
         return;
     }
 
-    FinestraQSL finestra(RFLog, numeroLog, this);
+    FinestraQSL finestra(qsoList, this);
     finestra.exec();
 }
 

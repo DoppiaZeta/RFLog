@@ -1,5 +1,3 @@
-#include "informazionisu.h"
-
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -7,6 +5,8 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QPixmap>
+
+#include "informazionisu.h"
 
 InformazioniSu::InformazioniSu(QWidget *parent)
     : QDialog(parent) {

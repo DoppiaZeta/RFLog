@@ -1,11 +1,11 @@
-#include "suggestivelineedit.h"
-
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QStringListModel>
 #include <algorithm>
+
+#include "suggestivelineedit.h"
 
 QString SuggestiveLineEdit::completionFromPopup(QCompleter *completer)
 {

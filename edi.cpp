@@ -1,7 +1,7 @@
-#include "edi.h"
-
 #include <QFile>
 #include <QTextStream>
+
+#include "edi.h"
 
 void Edi::impostaIntestazione(const QMap<QString, QString>& header) {
     intestazione = header;

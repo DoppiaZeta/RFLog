@@ -1,8 +1,10 @@
-#include "mappa.h"
 #include <QPainterPath>
 #include <QSet>
 #include <QtConcurrent>
 #include <QtMath>
+
+#include "mappa.h"
+
 Mappa::Mappa(DatabaseManager *dbm, QWidget *mappaConfig, QWidget *parent)
     : QWidget(parent), m_matrice(nullptr), linee(new QVector<Linee>()), loaderThread(nullptr), loaderRunning(false), hasPendingRequest(false), lastRequestId(0) {
     db = dbm;

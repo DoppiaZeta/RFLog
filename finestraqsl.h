@@ -2,16 +2,17 @@
 #define FINESTRAQSL_H
 
 #include <QDialog>
+#include <QList>
 
 class QListWidget;
-class DatabaseManager;
+class Qso;
 
 class FinestraQSL : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit FinestraQSL(DatabaseManager *db, int idLog, QWidget *parent = nullptr);
+    explicit FinestraQSL(const QList<Qso*> &qsoList, QWidget *parent = nullptr);
 
 private:
     QListWidget *listaNominativi;

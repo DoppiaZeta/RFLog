@@ -1,7 +1,7 @@
-#include "traduttore.h"
-
 #include <QFile>
 #include <QXmlStreamReader>
+
+#include "traduttore.h"
 
 Traduttore::Traduttore() = default;
 
