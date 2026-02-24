@@ -947,4 +947,48 @@ Impossible de lire le fichier : %2</translation>
         <translation>Utiliser ceci</translation>
     </message>
 </context>
+
+    <context>
+        <name>FinestraQSL</name>
+        <message>
+            <source>QSL richiesti</source>
+            <translation>QSL demandées</translation>
+        </message>
+        <message>
+            <source>Nominativi con QSL richiesto nel log corrente:</source>
+            <translation>Indicatifs avec QSL demandée dans le log actuel :</translation>
+        </message>
+        <message>
+            <source>Nessun contatto con QSL richiesto.</source>
+            <translation>Aucun contact avec QSL demandée.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InformazioniSu</name>
+        <message>
+            <source>Compilatore: %1
+Qt: %2</source>
+            <translation>Compilateur : %1
+Qt : %2</translation>
+        </message>
+        <message>
+            <source>Sconosciuto</source>
+            <translation>Inconnu</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainWindow</name>
+        <message>
+            <source>Prima di consultare i QSL devi iniziare o aprire un log.</source>
+            <translation>Avant de consulter les QSL, vous devez démarrer ou ouvrir un log.</translation>
+        </message>
+        <message>
+            <source>Conferma eliminazione</source>
+            <translation>Confirmer la suppression</translation>
+        </message>
+        <message>
+            <source>Sei sicuro di voler cancellare la riga selezionata?</source>
+            <translation>Voulez-vous vraiment supprimer la ligne sélectionnée ?</translation>
+        </message>
+    </context>
 </TS>

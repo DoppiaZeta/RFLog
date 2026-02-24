@@ -947,4 +947,48 @@ No se puede leer el archivo: %2</translation>
         <translation>Usar esto</translation>
     </message>
 </context>
+
+    <context>
+        <name>FinestraQSL</name>
+        <message>
+            <source>QSL richiesti</source>
+            <translation>QSL solicitadas</translation>
+        </message>
+        <message>
+            <source>Nominativi con QSL richiesto nel log corrente:</source>
+            <translation>Indicativos con QSL solicitada en el log actual:</translation>
+        </message>
+        <message>
+            <source>Nessun contatto con QSL richiesto.</source>
+            <translation>Ningún contacto con QSL solicitada.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InformazioniSu</name>
+        <message>
+            <source>Compilatore: %1
+Qt: %2</source>
+            <translation>Compilador: %1
+Qt: %2</translation>
+        </message>
+        <message>
+            <source>Sconosciuto</source>
+            <translation>Desconocido</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainWindow</name>
+        <message>
+            <source>Prima di consultare i QSL devi iniziare o aprire un log.</source>
+            <translation>Antes de consultar las QSL, debes iniciar o abrir un log.</translation>
+        </message>
+        <message>
+            <source>Conferma eliminazione</source>
+            <translation>Confirmar eliminación</translation>
+        </message>
+        <message>
+            <source>Sei sicuro di voler cancellare la riga selezionata?</source>
+            <translation>¿Seguro que quieres eliminar la fila seleccionada?</translation>
+        </message>
+    </context>
 </TS>

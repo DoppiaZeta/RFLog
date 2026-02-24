@@ -947,4 +947,48 @@ Unable to read file: %2</translation>
         <translation>Use this</translation>
     </message>
 </context>
+
+    <context>
+        <name>FinestraQSL</name>
+        <message>
+            <source>QSL richiesti</source>
+            <translation>Requested QSLs</translation>
+        </message>
+        <message>
+            <source>Nominativi con QSL richiesto nel log corrente:</source>
+            <translation>Call signs with requested QSL in the current log:</translation>
+        </message>
+        <message>
+            <source>Nessun contatto con QSL richiesto.</source>
+            <translation>No contact with requested QSL.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InformazioniSu</name>
+        <message>
+            <source>Compilatore: %1
+Qt: %2</source>
+            <translation>Compiler: %1
+Qt: %2</translation>
+        </message>
+        <message>
+            <source>Sconosciuto</source>
+            <translation>Unknown</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainWindow</name>
+        <message>
+            <source>Prima di consultare i QSL devi iniziare o aprire un log.</source>
+            <translation>Before viewing QSLs, you must start or open a log.</translation>
+        </message>
+        <message>
+            <source>Conferma eliminazione</source>
+            <translation>Confirm deletion</translation>
+        </message>
+        <message>
+            <source>Sei sicuro di voler cancellare la riga selezionata?</source>
+            <translation>Are you sure you want to delete the selected row?</translation>
+        </message>
+    </context>
 </TS>

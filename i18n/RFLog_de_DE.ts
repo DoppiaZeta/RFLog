@@ -947,4 +947,48 @@ Datei kann nicht gelesen werden: %2</translation>
         <translation>Dieses verwenden</translation>
     </message>
 </context>
+
+    <context>
+        <name>FinestraQSL</name>
+        <message>
+            <source>QSL richiesti</source>
+            <translation>Angeforderte QSLs</translation>
+        </message>
+        <message>
+            <source>Nominativi con QSL richiesto nel log corrente:</source>
+            <translation>Rufzeichen mit angeforderter QSL im aktuellen Log:</translation>
+        </message>
+        <message>
+            <source>Nessun contatto con QSL richiesto.</source>
+            <translation>Keine Kontakte mit angeforderter QSL.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InformazioniSu</name>
+        <message>
+            <source>Compilatore: %1
+Qt: %2</source>
+            <translation>Compiler: %1
+Qt: %2</translation>
+        </message>
+        <message>
+            <source>Sconosciuto</source>
+            <translation>Unbekannt</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainWindow</name>
+        <message>
+            <source>Prima di consultare i QSL devi iniziare o aprire un log.</source>
+            <translation>Bevor Sie QSLs anzeigen, müssen Sie ein Log starten oder öffnen.</translation>
+        </message>
+        <message>
+            <source>Conferma eliminazione</source>
+            <translation>Löschen bestätigen</translation>
+        </message>
+        <message>
+            <source>Sei sicuro di voler cancellare la riga selezionata?</source>
+            <translation>Möchten Sie die ausgewählte Zeile wirklich löschen?</translation>
+        </message>
+    </context>
 </TS>

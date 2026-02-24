@@ -932,4 +932,48 @@ Impossibile leggere il file: %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
+
+    <context>
+        <name>FinestraQSL</name>
+        <message>
+            <source>QSL richiesti</source>
+            <translation>QSL richiesti</translation>
+        </message>
+        <message>
+            <source>Nominativi con QSL richiesto nel log corrente:</source>
+            <translation>Nominativi con QSL richiesto nel log corrente:</translation>
+        </message>
+        <message>
+            <source>Nessun contatto con QSL richiesto.</source>
+            <translation>Nessun contatto con QSL richiesto.</translation>
+        </message>
+    </context>
+    <context>
+        <name>InformazioniSu</name>
+        <message>
+            <source>Compilatore: %1
+Qt: %2</source>
+            <translation>Compilatore: %1
+Qt: %2</translation>
+        </message>
+        <message>
+            <source>Sconosciuto</source>
+            <translation>Sconosciuto</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainWindow</name>
+        <message>
+            <source>Prima di consultare i QSL devi iniziare o aprire un log.</source>
+            <translation>Prima di consultare i QSL devi iniziare o aprire un log.</translation>
+        </message>
+        <message>
+            <source>Conferma eliminazione</source>
+            <translation>Conferma eliminazione</translation>
+        </message>
+        <message>
+            <source>Sei sicuro di voler cancellare la riga selezionata?</source>
+            <translation>Sei sicuro di voler cancellare la riga selezionata?</translation>
+        </message>
+    </context>
 </TS>
