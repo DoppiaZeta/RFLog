@@ -57,18 +57,19 @@ void LocatoriPreferiti::cercaLatLon() {
 }
 
 void LocatoriPreferiti::addLocatoreOK() {
-    addLocatore(ui->aggiungiLocatore->text(), ui->nomeLocatore->text());
+    addLocatore(ui->aggiungiLocatore->text().trimmed().toUpper(), ui->nomeLocatore->text());
 }
 
 void LocatoriPreferiti::addLocatore(const QString &loc, const QString &txt) {
-    if(!Coordinate::validaLocatore(loc.trimmed())) {
+    const QString normalizedLoc = loc.trimmed().toUpper();
+    if(!Coordinate::validaLocatore(normalizedLoc)) {
         return;
     }
 
     // Cerca se il locatore esiste già nella tabella
     for (int row = 0; row < ui->listaLocatori->rowCount(); ++row) {
         QTableWidgetItem *item = ui->listaLocatori->item(row, 0); // Ottieni la cella nella colonna 0
-        if (item && item->text() == loc.trimmed()) {
+        if (item && item->text().trimmed().toUpper() == normalizedLoc) {
             // Aggiorna il valore della colonna 1 (txt) se il locatore esiste
             ui->listaLocatori->item(row, 1)->setText(txt.trimmed());
 
@@ -82,7 +83,7 @@ void LocatoriPreferiti::addLocatore(const QString &loc, const QString &txt) {
     ui->listaLocatori->insertRow(newRow);
 
     // Imposta i valori delle celle
-    QTableWidgetItem *locItem = new QTableWidgetItem(loc.trimmed());
+    QTableWidgetItem *locItem = new QTableWidgetItem(normalizedLoc);
     QTableWidgetItem *txtItem = new QTableWidgetItem(txt.trimmed());
     ui->listaLocatori->setItem(newRow, 0, locItem);
     ui->listaLocatori->setItem(newRow, 1, txtItem);
