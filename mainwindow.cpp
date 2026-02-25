@@ -74,8 +74,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     Nominativo = new SuggestiveLineEdit(this);
-    Progressivo = new SuggestiveLineEdit(this);
     Locatore = new SuggestiveLineEdit(this);
+    Progressivo = new SuggestiveLineEdit(this);
     Segnale = new SuggestiveLineEdit(this);
     Frequenza = new SuggestiveLineEdit(this);
     Orario = new SuggestiveLineEdit(this);
@@ -89,8 +89,8 @@ MainWindow::MainWindow(QWidget *parent)
     Frequenza->setPlaceholderText(QStringLiteral("14.250 (20m)"));
 
     Nominativo->setStyleSheet(formato);
-    Progressivo->setStyleSheet(formato);
     Locatore->setStyleSheet(formato);
+    Progressivo->setStyleSheet(formato);
     Segnale->setStyleSheet(formato);
     Frequenza->setStyleSheet(formato);
     Orario->setStyleSheet(formato);
@@ -108,9 +108,9 @@ MainWindow::MainWindow(QWidget *parent)
     f.setPointSizeF(f.pointSizeF() * 1.4);
     ui->successivo->setFont(f);
 
-    QWidget::setTabOrder(Nominativo, Progressivo);
-    QWidget::setTabOrder(Progressivo, Locatore);
-    QWidget::setTabOrder(Locatore, Segnale);
+    QWidget::setTabOrder(Nominativo, Locatore);
+    QWidget::setTabOrder(Locatore, Progressivo);
+    QWidget::setTabOrder(Progressivo, Segnale);
     QWidget::setTabOrder(Segnale, Frequenza);
     QWidget::setTabOrder(Frequenza, Orario);
 
