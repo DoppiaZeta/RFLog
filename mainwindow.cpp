@@ -805,6 +805,9 @@ void MainWindow::confermaLinea() {
     aggiornaEtichettaSuccessivo();
     aggiornaTabella();
     updateMappaLocatori();
+
+    svuotaLineEdit();
+    Nominativo->setFocus();
 }
 
 void MainWindow::aggiornaOrario() {
